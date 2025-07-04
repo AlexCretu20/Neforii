@@ -31,6 +31,11 @@ public class Main {
                 }
             }
             System.out.println("0. Logout\n");
+            // creeaza o postare 
+            // vezi toate postariile
+            // vezi o postare -> daca e awarded postarea e cu steluta
+            // daca intri pe postare ai: expand postare, editeaza postare, sterge postarea (sa verificam sa nu poti sterge postariile altcuiva), upvote, lasa comentariu,
+            // daca dai expand vezi toate comentariile si poti sa dai upvote la comentarii, sa lasi un reply, delete, edit, 
             System.out.println("1. Creeaza o postare\n");
             System.out.printf("2. Vezi toate postarile\n");
             System.out.println("3. Sterge o postare\n");
