@@ -23,22 +23,6 @@ public class Post {
         this.votes = new ArrayList<Vote>();
     }
 
-    public ArrayList<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(ArrayList<Comment> comments) {
-        this.comments = comments;
-    }
-
-    public ArrayList<Vote> getVotes() {
-        return votes;
-    }
-
-    public void setVotes(ArrayList<Vote> votes) {
-        this.votes = votes;
-    }
-
     public Post(int id, String text, LocalDateTime createdAt, boolean isAwarded, User user) {
         this.id = id;
         this.text = text;
@@ -88,6 +72,23 @@ public class Post {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public ArrayList<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Comment comment) {
+        comments.add(comment);
+    }
+
+    public ArrayList<Vote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(Vote vote) {
+        votes.add(vote);
+    }
+
     public boolean equals(Object object) {
         if (object == null || getClass() != object.getClass()) return false;
         if (!super.equals(object)) return false;
