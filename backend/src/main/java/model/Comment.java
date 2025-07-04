@@ -10,6 +10,14 @@ public class Comment {
     private LocalDateTime updatedAt;
     private User user;
 
+    public Comment(int id, String text, LocalDateTime createdAt, LocalDateTime updatedAt, User user){
+        this.id = id;
+        this.text = text;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.user = user;
+    }
+
     public int getId() {
         return id;
     }
