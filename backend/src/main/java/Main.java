@@ -5,23 +5,28 @@ public class Main {
 //        PostService postService = new PostService();
         Scanner scanner = new Scanner(System.in);
 
-        while (true) {
-            System.out.println("Welcome to Neforii!");
-            System.out.println("1. Register");
-            System.out.println("2. Login");
-            System.out.println("0. Exit");
-            String choice = scanner.nextLine();
-            if (choice.equals("1")) {
-                System.out.println("Registering a new user...");
-            } else if (choice.equals("2")) {
-                System.out.println("Logging in...");
-
-            } else if (choice.equals("0")) {
-                System.out.println("Exiting...");
-                break;
-            } else {
-                System.out.println("Invalid choice, please try again.");
+        System.out.println("Welcome to Neforii!");
+        System.out.println("1. Register");
+        System.out.println("2. Login");
+        System.out.println("0. Exit");
+        String choice = scanner.nextLine();
+        switch (choice) {
+            case "1": {
+                System.out.println("Register functionality is not implemented yet.");
             }
+            case "2": {
+                System.out.println("Login functionality is not implemented yet.");
+                break;
+            }
+            case "0": {
+                System.out.println("Stopping the application!");
+                return;
+            }
+        }
+
+        while (true) {
+            System.out.println("1. Create Post");
+            break;
         }
 
     }

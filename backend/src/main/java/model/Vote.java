@@ -11,6 +11,8 @@ public class Vote {
     private EntityType entityType;
     private int entityId;
 
+    private int userId;
+
     public int getId() {
         return id;
     }
@@ -92,5 +94,4 @@ public class Vote {
         this.userId = userId;
     }
 
-    private int userId;
 }
