@@ -6,13 +6,13 @@ import java.util.Objects;
 public class User{
     private int id;
     private String username;
-    private String password;
     private String email;
+    private String password;
     private String phoneNumber;
     private String description;
     private LocalDateTime createdAt;
 
-    public User(String username, String password, String email, String phoneNumber, String description) {
+    public User(String username, String email, String password, String phoneNumber, String description) {
         this.username = username;
         this.password = password;
         this.email = email;
