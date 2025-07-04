@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Post {
@@ -9,6 +10,8 @@ public class Post {
     private LocalDateTime createdAt;
     private boolean isAwarded;
     private User user;
+    private ArrayList<Comment> comments;
+    private ArrayList<Vote> votes;
 
     public Post() {
         this.id = 0;
@@ -16,6 +19,24 @@ public class Post {
         this.createdAt = LocalDateTime.now();
         this.isAwarded = false;
         this.user = null;
+        this.comments = new ArrayList<Comment>();
+        this.votes = new ArrayList<Vote>();
+    }
+
+    public ArrayList<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(ArrayList<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public ArrayList<Vote> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(ArrayList<Vote> votes) {
+        this.votes = votes;
     }
 
     public Post(int id, String text, LocalDateTime createdAt, boolean isAwarded, User user) {
@@ -24,6 +45,8 @@ public class Post {
         this.createdAt = createdAt;
         this.isAwarded = isAwarded;
         this.user = user;
+        this.comments = new ArrayList<Comment>();
+        this.votes = new ArrayList<Vote>();
     }
 
     public int getId() {
