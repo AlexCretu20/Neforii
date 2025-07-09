@@ -102,12 +102,7 @@ public class Post {
 
     @java.lang.Override
     public java.lang.String toString() {
-        return "Post{" +
-                "id=" + id +
-                ", text='" + text + '\'' +
-                ", createdAt=" + createdAt +
-                ", isAwarded=" + isAwarded +
-                ", user=" + user +
-                '}';
+        return id + "\n" + text + "\n Created at :" + createdAt  +  "\n";
+
     }
 }
