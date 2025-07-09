@@ -35,15 +35,17 @@ public class MeniuService {
             switch (choice) {
                 case "1":
                     userService.registerUser();
-                    userService.loginUser();
-                    this.currentUser = userService.getCurrentUser();
-                    displayMainMeniu();
+                    this.currentUser = userService.loginUser();
+                    if (this.currentUser != null) {
+                        displayMainMeniu();
+                    }
                     break;
 
                 case "2":
-                    userService.loginUser();
-                    this.currentUser = userService.getCurrentUser();
-                    displayMainMeniu();
+                    this.currentUser = userService.loginUser();
+                    if (this.currentUser != null) {
+                        displayMainMeniu();
+                    }
                     break;
 
                 case "0": {
