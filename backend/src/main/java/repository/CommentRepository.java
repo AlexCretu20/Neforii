@@ -22,10 +22,7 @@ public class CommentRepository implements ICrudRepository<Comment> {
         return List.of();
     }
 
-    @Override
-    public void update(Comment entity) {
 
-    }
 
     @Override
     public void deleteById(int id) {

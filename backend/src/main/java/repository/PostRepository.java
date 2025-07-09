@@ -21,10 +21,8 @@ public class PostRepository implements ICrudRepository<Post>{
         return List.of();
     }
 
-    @Override
-    public void update(Post entity) {
 
-    }
+
 
     @Override
     public void deleteById(int id) {
