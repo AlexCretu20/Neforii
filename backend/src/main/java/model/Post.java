@@ -23,6 +23,13 @@ public class Post {
         this.votes = new ArrayList<Vote>();
     }
 
+    public Post(String text, LocalDateTime createdAt, boolean isAwarded, User user) {
+        this.text = text;
+        this.createdAt = createdAt;
+        this.isAwarded = isAwarded;
+        this.user = user;
+    }
+
     public Post(int id, String text, LocalDateTime createdAt, boolean isAwarded, User user) {
         this.id = id;
         this.text = text;
