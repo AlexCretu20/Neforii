@@ -1,20 +1,15 @@
 package service;
 
-import model.Comment;
-import model.EntityType;
-import model.User;
-import model.Vote;
+import model.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class CommentService {
     private static CommentService instance;
-    //count for first available id of comment
-    private static int cnt = 0;
-    private List<Comment> comments = new ArrayList<>();
+
+    private int cnt = 1;
+    private Map<Integer, Comment> comments = new HashMap<>();
 
     private CommentService() {}
 
@@ -25,108 +20,107 @@ public class CommentService {
         return instance;
     }
 
-    public static int getCnt(){
-        return cnt;
+    public void initService() {
+        comments.clear();
+        cnt = 1;
     }
 
-    public void increaseCnt(){
-        cnt ++;
-    }
-    public void initService(){
-        comments = new ArrayList<>();
-    }
-
-    public List<Comment> getComments() {
+    public Map<Integer, Comment> getComments() {
         return comments;
     }
-    public boolean isEmpty(Optional<Comment> comment){
-        return comment.isEmpty();
-    }
-    //used for linking comment to comment or comment to post, by using entityType
-    public void createComment(String text, User user, EntityType entityType, int entityId){
-        LocalDateTime currentTime = LocalDateTime.now();
-        List<Comment> replies = new ArrayList<>();
-        List<Vote> votes = new ArrayList<>();
-        Comment comment = new Comment(cnt, text, currentTime, currentTime, user, entityType, entityId, replies, votes);
 
-        if(entityType == EntityType.POST){
-            //add the new comment to the list of comments
-            comments.add(comment);
-            System.out.println("Comment added to post.\n");
-        }
-        else if(entityType == EntityType.COMMENT){
-            Optional<Comment> commentOptional = getComment(entityId);
-            if(isEmpty(commentOptional)){
-                System.out.println("The entered comment id does not exist.\n");
+    public Optional<Comment> getComment(int id) {
+        return Optional.ofNullable(comments.get(id));
+    }
+
+    public void createComment(String text, User user, EntityType entityType, int entityId) {
+        LocalDateTime now = LocalDateTime.now();
+        Comment comment = new Comment(cnt, text, now, now, user, entityType, entityId, new ArrayList<>(), new ArrayList<>());
+
+        if (entityType == EntityType.POST) {
+            Post post = PostService.getInstance().getPostById(entityId);
+            if (post != null) {
+                post.getComments().add(comment);
+                comments.put(cnt, comment);
+                System.out.println("Comment added to post.\n");
+            } else {
+                System.out.println("Post not found.\n");
+                return;
             }
-            else{
-                Comment parentComment = commentOptional.get();
-                parentComment.getReplies().add(comment);
+
+        } else if (entityType == EntityType.COMMENT) {
+            Optional<Comment> parentOpt = getComment(entityId);
+            if (parentOpt.isPresent()) {
+                Comment parent = parentOpt.get();
+                parent.getReplies().add(comment);
+                comments.put(cnt, comment);
                 System.out.println("Reply added to comment.\n");
+            } else {
+                System.out.println("Comment not found.\n");
+                return;
             }
         }
-        //next id
-        increaseCnt();
-        System.out.println("The comment has succesfully been added!\n");
+
+        cnt++;
+        System.out.println("The comment has been successfully added!\n");
     }
 
-    public Optional<Comment> getComment(int id){
-        for(Comment c : comments){
-            if(c.getId() == id){
-                return Optional.of(c);
-            }
-        }
-        //if the comment with this id doesnt exist, return Optional.empty
-        return Optional.empty();
-    }
-
-    public void updateComment(int id, String updateText){
-        Optional<Comment> commentOptional = getComment(id);
-        if(isEmpty(commentOptional)){
-            System.out.println("The entered comment id does not exist.\n");
-        }
-        else {
-            Comment comment = commentOptional.get();
-
-            LocalDateTime currentTime = LocalDateTime.now();
-            comment.setUpdatedAt(currentTime);
+    public void updateComment(int id, String updateText) {
+        Optional<Comment> opt = getComment(id);
+        if (opt.isPresent()) {
+            Comment comment = opt.get();
             comment.setText(updateText);
-
-            System.out.println("The comment has been edited succesfully.\n");
+            comment.setUpdatedAt(LocalDateTime.now());
+            System.out.println("Comment updated successfully.\n");
+        } else {
+            System.out.println("Comment not found.\n");
         }
     }
 
-    public void deleteComment(int id){
-        Optional<Comment> commentOptional = getComment(id);
-        if(isEmpty(commentOptional)){
-            System.out.println("The entered comment id does not exist.\n");
-        }
-        else {
-            Comment comment = commentOptional.get();
-
-            comments.remove(comment);
-            System.out.println("The comment has been deleted succesfully");
+    public void deleteComment(int id) {
+        if (comments.containsKey(id)) {
+            comments.remove(id);
+            System.out.println("Comment deleted successfully.\n");
+        } else {
+            System.out.println("Comment not found.\n");
         }
     }
 
-    public void showComments(){
-        for(Comment c : comments){
-            System.out.println(c);
-        }
-    }
-
-    public void showReplies(int id){
-        Optional<Comment> commentOptional = getComment(id);
-        if(isEmpty(commentOptional)){
-            System.out.println("The entered comment id does not exist.\n");
-        }
-        else{
-            Comment comment = commentOptional.get();
-            List<Comment> replies = comment.getReplies();
-            System.out.println("The list of replies:\n");
-            for(Comment r : replies){
-                System.out.println(r);
+    public void showReplies(int id) {
+        Optional<Comment> opt = getComment(id);
+        if (opt.isPresent()) {
+            Comment comment = opt.get();
+            System.out.println(comment);
+            System.out.println("Upvotes: " + comment.countUpvotes() + " Downvotes: " + comment.countDownvotes());
+            if (comment.getReplies().isEmpty()) {
+                System.out.println("No replies yet.\n");
+            } else {
+                System.out.println("Replies:");
+                for (Comment reply : comment.getReplies()) {
+                    System.out.println(reply);
+                }
             }
+        } else {
+            System.out.println("Comment not found.\n");
         }
+    }
+
+    public void addVote(int id, Vote vote) {
+        Optional<Comment> opt = getComment(id);
+        if (opt.isPresent()) {
+            Comment comment = opt.get();
+            comment.getVotes().add(vote);
+            System.out.println("Vote added.\n");
+        } else {
+            System.out.println("Comment not found.\n");
+        }
+    }
+
+    public int displayUpvotes(int id) {
+        return getComment(id).map(Comment::countUpvotes).orElse(0);
+    }
+
+    public int displayDownvotes(int id) {
+        return getComment(id).map(Comment::countDownvotes).orElse(0);
     }
 }

@@ -102,7 +102,21 @@ public class Post {
 
     @java.lang.Override
     public java.lang.String toString() {
-        return id + "\n" + text + "\n Created at :" + createdAt  +  "\n";
+        return id + "\n" + text + "\n Created at :" + createdAt  +  " " + "Created by : " + user.getUsername();
 
+    }
+
+    public int countUpvotes() {
+        int counter = 0;
+        for (Vote vote: votes){
+           if (vote.isUpvote() == true){
+               counter ++;
+           }
+       }
+        return  counter;
+
+    }
+    public int countDownvotes() {
+        return votes.size() -  countUpvotes();
     }
 }

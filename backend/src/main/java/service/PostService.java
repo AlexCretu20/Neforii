@@ -26,15 +26,14 @@ public class PostService {
         return instance;
     }
 
-    public Integer GetPostById(Post post) {
-        for (Map.Entry<Integer, Post> entry : posts.entrySet()) {
-            if (entry.getValue().equals(post)) {
-                return entry.getKey();
-            }
+    public Post getPostById(int id) {
+        if (posts.containsKey(id)) {
+            return posts.get(id);
         }
-        System.out.println("The post doesn't exist. ");
+        System.out.println("The post doesn't exist.");
         return null;
     }
+
 
     public void CreatePost(User user, String text){
         counter ++;
@@ -86,6 +85,7 @@ public class PostService {
             if (key == id){
                 comments = posts.get(key).getComments();
                 System.out.println(posts.get(key).toString());
+                System.out.println("Upvotes " + posts.get(key).countUpvotes() +  "\n" + "Downvotes " + posts.get(key).countDownvotes());
                 isNumber = true;
             }
 
@@ -93,7 +93,7 @@ public class PostService {
         if (isNumber) {
             System.out.println("Comments");
             for (Comment cm: comments){
-                System.out.println(cm.getText());
+                System.out.println(cm.getId() + " " + cm.getText());
             }
             if (comments.size() == 0) {
                 System.out.println("The post doesn't have comments.");
@@ -117,9 +117,43 @@ public class PostService {
         for (Integer key : posts.keySet()) {
             if (key == id) {
                 System.out.println(posts.get(key).toString());
-
+                System.out.println("Upvotes " + posts.get(key).countUpvotes() +  "\n" + "Downvotes " + posts.get(key).countDownvotes());
             }
 
         }
     }
+
+    public void addComment(int id, Comment comment){
+        for (Integer key: posts.keySet()){
+            if (key == id){
+                posts.get(key).setComments(comment);
+
+            }
+
+        }
+
+    }
+
+    public int displayUpvotes(int id) {
+        for (Integer key: posts.keySet()){
+            if (key == id){
+                return posts.get(key).countUpvotes();
+
+            }
+
+        }
+        return 0;
+    }
+
+    public int displayDownvotes(int id) {
+        for (Integer key: posts.keySet()){
+            if (key == id){
+                return posts.get(key).countDownvotes();
+
+            }
+
+        }
+        return 0;
+    }
+
 }

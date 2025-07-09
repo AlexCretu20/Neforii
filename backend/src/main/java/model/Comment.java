@@ -90,16 +90,16 @@ public class Comment {
         return replies;
     }
 
-    public void setReplies(List<Comment> replies) {
-        this.replies = replies;
+    public void setReplies(Comment replie) {
+        replies.add(replie);
     }
 
     public List<Vote> getVotes() {
         return votes;
     }
 
-    public void setVotes(List<Vote> votes) {
-        this.votes = votes;
+    public void setVotes(Vote vote) {
+        votes.add(vote);
     }
 
     @Override
@@ -115,16 +115,20 @@ public class Comment {
 
     @Override
     public String toString() {
-        return "Comment{" +
-                "id=" + id +
-                ", text='" + text + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", user=" + user +
-                ", entityType=" + entityType +
-                ", entityId=" + entityId +
-                ", replies=" + replies +
-                ", votes=" + votes +
-                '}';
+        return id + "\n" + text + "\n Created at :" + createdAt  +  " " + "Created by : " + user.getUsername();
+    }
+
+    public int countUpvotes() {
+        int counter = 0;
+        for (Vote vote: votes){
+            if (vote.isUpvote() == true){
+                counter ++;
+            }
+        }
+        return  counter;
+
+    }
+    public int countDownvotes() {
+        return votes.size() -  countUpvotes();
     }
 }

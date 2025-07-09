@@ -36,6 +36,7 @@ public class MeniuService {
                 case "1":
                     userService.registerUser();
                     userService.loginUser();
+                    this.currentUser = userService.getCurrentUser();
                     displayMainMeniu();
                     break;
 
@@ -90,6 +91,7 @@ public class MeniuService {
                 case "4":
                     System.out.println("Enter the number of a post:\n");
                     int number =  scanner.nextInt();
+                    scanner.nextLine();
                     //sa se afiseze numarul de upvotes, downvotes, comenatrii
                     postService.displayOnePost(number);
                     displayPostMenu(number);
@@ -104,14 +106,12 @@ public class MeniuService {
     }
 
 
-
-
     public void displayPostMenu(int postId) {
         boolean flag = true;
 
         while (flag) {
             System.out.println("\n--- Post Menu ---");
-            System.out.println("1. Show comments");
+            System.out.println("1. Show comments and votes");
             System.out.println("2. Leave a comment on this post");
             System.out.println("3. Upvote/downvote this post");
             System.out.println("4. Select a comment to interact with");
@@ -144,6 +144,7 @@ public class MeniuService {
                 case "4":
                     System.out.print("Enter the ID of the comment to interact with: ");
                     int commentId = Integer.parseInt(scanner.nextLine());
+                    commentService.getComment(commentId);
                     displayCommentMenu(commentId); // meniul pentru comentariu selectat
                     break;
 

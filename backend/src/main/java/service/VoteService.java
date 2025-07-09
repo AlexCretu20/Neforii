@@ -35,10 +35,15 @@ public class VoteService {
                 userId
         );
         votes.add(vote);
+
 //        commentService.getCommentById(entityId).getVotes().add(vote);
 
         if (entityType == EntityType.POST) {
+            PostService.getInstance().AddVote(userId,vote);
 //            postService.getPostById(entityId).setAwarded(true)
+        }
+        else {
+            CommentService.getInstance().addVote(entityId, vote);
         }
         return "You have successfully voted!";
     }
