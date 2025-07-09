@@ -35,8 +35,15 @@ public class VoteService {
                 userId
         );
         votes.add(vote);
+//        commentService.getCommentById(entityId).getVotes().add(vote);
+
+        if (entityType == EntityType.POST) {
+//            postService.getPostById(entityId).setAwarded(true)
+        }
         return "You have successfully voted!";
     }
+
+
 
     public String deleteVote(int userId, EntityType entityType, int entityId) {
         boolean removed = votes.removeIf(vote -> vote.getUserId() == userId && vote.getEntityType() == entityType && vote.getEntityId() == entityId);
@@ -51,5 +58,6 @@ public class VoteService {
         return votes.stream()
                 .anyMatch(vote -> vote.getUserId() == userId && vote.getEntityType() == entityType && vote.getEntityId() == entityId);
     }
+
 
 }
