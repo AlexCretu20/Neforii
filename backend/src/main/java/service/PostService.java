@@ -81,18 +81,28 @@ public class PostService {
 
     public void ExpandComments(int id){
         ArrayList<Comment> comments = new ArrayList<>();
+        boolean isNumber = false;
         for (Integer key: posts.keySet()){
             if (key == id){
                 comments = posts.get(key).getComments();
+                System.out.println(posts.get(key).toString());
+                isNumber = true;
             }
 
         }
+        if (isNumber) {
+            System.out.println("Comments");
+            for (Comment cm: comments){
+                System.out.println(cm.getText());
+            }
+            if (comments.size() == 0) {
+                System.out.println("The post doesn't have comments.");
+            }
 
-        System.out.println("Comments");
-        for (Comment cm: comments){
-            System.out.println(cm.getText());
         }
-
+        else {
+            System.out.println("The post doesn't exist.");
+        }
     }
 
     public void DisplayPosts(){
@@ -100,5 +110,16 @@ public class PostService {
             System.out.println(entry.getValue());
         }
 
+    }
+
+
+    public  void displayOnePost(int id) {
+        for (Integer key : posts.keySet()) {
+            if (key == id) {
+                System.out.println(posts.get(key).toString());
+
+            }
+
+        }
     }
 }

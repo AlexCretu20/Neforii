@@ -1,10 +1,9 @@
 package service;
 
+import model.EntityType;
 import model.User;
 
 import java.util.Scanner;
-
-import static java.lang.Integer.parseInt;
 
 public class MeniuService {
     private CommentService commentService;
@@ -64,6 +63,7 @@ public class MeniuService {
         while (flag){
             System.out.println("1. Create a post\n");
             System.out.println("2. See all posts\n");
+            //daca un user are postari atunci ii apare in meniu optiunea de editarea/stergerea a postarii
             System.out.println("3. Delete a post\n");
             System.out.println("4. See a post\n");
             System.out.println("0. Back\n");
@@ -89,9 +89,10 @@ public class MeniuService {
 
                 case "4":
                     System.out.println("Enter the number of a post:\n");
-                    String number =  scanner.nextLine();
-                    postService.ExpandComments(parseInt(number));
-                    // new method
+                    int number =  scanner.nextInt();
+                    //sa se afiseze numarul de upvotes, downvotes, comenatrii
+                    postService.displayOnePost(number);
+                    displayPostMenu(number);
                     break;
 
                 case "0":
@@ -101,5 +102,106 @@ public class MeniuService {
 
         }
     }
+
+
+
+
+    public void displayPostMenu(int postId) {
+        boolean flag = true;
+
+        while (flag) {
+            System.out.println("\n--- Post Menu ---");
+            System.out.println("1. Show comments");
+            System.out.println("2. Leave a comment on this post");
+            System.out.println("3. Upvote/downvote this post");
+            System.out.println("4. Select a comment to interact with");
+            System.out.println("0. Back to main menu");
+            System.out.print("Enter your choice: ");
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    postService.ExpandComments(postId); // afișare recursivă comentarii
+                    break;
+
+                case "2":
+                    System.out.print("Write your comment: ");
+                    String text = scanner.nextLine();
+                    commentService.createComment(text, currentUser, EntityType.POST, postId);
+                    break;
+
+                case "3":
+                    System.out.println("1. Upvote");
+                    System.out.println("2. Downvote");
+                    String voteChoice = scanner.nextLine();
+                    if (voteChoice.equals("1") || voteChoice.equals("2")) {
+                        boolean isUpvote = voteChoice.equals("1");
+                        String result = voteService.createVote(currentUser.getId(), EntityType.POST, postId, isUpvote);
+                        System.out.println(result);
+                    }
+                    break;
+
+                case "4":
+                    System.out.print("Enter the ID of the comment to interact with: ");
+                    int commentId = Integer.parseInt(scanner.nextLine());
+                    displayCommentMenu(commentId); // meniul pentru comentariu selectat
+                    break;
+
+                case "0":
+                    flag = false;
+                    break;
+
+                default:
+                    System.out.println("Invalid option.");
+            }
+        }
+    }
+
+
+
+    public void displayCommentMenu(int commentId) {
+        boolean flag = true;
+
+        while (flag) {
+            System.out.println("\n--- Comment Menu ---");
+            System.out.println("1. Reply to this comment");
+            System.out.println("2. Upvote/downvote this comment");
+            System.out.println("3. Show replies to this comment");
+            System.out.println("0. Back");
+            System.out.print("Enter your choice: ");
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    System.out.print("Write your reply: ");
+                    String replyText = scanner.nextLine();
+                    commentService.createComment(replyText, currentUser, EntityType.COMMENT, commentId);
+                    break;
+
+                case "2":
+                    System.out.println("1. Upvote");
+                    System.out.println("2. Downvote");
+                    String voteChoice = scanner.nextLine();
+                    if (voteChoice.equals("1") || voteChoice.equals("2")) {
+                        boolean isUpvote = voteChoice.equals("1");
+                        String result = voteService.createVote(currentUser.getId(), EntityType.COMMENT, commentId, isUpvote);
+                        System.out.println(result);
+                    }
+                    break;
+
+                case "3":
+                    commentService.showReplies(commentId);
+                    break;
+
+                case "0":
+                    flag = false;
+                    break;
+
+                default:
+                    System.out.println("Invalid option.");
+            }
+        }
+    }
+
 
 }
