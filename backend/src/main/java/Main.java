@@ -1,4 +1,7 @@
+import model.Comment;
+import model.EntityType;
 import model.User;
+import repository.CommentRepository;
 import repository.PostRepository;
 import repository.UserRepository;
 import service.*;
@@ -38,12 +41,24 @@ public class Main {
 
         UserRepository userRepository = new UserRepository();
         PostRepository postRepository = new PostRepository(userRepository);
+        CommentRepository commentRepository = new CommentRepository(userRepository);
         User user = new User("aaaa", "aaaa@yahoo.com", "alsdJ23", "079438232", "aadnasdsadsadsad");
         //Post post = new Post("test post", LocalDateTime.now(), false, userRepository.findById(1).get());
 //        userRepository.save(user);
-        userRepository.deleteById(1);
+        Comment comment = new Comment(
+                "nasdasjdjsa",
+
+                userRepository.findById(2).get(),
+                EntityType.POST,
+                8
+        );
+
+        //commentRepository.save(comment);
+//        System.out.println(commentRepository.findAll());
+        commentRepository.deleteById(1);
 //        postRepository.save(post);
 //        postRepository.deleteById(6);
+
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner);
         meniuService.displayLoginMeniu();

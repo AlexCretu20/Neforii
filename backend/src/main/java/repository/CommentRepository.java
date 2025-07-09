@@ -5,30 +5,37 @@ import model.EntityType;
 import model.User;
 import utils.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class CommentRepository implements ICrudRepository<Comment> {
 
-    private final UserRepository userRepository = new UserRepository();
+    private final ICrudRepository<User> userRepository;
+
+    public CommentRepository(ICrudRepository<User> userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public void save(Comment comment) {
-        String sql = "INSERT INTO comments (text, created_at, updated_at, user_id, entity_type, entity_id) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection connection = DatabaseConnection.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, comment.getText());
-            preparedStatement.setTimestamp(2, java.sql.Timestamp.valueOf(comment.getCreatedAt() != null ? comment.getCreatedAt() : java.time.LocalDateTime.now()));
-            preparedStatement.setTimestamp(3, java.sql.Timestamp.valueOf(comment.getUpdatedAt() != null ? comment.getUpdatedAt() : java.time.LocalDateTime.now()));
-            preparedStatement.setInt(4, comment.getUser().getId());
-            preparedStatement.setString(5, comment.getEntityType().name());
-            preparedStatement.setInt(6, comment.getEntityId());
-            preparedStatement.executeUpdate();
+        String sql = "INSERT INTO comments (text, created_at, updated_at, user_id, entity_type, entity_id) " +
+                "VALUES (?, ?, ?, ?, ?::entity_type, ?)";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, comment.getText());
+            stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setTimestamp(3, null); // no update yet
+            stmt.setInt(4, comment.getUser().getId());
+            stmt.setString(5, comment.getEntityType().getDbValue());
+            stmt.setInt(6, comment.getEntityId());
+
+            stmt.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -37,30 +44,33 @@ public class CommentRepository implements ICrudRepository<Comment> {
     @Override
     public Optional<Comment> findById(int id) {
         String sql = "SELECT * FROM comments WHERE id = ?";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            if (resultSet.next()) {
-                int userId = resultSet.getInt("user_id");
-                Optional<User> userOptional = userRepository.findById(userId);
-                if (userOptional.isEmpty()) {
-                    return Optional.empty();
-                }
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int userId = rs.getInt("user_id");
+                Optional<User> userOpt = userRepository.findById(userId);
+
+                if (userOpt.isEmpty()) return Optional.empty();
 
                 Comment comment = new Comment(
-                        resultSet.getInt("id"),
-                        resultSet.getString("text"),
-                        resultSet.getTimestamp("created_at").toLocalDateTime(),
-                        resultSet.getTimestamp("updated_at") != null ? resultSet.getTimestamp("updated_at").toLocalDateTime() : null,
-                        userOptional.get(),
-                        EntityType.valueOf(resultSet.getString("entity_type")),
-                        resultSet.getInt("entity_id"),
-                        List.of(),
-                        List.of()
+                        rs.getString("text"),
+                        userOpt.get(),
+                        EntityType.fromDbValue(rs.getString("entity_type")),
+                        rs.getInt("entity_id")
                 );
+
+                comment.setId(rs.getInt("id"));
+                comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+
+                Timestamp updatedAt = rs.getTimestamp("updated_at");
+                if (updatedAt != null) {
+                    comment.setUpdatedAt(updatedAt.toLocalDateTime());
+                }
 
                 return Optional.of(comment);
             }
@@ -74,66 +84,56 @@ public class CommentRepository implements ICrudRepository<Comment> {
 
     @Override
     public List<Comment> findAll() {
+        List<Comment> comments = new ArrayList<>();
         String sql = "SELECT * FROM comments";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<Comment> comments = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
-            while (resultSet.next()) {
-                int userId = resultSet.getInt("user_id");
-                Optional<User> userOptional = userRepository.findById(userId);
-                if (userOptional.isEmpty()) {
-                    continue;
-                }
+            while (rs.next()) {
+                int userId = rs.getInt("user_id");
+                Optional<User> userOpt = userRepository.findById(userId);
+
+                if (userOpt.isEmpty()) continue;
 
                 Comment comment = new Comment(
-                        resultSet.getInt("id"),
-                        resultSet.getString("text"),
-                        resultSet.getTimestamp("created_at").toLocalDateTime(),
-                        resultSet.getTimestamp("updated_at") != null ? resultSet.getTimestamp("updated_at").toLocalDateTime() : null,
-                        userOptional.get(),
-                        EntityType.valueOf(resultSet.getString("entity_type")),
-                        resultSet.getInt("entity_id"),
-                        List.of(),
-                        List.of()
+                        rs.getString("text"),
+                        userOpt.get(),
+                        EntityType.fromDbValue(rs.getString("entity_type")),
+                        rs.getInt("entity_id")
                 );
+
+                comment.setId(rs.getInt("id"));
+                comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+
+                Timestamp updatedAt = rs.getTimestamp("updated_at");
+                if (updatedAt != null) {
+                    comment.setUpdatedAt(updatedAt.toLocalDateTime());
+                }
 
                 comments.add(comment);
             }
-
-            return comments;
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return List.of();
+        return comments;
     }
 
     @Override
     public void deleteById(int id) {
-        Optional<Comment> commentOptional = findById(id);
-        if (commentOptional.isEmpty()) {
-            System.out.println("The entered comment does not exist in order to be deleted!\n");
-        } else {
-            String sql = "DELETE FROM comments WHERE id = ?";
-            try (Connection connection = DatabaseConnection.getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        String sql = "DELETE FROM comments WHERE id = ?";
 
-                preparedStatement.setInt(1, id);
-                int rowsAffected = preparedStatement.executeUpdate();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                if (rowsAffected > 0) {
-                    System.out.println("The comment has been deleted successfully\n");
-                } else {
-                    System.out.println("Could not delete comment\n");
-                }
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
 
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

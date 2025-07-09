@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,13 +31,13 @@ public class Comment {
         this.votes = votes;
     }
 
-    public Comment(String text, User user, EntityType entityType, int entityId, List<Comment> replies, List<Vote> votes) {
+    public Comment(String text, User user, EntityType entityType, int entityId) {
         this.text = text;
         this.user = user;
         this.entityType = entityType;
         this.entityId = entityId;
-        this.replies = replies;
-        this.votes = votes;
+        this.replies = new ArrayList<>();
+        this.votes = new ArrayList<>();
     }
 
     public int getId() {
