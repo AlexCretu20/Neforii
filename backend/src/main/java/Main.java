@@ -1,3 +1,5 @@
+import model.User;
+import repository.UserRepository;
 import service.*;
 
 import java.util.Scanner;
@@ -32,6 +34,10 @@ public class Main {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
+
+        UserRepository userRepository = new UserRepository();
+        User user = new User("aaa", "aaa@yahoo.com", "alsdJ23", "07943823", "dnasdsadsadsad");
+        userRepository.save(user);
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner);
         meniuService.displayLoginMeniu();
