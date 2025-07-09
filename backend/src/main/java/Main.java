@@ -1,7 +1,10 @@
+import model.Post;
 import model.User;
+import repository.PostRepository;
 import repository.UserRepository;
 import service.*;
 
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class Main {
@@ -36,8 +39,13 @@ public class Main {
 //        }
 
         UserRepository userRepository = new UserRepository();
-        User user = new User("aaa", "aaa@yahoo.com", "alsdJ23", "07943823", "dnasdsadsadsad");
-        userRepository.save(user);
+        PostRepository postRepository = new PostRepository(userRepository);
+        User user = new User("aaaa", "aaaa@yahoo.com", "alsdJ23", "079438232", "aadnasdsadsadsad");
+                Post post = new Post("test post", LocalDateTime.now(), false, userRepository.findById(1).get());
+//        userRepository.save(user);
+        userRepository.deleteById(1);
+//        postRepository.save(post);
+//        postRepository.deleteById(6);
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner);
         meniuService.displayLoginMeniu();

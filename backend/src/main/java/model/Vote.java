@@ -13,6 +13,14 @@ public class Vote {
 
     private int userId;
 
+    public Vote(boolean isUpvote, LocalDateTime createdAt, EntityType entityType, int entityId, int userId) {
+        this.isUpvote = isUpvote;
+        this.createdAt = createdAt;
+        this.entityType = entityType;
+        this.entityId = entityId;
+        this.userId = userId;
+    }
+
     public int getId() {
         return id;
     }
