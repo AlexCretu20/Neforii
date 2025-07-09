@@ -30,6 +30,14 @@ public class Comment {
         this.votes = votes;
     }
 
+    public Comment(String text, LocalDateTime createdAt, User user, EntityType entityType, int entityId) {
+        this.text = text;
+        this.createdAt = createdAt;
+        this.user = user;
+        this.entityType = entityType;
+        this.entityId = entityId;
+    }
+
     public int getId() {
         return id;
     }

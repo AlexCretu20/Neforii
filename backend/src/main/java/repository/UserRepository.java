@@ -22,10 +22,7 @@ public class UserRepository implements ICrudRepository<User> {
         return List.of();
     }
 
-    @Override
-    public void update(User entity) {
 
-    }
 
     @Override
     public void deleteById(int id) {

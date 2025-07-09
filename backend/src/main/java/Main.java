@@ -9,6 +9,11 @@ public class Main {
         CommentService commentService = CommentService.getInstance();
         VoteService voteService = VoteService.getInstance();
         Scanner scanner = new Scanner(System.in);
+//
+//        User user = new User("test", "alex@yahoo.com", "parola"," 0772208997", "Test user");
+//        Post post = new Post("test post", LocalDateTime.now(), false, user);
+
+
 
 //        String insertSQL = "INSERT INTO users (username, email, password, phone_number, description) VALUES (?, ?, ?, ?, ?)";
 //

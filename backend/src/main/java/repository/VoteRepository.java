@@ -21,10 +21,6 @@ public class VoteRepository implements ICrudRepository<Vote> {
         return List.of();
     }
 
-    @Override
-    public void update(Vote entity) {
-
-    }
 
     @Override
     public void deleteById(int id) {
