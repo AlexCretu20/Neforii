@@ -30,6 +30,15 @@ public class Comment {
         this.votes = votes;
     }
 
+    public Comment(String text, User user, EntityType entityType, int entityId, List<Comment> replies, List<Vote> votes) {
+        this.text = text;
+        this.user = user;
+        this.entityType = entityType;
+        this.entityId = entityId;
+        this.replies = replies;
+        this.votes = votes;
+    }
+
     public int getId() {
         return id;
     }
