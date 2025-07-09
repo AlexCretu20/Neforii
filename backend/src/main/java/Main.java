@@ -1,11 +1,14 @@
 import model.Comment;
 import model.EntityType;
 import model.User;
+import model.Vote;
 import repository.CommentRepository;
 import repository.PostRepository;
 import repository.UserRepository;
+import repository.VoteRepository;
 import service.*;
 
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class Main {
@@ -59,6 +62,10 @@ public class Main {
 //        postRepository.save(post);
 //        postRepository.deleteById(6);
 
+        Vote vote = new Vote(true, LocalDateTime.now(), EntityType.POST, 8, 2);
+        VoteRepository voteRepository = new VoteRepository();
+//        voteRepository.save(vote);
+        voteRepository.deleteById(1);
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner);
         meniuService.displayLoginMeniu();
