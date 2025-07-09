@@ -1,4 +1,5 @@
 import model.User;
+import repository.PostRepository;
 import repository.UserRepository;
 import service.*;
 
@@ -11,6 +12,11 @@ public class Main {
         CommentService commentService = CommentService.getInstance();
         VoteService voteService = VoteService.getInstance();
         Scanner scanner = new Scanner(System.in);
+//
+//        User user = new User("test", "alex@yahoo.com", "parola"," 0772208997", "Test user");
+//        Post post = new Post("test post", LocalDateTime.now(), false, user);
+
+
 
 //        String insertSQL = "INSERT INTO users (username, email, password, phone_number, description) VALUES (?, ?, ?, ?, ?)";
 //
@@ -31,8 +37,13 @@ public class Main {
 //        }
 
         UserRepository userRepository = new UserRepository();
-        User user = new User("aabbba", "aabbbbba@yahoo.com", "alsdJ23", "07943823", "dnasdsadsadsad");
-        userRepository.save(user);
+        PostRepository postRepository = new PostRepository(userRepository);
+        User user = new User("aaaa", "aaaa@yahoo.com", "alsdJ23", "079438232", "aadnasdsadsadsad");
+        //Post post = new Post("test post", LocalDateTime.now(), false, userRepository.findById(1).get());
+//        userRepository.save(user);
+        userRepository.deleteById(1);
+//        postRepository.save(post);
+//        postRepository.deleteById(6);
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner);
         meniuService.displayLoginMeniu();
