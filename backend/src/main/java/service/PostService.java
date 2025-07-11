@@ -107,12 +107,14 @@ public class PostService implements IVotable {
 
     public void DisplayPosts() {
         for (Map.Entry<Integer, Post> entry : posts.entrySet()) {
+            updateAward(entry.getKey());
             System.out.println(entry.getValue());
         }
 
     }
 
     public void displayOnePost(int id) {
+        updateAward(id);
         for (Integer key : posts.keySet()) {
             if (key == id) {
                 System.out.println(posts.get(key).toString());
@@ -139,6 +141,7 @@ public class PostService implements IVotable {
         for (Integer key : posts.keySet()) {
             if (key == id) {
                 votes = posts.get(key).getVotes();
+                System.out.println(votes);
                 for (Vote vote : votes) {
                     if (vote.isUpvote() == true) {
                         counter++;
@@ -157,12 +160,19 @@ public class PostService implements IVotable {
         for (Integer key : posts.keySet()) {
             if (key == id) {
                 votes = posts.get(key).getVotes();
+                System.out.println(votes);
                 return votes.size() - displayUpvotes(id);
 
             }
 
         }
         return 0;
+    }
+
+    public void updateAward(int id){
+        if (displayUpvotes(id) > 1 && displayUpvotes(id) - displayDownvotes(id) > 0) {
+            getPostById(id).setAwarded(true);
+        }
     }
 
 }

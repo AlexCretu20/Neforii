@@ -71,8 +71,9 @@ public class MeniuService {
             System.out.println("1. Create a post\n");
             System.out.println("2. See all posts\n");
             //daca un user are postari atunci ii apare in meniu optiunea de editarea/stergerea a postarii
-            System.out.println("3. Delete a post\n");
-            System.out.println("4. See a post\n");
+            System.out.println("3. Update a post\n");
+            System.out.println("4. Delete a post\n");
+            System.out.println("5. See a post\n");
             System.out.println("0. Back\n");
             System.out.println("Enter your choice: ");
             String choice = scanner.nextLine();
@@ -91,16 +92,39 @@ public class MeniuService {
                     break;
 
                 case "3":
-                    // un user poate sterge doar o postare a lui
+                    // un user poate modifica doar o postare a lui
+                    System.out.println("Enter the id of the post you want to modify");
+                    int number =  scanner.nextInt();
+                    scanner.nextLine();
+                    if ( currentUser != postService.getPostById(number).getUser()){
+                        System.out.println("You can't modify a post made by another user ");
+                    }
+                    else {
+                        System.out.println("Enter the new text: ");
+                        String newText = scanner.nextLine();
+                        postService.UpdatePost(number, newText);
+                    }
                     break;
 
                 case "4":
+                    // un user poate sterge doar o postare a lui
+                    System.out.println("Enter the id of the post you want to modify");
+                    int number2 =  scanner.nextInt();
+                    scanner.nextLine();
+                    if ( currentUser != postService.getPostById(number2).getUser()){
+                        System.out.println("You can't delete a post made by another user ");
+                    }
+                    else {
+                        postService.DeletePost(number2);
+                    }
+
+                case "5":
                     System.out.println("Enter the number of a post:\n");
-                    int number =  scanner.nextInt();
+                    int number3 =  scanner.nextInt();
                     scanner.nextLine();
                     //sa se afiseze numarul de upvotes, downvotes, comenatrii
-                    postService.displayOnePost(number);
-                    displayPostMenu(number);
+                    postService.displayOnePost(number3);
+                    displayPostMenu(number3);
                     break;
 
                 case "0":
@@ -217,6 +241,5 @@ public class MeniuService {
             }
         }
     }
-
 
 }
