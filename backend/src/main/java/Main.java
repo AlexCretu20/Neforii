@@ -7,6 +7,7 @@ import repository.PostRepository;
 import repository.UserRepository;
 import repository.VoteRepository;
 import service.*;
+import ui.UserUI;
 
 import java.time.LocalDateTime;
 import java.util.Scanner;
@@ -18,6 +19,7 @@ public class Main {
         CommentService commentService = CommentService.getInstance();
         VoteService voteService = VoteService.getInstance();
         Scanner scanner = new Scanner(System.in);
+        UserUI userUI = new UserUI(scanner,userService);
 //
 //        User user = new User("test", "alex@yahoo.com", "parola"," 0772208997", "Test user");
 //        Post post = new Post("test post", LocalDateTime.now(), false, user);
@@ -67,7 +69,7 @@ public class Main {
 //        voteRepository.save(vote);
         voteRepository.deleteById(1);
 
-        MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner);
+        MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner, userUI);
         meniuService.displayLoginMeniu();
 
 

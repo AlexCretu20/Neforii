@@ -2,6 +2,7 @@ package service;
 
 import model.EntityType;
 import model.User;
+import ui.UserUI;
 
 import java.util.Scanner;
 
@@ -12,14 +13,24 @@ public class MeniuService {
     private VoteService voteService;
     private Scanner scanner;
     private User currentUser;
+    private UserUI userUI;
 
-    public MeniuService(CommentService commentService, PostService postService, UserService userService, VoteService voteService, Scanner scanner) {
+    public MeniuService(CommentService commentService, PostService postService, UserService userService, VoteService voteService, Scanner scanner, UserUI userUI) {
         this.commentService = commentService;
         this.postService = postService;
         this.userService = userService;
         this.voteService = voteService;
         this.scanner = scanner;
+        this.userUI = userUI;
 
+    }
+
+    private void tryToLogin(){
+        userUI.loginUserUI();
+        this.currentUser = userService.getCurrentUser();
+        if (this.currentUser != null) {
+            displayMainMeniu();
+        }
     }
 
     public void  displayLoginMeniu() {
@@ -27,36 +38,29 @@ public class MeniuService {
         boolean flag = true;
         while (flag) {
             System.out.println("Welcome to Neforii!\n");
-            System.out.println("1. Register\n");
-            System.out.println("2. Login\n");
-            System.out.println("0. Exit\n");
+            System.out.println("1. Register");
+            System.out.println("2. Login");
+            System.out.println("0. Exit");
             System.out.println("Enter your choice: ");
             String choice = scanner.nextLine();
             switch (choice) {
                 case "1":
-                    userService.registerUser();
-                    this.currentUser = userService.loginUser();
-                    if (this.currentUser != null) {
-                        displayMainMeniu();
-                    }
+                    userUI.registerUserUI();
+                    tryToLogin();
                     break;
 
                 case "2":
-                    this.currentUser = userService.loginUser();
-                    if (this.currentUser != null) {
-                        displayMainMeniu();
-                    }
+                    tryToLogin();
                     break;
 
-                case "0": {
+                case "0":
                     System.out.println("Stopping the application!\n");
                     flag = false;
                     break;
-
-                }
+                default:
+                    System.out.println("Invalid choice! Please try again!\n");
 
             }
-            System.out.println("0. Logout\n");
         }
     }
 
