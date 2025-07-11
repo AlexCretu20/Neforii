@@ -5,15 +5,16 @@ import model.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class CommentService {
+public class CommentService implements IVotable {
     private static CommentService instance;
 
     private int cnt = 1;
     private Map<Integer, Comment> comments = new HashMap<>();
 
-    private CommentService() {}
+    private CommentService() {
+    }
 
-    public static CommentService getInstance() {
+    public synchronized static CommentService getInstance() {
         if (instance == null) {
             instance = new CommentService();
         }
@@ -91,7 +92,7 @@ public class CommentService {
         if (opt.isPresent()) {
             Comment comment = opt.get();
             System.out.println(comment);
-            System.out.println("Upvotes: " + comment.countUpvotes() + " Downvotes: " + comment.countDownvotes());
+            System.out.println("Upvotes: " + displayUpvotes(id) + " Downvotes: " + displayDownvotes(id));
             if (comment.getReplies().isEmpty()) {
                 System.out.println("No replies yet.\n");
             } else {
@@ -117,10 +118,37 @@ public class CommentService {
     }
 
     public int displayUpvotes(int id) {
-        return getComment(id).map(Comment::countUpvotes).orElse(0);
+        int counter = 0;
+        List<Vote> votes;
+        for (Integer key : comments.keySet()) {
+            if (key == id) {
+                votes = comments.get(key).getVotes();
+                for (Vote vote : votes) {
+                    if (vote.isUpvote() == true) {
+                        counter++;
+                    }
+                }
+                return counter;
+
+            }
+        }
+
+        return 0;
+
+
     }
 
     public int displayDownvotes(int id) {
-        return getComment(id).map(Comment::countDownvotes).orElse(0);
+        List<Vote> votes;
+        for (Integer key : comments.keySet()) {
+            if (key == id) {
+                votes = comments.get(key).getVotes();
+                return votes.size() - displayUpvotes(id);
+
+            }
+
+        }
+        return 0;
+
     }
 }

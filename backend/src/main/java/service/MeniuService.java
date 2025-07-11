@@ -133,13 +133,17 @@ public class MeniuService {
                     break;
 
                 case "3":
-                    System.out.println("1. Upvote");
-                    System.out.println("2. Downvote");
-                    String voteChoice = scanner.nextLine();
-                    if (voteChoice.equals("1") || voteChoice.equals("2")) {
-                        boolean isUpvote = voteChoice.equals("1");
-                        String result = voteService.createVote(currentUser.getId(), EntityType.POST, postId, isUpvote);
-                        System.out.println(result);
+                    if (voteService.hasUserVoted(currentUser.getId(), EntityType.POST, postId))
+                        System.out.println("The user already voted");
+                    else {
+                        System.out.println("1. Upvote");
+                        System.out.println("2. Downvote");
+                        String voteChoice = scanner.nextLine();
+                        if (voteChoice.equals("1") || voteChoice.equals("2")) {
+                            boolean isUpvote = voteChoice.equals("1");
+                            String result = voteService.createVote(currentUser.getId(), EntityType.POST, postId, isUpvote);
+                            System.out.println(result);
+                        }
                     }
                     break;
 
@@ -182,13 +186,17 @@ public class MeniuService {
                     break;
 
                 case "2":
-                    System.out.println("1. Upvote");
-                    System.out.println("2. Downvote");
-                    String voteChoice = scanner.nextLine();
-                    if (voteChoice.equals("1") || voteChoice.equals("2")) {
-                        boolean isUpvote = voteChoice.equals("1");
-                        String result = voteService.createVote(currentUser.getId(), EntityType.COMMENT, commentId, isUpvote);
-                        System.out.println(result);
+                    if (voteService.hasUserVoted(currentUser.getId(), EntityType.COMMENT, commentId))
+                        System.out.println("The user already voted");
+                    else {
+                        System.out.println("1. Upvote");
+                        System.out.println("2. Downvote");
+                        String voteChoice = scanner.nextLine();
+                        if (voteChoice.equals("1") || voteChoice.equals("2")) {
+                            boolean isUpvote = voteChoice.equals("1");
+                            String result = voteService.createVote(currentUser.getId(), EntityType.COMMENT, commentId, isUpvote);
+                            System.out.println(result);
+                        }
                     }
                     break;
 
