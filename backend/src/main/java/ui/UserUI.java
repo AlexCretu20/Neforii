@@ -1,17 +1,20 @@
 package ui;
 
 import model.User;
-import service.UserService;
+import service.IUserService;
+import validation.UserValidator;
 
 import java.util.Scanner;
 
 public class UserUI {
     private final Scanner scanner;
-    private final UserService userService;
+    private final IUserService userService;
+    private final UserValidator userValidator;
 
-    public UserUI(Scanner scanner, UserService userService) {
+    public UserUI(Scanner scanner, IUserService userService, UserValidator userValidator) {
         this.scanner = scanner;
         this.userService = userService;
+        this.userValidator = userValidator;
     }
 
     public void registerUserUI() {
@@ -32,7 +35,7 @@ public class UserUI {
             System.out.print("Email: ");
             email = scanner.nextLine().trim();
 
-            if (!userService.isEmailValid(email)) {
+            if (!userValidator.isEmailValid(email)) {
                 System.out.println("The format is not valid! Exemple: something@gmail.com ");
             } else if (userService.isEmailExisting(email)) {
                 System.out.println("Email already used");
@@ -44,7 +47,7 @@ public class UserUI {
             System.out.print("Password: ");
             password = scanner.nextLine();
 
-            if (!userService.isPasswordValid(password)) {
+            if (!userValidator.isPasswordValid(password)) {
                 System.out.println("The password must have at least 8 characters");
             } else break;
         }
@@ -54,7 +57,7 @@ public class UserUI {
             System.out.print("Phone Number: ");
             phoneNumber = scanner.nextLine().trim();
 
-            if (!userService.isPhoneNumberValid(phoneNumber)) {
+            if (!userValidator.isPhoneNumberValid(phoneNumber)) {
                 System.out.println("Invalid phone number! Valid format: 07xx xxx xxx");
             } else break;
         }

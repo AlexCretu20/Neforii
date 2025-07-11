@@ -1,7 +1,6 @@
 package service;
 
 import model.EntityType;
-import model.User;
 import ui.UserUI;
 
 import java.util.Scanner;
@@ -12,7 +11,6 @@ public class MeniuService {
     private UserService userService;
     private VoteService voteService;
     private Scanner scanner;
-    private User currentUser;
     private UserUI userUI;
 
     public MeniuService(CommentService commentService, PostService postService, UserService userService, VoteService voteService, Scanner scanner, UserUI userUI) {
@@ -27,8 +25,7 @@ public class MeniuService {
 
     private void tryToLogin(){
         userUI.loginUserUI();
-        this.currentUser = userService.getCurrentUser();
-        if (this.currentUser != null) {
+        if (userService.getCurrentUser() != null) {
             displayMainMeniu();
         }
     }
@@ -38,28 +35,48 @@ public class MeniuService {
         boolean flag = true;
         while (flag) {
             System.out.println("Welcome to Neforii!\n");
-            System.out.println("1. Register");
-            System.out.println("2. Login");
-            System.out.println("0. Exit");
-            System.out.println("Enter your choice: ");
-            String choice = scanner.nextLine();
-            switch (choice) {
-                case "1":
-                    userUI.registerUserUI();
-                    tryToLogin();
-                    break;
+            if(userService.getCurrentUser() == null){
+                System.out.println("1. Register");
+                System.out.println("2. Login");
+                System.out.println("0. Exit");
+                System.out.println("Enter your choice: ");
+                String choice = scanner.nextLine();
+                switch (choice) {
+                    case "1":
+                        userUI.registerUserUI();
+                        tryToLogin();
+                        break;
 
-                case "2":
-                    tryToLogin();
-                    break;
+                    case "2":
+                        tryToLogin();
+                        break;
 
-                case "0":
-                    System.out.println("Stopping the application!\n");
-                    flag = false;
-                    break;
-                default:
-                    System.out.println("Invalid choice! Please try again!\n");
+                    case "0":
+                        System.out.println("Stopping the application!\n");
+                        flag = false;
+                        break;
+                    default:
+                        System.out.println("Invalid choice! Please try again!\n");
 
+                }
+            }else{
+                System.out.println("1. Logout");
+                System.out.println("0. Exit");
+                System.out.println("Enter your choice: ");
+                String choice = scanner.nextLine();
+                switch(choice){
+                    case "1":
+                        String username = userService.getCurrentUser().getUsername();
+                        userService.logoutUser();
+                        System.out.println(username + " has logged out! See you next time!");
+                        break;
+                    case "0":
+                        System.out.println("Stopping the application!\n");
+                        flag=false;
+                        break;
+                    default:
+                        System.out.println("Invalid choice! Please try again!\n");
+                }
             }
         }
     }
@@ -68,13 +85,13 @@ public class MeniuService {
         boolean flag = true;
 
         while (flag){
-            System.out.println("1. Create a post\n");
-            System.out.println("2. See all posts\n");
+            System.out.println("1. Create a post");
+            System.out.println("2. See all posts");
             //daca un user are postari atunci ii apare in meniu optiunea de editarea/stergerea a postarii
-            System.out.println("3. Update a post\n");
-            System.out.println("4. Delete a post\n");
-            System.out.println("5. See a post\n");
-            System.out.println("0. Back\n");
+            System.out.println("3. Update a post");
+            System.out.println("4. Delete a post");
+            System.out.println("5. See a post");
+            System.out.println("0. Back");
             System.out.println("Enter your choice: ");
             String choice = scanner.nextLine();
 
@@ -84,7 +101,7 @@ public class MeniuService {
                 case "1":
                     System.out.println("Enter your text for the post:");
                     String text = scanner.nextLine();
-                    postService.CreatePost(this.currentUser, text);
+                    postService.CreatePost(userService.getCurrentUser(), text);
                     break;
 
                 case "2":
@@ -96,7 +113,7 @@ public class MeniuService {
                     System.out.println("Enter the id of the post you want to modify");
                     int number =  scanner.nextInt();
                     scanner.nextLine();
-                    if ( currentUser != postService.getPostById(number).getUser()){
+                    if ( userService.getCurrentUser() != postService.getPostById(number).getUser()){
                         System.out.println("You can't modify a post made by another user ");
                     }
                     else {
@@ -111,12 +128,13 @@ public class MeniuService {
                     System.out.println("Enter the id of the post you want to modify");
                     int number2 =  scanner.nextInt();
                     scanner.nextLine();
-                    if ( currentUser != postService.getPostById(number2).getUser()){
+                    if ( userService.getCurrentUser() != postService.getPostById(number2).getUser()){
                         System.out.println("You can't delete a post made by another user ");
                     }
                     else {
                         postService.DeletePost(number2);
                     }
+                    break;
 
                 case "5":
                     System.out.println("Enter the number of a post:\n");
@@ -157,11 +175,11 @@ public class MeniuService {
                 case "2":
                     System.out.print("Write your comment: ");
                     String text = scanner.nextLine();
-                    commentService.createComment(text, currentUser, EntityType.POST, postId);
+                    commentService.createComment(text, userService.getCurrentUser(), EntityType.POST, postId);
                     break;
 
                 case "3":
-                    if (voteService.hasUserVoted(currentUser.getId(), EntityType.POST, postId))
+                    if (voteService.hasUserVoted(userService.getCurrentUser().getId(), EntityType.POST, postId))
                         System.out.println("The user already voted");
                     else {
                         System.out.println("1. Upvote");
@@ -169,7 +187,7 @@ public class MeniuService {
                         String voteChoice = scanner.nextLine();
                         if (voteChoice.equals("1") || voteChoice.equals("2")) {
                             boolean isUpvote = voteChoice.equals("1");
-                            String result = voteService.createVote(currentUser.getId(), EntityType.POST, postId, isUpvote);
+                            String result = voteService.createVote(userService.getCurrentUser().getId(), EntityType.POST, postId, isUpvote);
                             System.out.println(result);
                         }
                     }
@@ -210,11 +228,11 @@ public class MeniuService {
                 case "1":
                     System.out.print("Write your reply: ");
                     String replyText = scanner.nextLine();
-                    commentService.createComment(replyText, currentUser, EntityType.COMMENT, commentId);
+                    commentService.createComment(replyText, userService.getCurrentUser(), EntityType.COMMENT, commentId);
                     break;
 
                 case "2":
-                    if (voteService.hasUserVoted(currentUser.getId(), EntityType.COMMENT, commentId))
+                    if (voteService.hasUserVoted(userService.getCurrentUser().getId(), EntityType.COMMENT, commentId))
                         System.out.println("The user already voted");
                     else {
                         System.out.println("1. Upvote");
@@ -222,7 +240,7 @@ public class MeniuService {
                         String voteChoice = scanner.nextLine();
                         if (voteChoice.equals("1") || voteChoice.equals("2")) {
                             boolean isUpvote = voteChoice.equals("1");
-                            String result = voteService.createVote(currentUser.getId(), EntityType.COMMENT, commentId, isUpvote);
+                            String result = voteService.createVote(userService.getCurrentUser().getId(), EntityType.COMMENT, commentId, isUpvote);
                             System.out.println(result);
                         }
                     }

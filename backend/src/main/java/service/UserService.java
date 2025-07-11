@@ -5,7 +5,7 @@ import model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserService {
+public class UserService implements IUserService {
     private User currentUser;
     private final List<User> users = new ArrayList<>();
     private static UserService instance;
@@ -44,20 +44,6 @@ public class UserService {
         return false;
     }
 
-    public boolean isEmailValid(String email) {
-        if (!email.matches("^\\S+@\\S+\\.\\S+$")) {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean isPasswordValid(String password) {
-        return password.length() >= 8;
-    }
-
-    public boolean isPhoneNumberValid(String phoneNumber) {
-        return phoneNumber.matches("^07[0-9]{8}$");
-    }
 
     public User loginUser(String email, String password) {
         for (User u : users) {
@@ -78,10 +64,6 @@ public class UserService {
 
     public void setCurrentUser(User currentUser) {
         this.currentUser = currentUser;
-    }
-
-    public List<User> showUsers() {
-        return users;
     }
 }
 
