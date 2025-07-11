@@ -40,7 +40,7 @@ public class VoteService {
 //        commentService.getCommentById(entityId).getVotes().add(vote);
 
         if (entityType == EntityType.POST) {
-            PostService.getInstance().AddVote(userId,vote);
+            PostService.getInstance().AddVote(entityId,vote);
 //            postService.getPostById(entityId).setAwarded(true)
         }
         else {

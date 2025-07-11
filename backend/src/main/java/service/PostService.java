@@ -69,9 +69,9 @@ public class PostService implements IVotable {
         System.out.println("The comment was added.");
     }
 
-    public void AddVote(int id, Vote vote) {
+    public void AddVote(int postid, Vote vote) {
         for (Integer key : posts.keySet()) {
-            if (key == id) {
+            if (key == postid) {
                 posts.get(key).setVotes(vote);
             }
 
@@ -141,7 +141,6 @@ public class PostService implements IVotable {
         for (Integer key : posts.keySet()) {
             if (key == id) {
                 votes = posts.get(key).getVotes();
-                System.out.println(votes);
                 for (Vote vote : votes) {
                     if (vote.isUpvote() == true) {
                         counter++;
@@ -160,7 +159,6 @@ public class PostService implements IVotable {
         for (Integer key : posts.keySet()) {
             if (key == id) {
                 votes = posts.get(key).getVotes();
-                System.out.println(votes);
                 return votes.size() - displayUpvotes(id);
 
             }

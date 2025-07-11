@@ -108,7 +108,7 @@ public class Post {
     @Override
     public String toString() {
         if (isAwarded == true){
-            return id +"✬" + "\n" + text + "\n Created at :" + createdAt + " " + "Created by : " + user.getUsername();
+            return id +" ✬" + "\n" + text + "\n Created at :" + createdAt + " " + "Created by : " + user.getUsername();
         }
         return id + "\n" + text + "\n Created at :" + createdAt + " " + "Created by : " + user.getUsername();
     }
