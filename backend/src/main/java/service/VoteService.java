@@ -34,6 +34,7 @@ public class VoteService {
                 entityId,
                 userId
         );
+
         votes.add(vote);
 
 //        commentService.getCommentById(entityId).getVotes().add(vote);

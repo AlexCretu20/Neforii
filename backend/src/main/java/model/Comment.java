@@ -128,17 +128,4 @@ public class Comment {
         return id + "\n" + text + "\n Created at :" + createdAt  +  " " + "Created by : " + user.getUsername();
     }
 
-    public int countUpvotes() {
-        int counter = 0;
-        for (Vote vote: votes){
-            if (vote.isUpvote() == true){
-                counter ++;
-            }
-        }
-        return  counter;
-
-    }
-    public int countDownvotes() {
-        return votes.size() -  countUpvotes();
-    }
 }

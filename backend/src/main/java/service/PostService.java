@@ -11,17 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PostService {
+public class PostService implements IVotable {
 
-    private static PostService instance;
-    private static int counter;
-    private Map<Integer, Post> posts = new HashMap<>();
-
-    private PostService() {
-        counter = 0;
-    }
-
-    ;
+   private static PostService instance;
+   private static  int counter;
+   private Map<Integer, Post> posts = new HashMap<>();
+   private PostService() {
+       counter = 0;
+   };
 
     public static PostService getInstance() {
         if (instance == null) {
@@ -89,7 +86,7 @@ public class PostService {
             if (key == id) {
                 comments = posts.get(key).getComments();
                 System.out.println(posts.get(key).toString());
-                System.out.println("Upvotes " + posts.get(key).countUpvotes() + "\n" + "Downvotes " + posts.get(key).countDownvotes());
+                System.out.println("Upvotes " + displayUpvotes(id) + "\n" + "Downvotes " + displayDownvotes(id));
                 isNumber = true;
             }
 
@@ -115,12 +112,11 @@ public class PostService {
 
     }
 
-
     public void displayOnePost(int id) {
         for (Integer key : posts.keySet()) {
             if (key == id) {
                 System.out.println(posts.get(key).toString());
-                System.out.println("Upvotes " + posts.get(key).countUpvotes() + "\n" + "Downvotes " + posts.get(key).countDownvotes());
+                System.out.println("Upvotes " + displayUpvotes(id) + "\n" + "Downvotes " + displayDownvotes(id));
             }
 
         }
@@ -138,20 +134,30 @@ public class PostService {
     }
 
     public int displayUpvotes(int id) {
+        int counter = 0;
+        List<Vote> votes;
         for (Integer key : posts.keySet()) {
             if (key == id) {
-                return posts.get(key).countUpvotes();
+                votes = posts.get(key).getVotes();
+                for (Vote vote : votes) {
+                    if (vote.isUpvote() == true) {
+                        counter++;
+                    }
+                }
+                return counter;
 
             }
-
         }
+
         return 0;
     }
 
     public int displayDownvotes(int id) {
+        List<Vote> votes;
         for (Integer key : posts.keySet()) {
             if (key == id) {
-                return posts.get(key).countDownvotes();
+                votes = posts.get(key).getVotes();
+                return votes.size() - displayUpvotes(id);
 
             }
 
