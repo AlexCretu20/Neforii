@@ -2,25 +2,23 @@ package model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Post {
-    private int id;
+    private int id; // 0 by default
     private String text;
     private LocalDateTime createdAt;
-    private boolean isAwarded;
-    private User user;
-    private ArrayList<Comment> comments;
-    private ArrayList<Vote> votes;
+    private boolean isAwarded; // false bydefault
+    private User user; // null by default
+    private List<Comment> comments;
+    private List<Vote> votes;
 
     public Post() {
-        this.id = 0;
         this.text = "";
         this.createdAt = LocalDateTime.now();
-        this.isAwarded = false;
-        this.user = null;
-        this.comments = new ArrayList<Comment>();
-        this.votes = new ArrayList<Vote>();
+        this.comments = new ArrayList<>();
+        this.votes = new ArrayList<>();
     }
 
     public Post(String text, LocalDateTime createdAt, boolean isAwarded, User user) {
@@ -36,8 +34,8 @@ public class Post {
         this.createdAt = createdAt;
         this.isAwarded = isAwarded;
         this.user = user;
-        this.comments = new ArrayList<Comment>();
-        this.votes = new ArrayList<Vote>();
+        this.comments = new ArrayList<>();
+        this.votes = new ArrayList<>();
     }
 
     public int getId() {
@@ -80,7 +78,7 @@ public class Post {
         this.user = user;
     }
 
-    public ArrayList<Comment> getComments() {
+    public List<Comment> getComments() {
         return comments;
     }
 
@@ -88,7 +86,7 @@ public class Post {
         comments.add(comment);
     }
 
-    public ArrayList<Vote> getVotes() {
+    public List<Vote> getVotes() {
         return votes;
     }
 
@@ -98,32 +96,32 @@ public class Post {
 
     public boolean equals(Object object) {
         if (object == null || getClass() != object.getClass()) return false;
-        if (!super.equals(object)) return false;
         Post post = (Post) object;
-        return id == post.id && isAwarded == post.isAwarded && java.util.Objects.equals(text, post.text) && java.util.Objects.equals(createdAt, post.createdAt) && java.util.Objects.equals(user, post.user);
+        return id == post.id && isAwarded == post.isAwarded && Objects.equals(text, post.text) && Objects.equals(createdAt, post.createdAt) && Objects.equals(user, post.user);
     }
 
+    @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, text, createdAt, isAwarded, user);
+        return Objects.hash(id, text, createdAt, isAwarded, user);
     }
 
-    @java.lang.Override
-    public java.lang.String toString() {
-        return id + "\n" + text + "\n Created at :" + createdAt  +  " " + "Created by : " + user.getUsername();
-
+    @Override
+    public String toString() {
+        return id + "\n" + text + "\n Created at :" + createdAt + " " + "Created by : " + user.getUsername();
     }
 
     public int countUpvotes() {
         int counter = 0;
-        for (Vote vote: votes){
-           if (vote.isUpvote() == true){
-               counter ++;
-           }
-       }
-        return  counter;
+        for (Vote vote : votes) {
+            if (vote.isUpvote() == true) {
+                counter++;
+            }
+        }
+        return counter;
 
     }
+
     public int countDownvotes() {
-        return votes.size() -  countUpvotes();
+        return votes.size() - countUpvotes();
     }
 }
