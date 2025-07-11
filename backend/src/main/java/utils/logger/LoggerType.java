@@ -1,6 +1,6 @@
 package utils.logger;
 
-public enum LoggerTypes {
+public enum LoggerType {
     DEBUG,
     INFO,
     ERROR,

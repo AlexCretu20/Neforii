@@ -4,8 +4,10 @@ public class Logger {
 
     private static final LoggerManager loggerManager = LoggerManager.getInstance();
 
-    static void log(LoggerTypes type, String message){
-        System.out.println("Sunt in logger class");
+    // putem adauga lazy loading (sa bage in loggermanager consolelogger daca nu s-a dat register
+    // la nimic, asta cand dau logAll cred o fac), functiile debug/info.., poate o functie sa afiseze doar ERROR sau ce e important
+    // si terminat fileloggerul
+    public static void log(LoggerType type, String message){
         loggerManager.logAll(type, message);
 
     }

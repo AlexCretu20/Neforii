@@ -7,30 +7,29 @@ public class LoggerManager {
     static LoggerManager instance;
     List<ILogger> loggers = new ArrayList<>();
 
-    private LoggerManager(){
-        this.loggers = new ArrayList<>();
+    private LoggerManager() {
+        loggers.add(new ConsoleLogger()); // default logger
     }
 
-    public static LoggerManager getInstance(){
-        if (instance == null){
+    public static LoggerManager getInstance() {
+        if (instance == null) {
             instance = new LoggerManager();
         }
-        return  instance;
+        return instance;
     }
 
-    public void register(ILogger logger){
+    public void register(ILogger logger) {
         loggers.add(logger);
     }
 
-    public void remove(ILogger logger){
+    public void remove(ILogger logger) {
         loggers.remove(logger);
     }
 
 
-    public void logAll(LoggerTypes type, String message) {
+    public void logAll(LoggerType type, String message) {
 
-        for (ILogger logger : loggers){
-            System.out.println("Sunt in logermanager for");
+        for (ILogger logger : loggers) {
             logger.log(type, message);
         }
     }
