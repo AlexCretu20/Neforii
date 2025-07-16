@@ -1,0 +1,322 @@
+Index: backend/src/main/java/service/UserService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package service;\r\n\r\nimport model.User;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\n\r\npublic class UserService implements IUserService {\r\n    private User currentUser;\r\n    private final List<User> users = new ArrayList<>();\r\n    private static UserService instance;\r\n    private static int userId = 0;\r\n\r\n    private UserService() {\r\n    }\r\n\r\n    public static UserService getInstance() {\r\n        if (instance == null) {\r\n            instance = new UserService();\r\n        }\r\n        return instance;\r\n    }\r\n\r\n    public void registerUser(User user) {\r\n        user.setId(++userId);\r\n        users.add(user);\r\n    }\r\n\r\n    public boolean isUsernameExisting(String username) {\r\n        for (User user : users) {\r\n            if (user.getUsername().equals(username)) {\r\n                return true;\r\n            }\r\n        }\r\n        return false;\r\n    }\r\n\r\n    public boolean isEmailExisting(String email) {\r\n        for (User user : users) {\r\n            if (user.getEmail().equals(email)) {\r\n                return true;\r\n            }\r\n        }\r\n        return false;\r\n    }\r\n\r\n\r\n    public User loginUser(String email, String password) {\r\n        for (User u : users) {\r\n            if (u.getEmail().equals(email) && u.getPassword().equals(password)) {\r\n                return u;\r\n            }\r\n        }\r\n        return null;\r\n    }\r\n\r\n    public void logoutUser() {\r\n        currentUser = null;\r\n    }\r\n\r\n    public User getCurrentUser() {\r\n        return currentUser;\r\n    }\r\n\r\n    public void setCurrentUser(User currentUser) {\r\n        this.currentUser = currentUser;\r\n    }\r\n}\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/service/UserService.java b/backend/src/main/java/service/UserService.java
+--- a/backend/src/main/java/service/UserService.java	(revision 36f94556241c0aa736f29916ba28e74463d461b4)
++++ b/backend/src/main/java/service/UserService.java	(date 1752655978857)
+@@ -1,59 +1,52 @@
+ package service;
+ 
+ import model.User;
++import repository.UserRepository;
+ 
+-import java.util.ArrayList;
+-import java.util.List;
++import java.util.Optional;
+ 
+ public class UserService implements IUserService {
+     private User currentUser;
+-    private final List<User> users = new ArrayList<>();
+-    private static UserService instance;
+-    private static int userId = 0;
++    //private static UserService instance;
++    private final UserRepository userRepo;
+ 
+-    private UserService() {
+-    }
++//    private UserService() {
++//    }
++//
++//    public static UserService getInstance() {
++//        if (instance == null) {
++//            instance = new UserService();
++//        }
++//        return instance;
++//    }
+ 
+-    public static UserService getInstance() {
+-        if (instance == null) {
+-            instance = new UserService();
+-        }
+-        return instance;
++    public UserService(UserRepository userRepo){
++        this.userRepo = userRepo;
+     }
+ 
+     public void registerUser(User user) {
+-        user.setId(++userId);
+-        users.add(user);
++        userRepo.save(user);
+     }
+ 
+     public boolean isUsernameExisting(String username) {
+-        for (User user : users) {
+-            if (user.getUsername().equals(username)) {
+-                return true;
+-            }
+-        }
+-        return false;
++        return userRepo.isUsernameTaken(username);
+     }
+ 
+     public boolean isEmailExisting(String email) {
+-        for (User user : users) {
+-            if (user.getEmail().equals(email)) {
+-                return true;
+-            }
+-        }
+-        return false;
++        return userRepo.findByEmail(email).isPresent();
+     }
+ 
+ 
+     public User loginUser(String email, String password) {
+-        for (User u : users) {
+-            if (u.getEmail().equals(email) && u.getPassword().equals(password)) {
+-                return u;
+-            }
++        Optional<User> user = userRepo.findByEmailAndPassword(email, password);
++        if (user.isPresent()) {
++            this.currentUser = user.get();
++            return this.currentUser;
+         }
+         return null;
+     }
+ 
++
+     public void logoutUser() {
+         currentUser = null;
+     }
+Index: backend/src/main/java/repository/ICrudRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package repository;\r\n\r\nimport java.util.List;\r\nimport java.util.Optional;\r\n\r\npublic interface ICrudRepository <T>{\r\n    void save(T entity);\r\n    Optional<T> findById(int id);\r\n    List<T> findAll();\r\n    void deleteById(int id);\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/repository/ICrudRepository.java b/backend/src/main/java/repository/ICrudRepository.java
+--- a/backend/src/main/java/repository/ICrudRepository.java	(revision 36f94556241c0aa736f29916ba28e74463d461b4)
++++ b/backend/src/main/java/repository/ICrudRepository.java	(date 1752656367865)
+@@ -1,11 +1,17 @@
+ package repository;
+ 
++import javax.naming.OperationNotSupportedException;
+ import java.util.List;
+ import java.util.Optional;
+ 
+-public interface ICrudRepository <T>{
++public interface ICrudRepository<T> {
+     void save(T entity);
++
++    void update(T entity) throws OperationNotSupportedException; //get id of the entity to update, call findById, replace fields
++
+     Optional<T> findById(int id);
++
+     List<T> findAll();
++
+     void deleteById(int id);
+ }
+Index: backend/src/main/java/repository/UserRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package repository;\r\n\r\nimport model.User;\r\nimport utils.DatabaseConnection;\r\n\r\nimport java.sql.Connection;\r\nimport java.sql.PreparedStatement;\r\nimport java.sql.ResultSet;\r\nimport java.sql.SQLException;\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\nimport java.util.Optional;\r\n\r\npublic class UserRepository implements ICrudRepository<User> {\r\n\r\n    @Override\r\n    public void save(User user) {\r\n        String sql = \"INSERT INTO users (username, email, password, phone_number, description) VALUES (?, ?, ?, ?, ?)\";\r\n        try(Connection connection = DatabaseConnection.getConnection()){\r\n            PreparedStatement preparedStatement = connection.prepareStatement(sql);\r\n            preparedStatement.setString(1, user.getUsername());\r\n            preparedStatement.setString(2, user.getEmail());\r\n            preparedStatement.setString(3, user.getPassword());\r\n            preparedStatement.setString(4, user.getPhoneNumber());\r\n            preparedStatement.setString(5, user.getDescription());\r\n            preparedStatement.executeUpdate();\r\n        }\r\n        catch (SQLException e){\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public Optional<User> findById(int id) {\r\n        String sql = \"SELECT * FROM USERS WHERE id = ?\";\r\n        try (Connection connection = DatabaseConnection.getConnection();\r\n             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {\r\n\r\n            preparedStatement.setInt(1, id);\r\n            ResultSet resultSet = preparedStatement.executeQuery();\r\n\r\n            if (resultSet.next()) {\r\n                User user = new User(\r\n                        //resultSet.getInt(\"id\"),\r\n                        resultSet.getString(\"username\"),\r\n                        resultSet.getString(\"email\"),\r\n                        resultSet.getString(\"password\"),\r\n                        resultSet.getString(\"phone_number\"),\r\n                        resultSet.getString(\"description\")\r\n                        //resultSet.getTimestamp(\"created_at\").toLocalDateTime()\r\n                );\r\n                //TO DO: wrapper\r\n                user.setId(resultSet.getInt(\"id\"));\r\n                user.setCreatedAt(resultSet.getTimestamp(\"created_at\").toLocalDateTime());\r\n                return Optional.of(user);\r\n            } else {\r\n                return Optional.empty();\r\n            }\r\n\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n            return Optional.empty();\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public List<User> findAll() {\r\n        String sql = \"SELECT * FROM users\";\r\n        try(Connection connection = DatabaseConnection.getConnection()){\r\n            PreparedStatement preparedStatement = connection.prepareStatement(sql);\r\n            ResultSet resultSet = preparedStatement.executeQuery();\r\n            List<User> users = new ArrayList<>();\r\n\r\n            while(resultSet.next()) {\r\n                User user = new User(\r\n                        resultSet.getString(\"username\"),\r\n                        resultSet.getString(\"email\"),\r\n                        resultSet.getString(\"password\"),\r\n                        resultSet.getString(\"phone_number\"),\r\n                        resultSet.getString(\"description\")\r\n                );\r\n                user.setId(resultSet.getInt(\"id\"));\r\n                user.setCreatedAt(resultSet.getTimestamp(\"created_at\").toLocalDateTime());\r\n                users.add(user);\r\n            }\r\n\r\n            return users;\r\n        }\r\n        catch (SQLException e){\r\n            e.printStackTrace();\r\n        }\r\n        return List.of();\r\n    }\r\n\r\n    @Override\r\n    public void deleteById(int id) {\r\n        Optional<User> userOptional = findById(id);\r\n        if(userOptional.isEmpty()){\r\n            System.out.println(\"The entered user does not exist in order to be deleted!\\n\");\r\n        }\r\n        else{\r\n            String sql = \"DELETE FROM users WHERE id = ?\";\r\n            try(Connection connection = DatabaseConnection.getConnection()){\r\n                PreparedStatement preparedStatement = connection.prepareStatement(sql);\r\n                preparedStatement.setInt(1, id);\r\n\r\n                //affected rows by sql statement;>0 means it has been deleted\r\n                int rowsAffected = preparedStatement.executeUpdate();\r\n\r\n                if(rowsAffected > 0){\r\n                    System.out.printf(\"The user has been deleted succesfully\\n\");\r\n                }\r\n                else{\r\n                    System.out.println(\"Could not delete user\\n\");\r\n                }\r\n            }\r\n            catch (SQLException e) {\r\n                e.printStackTrace();\r\n                return;\r\n            }\r\n        }\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/repository/UserRepository.java b/backend/src/main/java/repository/UserRepository.java
+--- a/backend/src/main/java/repository/UserRepository.java	(revision 36f94556241c0aa736f29916ba28e74463d461b4)
++++ b/backend/src/main/java/repository/UserRepository.java	(date 1752656845353)
+@@ -11,7 +11,7 @@
+ import java.util.List;
+ import java.util.Optional;
+ 
+-public class UserRepository implements ICrudRepository<User> {
++public class UserRepository implements IUserRepository {
+ 
+     @Override
+     public void save(User user) {
+@@ -92,6 +92,7 @@
+         return List.of();
+     }
+ 
++
+     @Override
+     public void deleteById(int id) {
+         Optional<User> userOptional = findById(id);
+@@ -121,4 +122,82 @@
+         }
+     }
+ 
++    @Override
++    public Optional<User> findByEmail(String email){
++        String sql="SELECT * FROM users WHERE email = ?";
++        try(Connection conn = DatabaseConnection.getConnection();
++            PreparedStatement preparedStatement = conn.prepareStatement(sql)){
++
++            preparedStatement.setString(1,email);
++
++            ResultSet resultSet = preparedStatement.executeQuery();
++
++            if(resultSet.next()){
++                User user = new User(
++                        resultSet.getString("username"),
++                        resultSet.getString("email"),
++                        resultSet.getString("password"),
++                        resultSet.getString("phone_number"),
++                        resultSet.getString("description")
++                );
++                user.setId(resultSet.getInt("id"));
++                user.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
++                return Optional.of(user);
++            }
++
++        }catch (SQLException e){
++            e.printStackTrace();
++        }
++        return Optional.empty();
++    }
++
++    @Override
++    public Optional<User> findByEmailAndPassword(String email, String password){
++        String sql="SELECT * FROM users WHERE email = ? AND password = ?";
++        try(Connection conn = DatabaseConnection.getConnection();
++            PreparedStatement preparedStatement = conn.prepareStatement(sql)){
++
++            preparedStatement.setString(1,email);
++            preparedStatement.setString(2,password);
++
++            ResultSet resultSet = preparedStatement.executeQuery();
++
++            if(resultSet.next()){
++                User user = new User(
++                        resultSet.getString("username"),
++                        resultSet.getString("email"),
++                        resultSet.getString("password"),
++                        resultSet.getString("phone_number"),
++                        resultSet.getString("description")
++                );
++                user.setId(resultSet.getInt("id"));
++                user.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
++                return Optional.of(user);
++            }
++
++        }catch (SQLException e){
++            e.printStackTrace();
++        }
++        return Optional.empty();
++    }
++
++    @Override
++    public boolean isUsernameTaken(String username) {
++        String sql="SELECT 1 FROM users WHERE username = ?";
++        try(Connection conn = DatabaseConnection.getConnection();
++            PreparedStatement preparedStatement = conn.prepareStatement(sql)){
++
++            preparedStatement.setString(1,username);
++            ResultSet resultSet = preparedStatement.executeQuery();
++
++            return resultSet.next();
++
++        }catch(SQLException e){
++            e.printStackTrace();
++        }
++        return false;
++    }
++
++
++
+ }
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"0cd84363-df02-4696-9c84-f8a6d3d1234e\" name=\"Changes\" comment=\"\">\r\n      <change afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/backend/Dockerfile\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/backend/scripts/build-tar.sh\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.gitignore\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gitignore\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/backend/pom.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/backend/pom.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/docker/postgres/Dockerfile\" beforeDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 5\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2zjV8Bu7ZG6WHyisiEo7CO2VRN1\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"Application.Main.executor\": \"Run\",\r\n    \"Maven.backend [clean,package].executor\": \"Run\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"RunOnceActivity.git.unshallow\": \"true\",\r\n    \"git-widget-placeholder\": \"Merging main\",\r\n    \"kotlin-language-version-configured\": \"true\",\r\n    \"node.js.detected.package.eslint\": \"true\",\r\n    \"node.js.detected.package.tslint\": \"true\",\r\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\r\n    \"node.js.selected.package.tslint\": \"(autodetect)\",\r\n    \"nodejs_package_manager_path\": \"npm\",\r\n    \"vue.rearranger.settings.migration\": \"true\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"MoveFile.RECENT_KEYS\">\r\n      <recent name=\"C:\\Users\\amito\\IdeaProjects\\Neforii\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.39\" />\r\n        <option value=\"bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.39\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"0cd84363-df02-4696-9c84-f8a6d3d1234e\" name=\"Changes\" comment=\"\" />\r\n      <created>1752244307784</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1752244307784</updated>\r\n      <workItem from=\"1752244309334\" duration=\"3606000\" />\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 36f94556241c0aa736f29916ba28e74463d461b4)
++++ b/.idea/workspace.xml	(date 1752656672976)
+@@ -5,17 +5,22 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="0cd84363-df02-4696-9c84-f8a6d3d1234e" name="Changes" comment="">
+-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/backend/Dockerfile" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/backend/scripts/build-tar.sh" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/docker/postgres/Dockerfile" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/backend/src/main/java/repository/ICrudRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/repository/ICrudRepository.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/backend/src/main/java/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/repository/UserRepository.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/backend/src/main/java/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/service/UserService.java" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+     <option name="LAST_RESOLUTION" value="IGNORE" />
++  </component>
++  <component name="FileTemplateManagerImpl">
++    <option name="RECENT_TEMPLATES">
++      <list>
++        <option value="Interface" />
++      </list>
++    </option>
+   </component>
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+@@ -28,22 +33,23 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "Application.Main.executor": "Run",
+-    "Maven.backend [clean,package].executor": "Run",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "RunOnceActivity.git.unshallow": "true",
+-    "git-widget-placeholder": "Merging main",
+-    "kotlin-language-version-configured": "true",
+-    "node.js.detected.package.eslint": "true",
+-    "node.js.detected.package.tslint": "true",
+-    "node.js.selected.package.eslint": "(autodetect)",
+-    "node.js.selected.package.tslint": "(autodetect)",
+-    "nodejs_package_manager_path": "npm",
+-    "vue.rearranger.settings.migration": "true"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
++    &quot;Maven.backend [clean,package].executor&quot;: &quot;Run&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
++    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
++    &quot;last_opened_file_path&quot;: &quot;C:/Users/Bogdan/Documents/Downloads/springBootTest&quot;,
++    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
++    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
++    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
++    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
++    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
++    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="RecentsManager">
+     <key name="MoveFile.RECENT_KEYS">
+       <recent name="C:\Users\amito\IdeaProjects\Neforii" />
+@@ -66,6 +72,11 @@
+       <option name="presentableId" value="Default" />
+       <updated>1752244307784</updated>
+       <workItem from="1752244309334" duration="3606000" />
++      <workItem from="1752493755598" duration="1298000" />
++      <workItem from="1752513953649" duration="5000" />
++      <workItem from="1752521493400" duration="641000" />
++      <workItem from="1752577387856" duration="92000" />
++      <workItem from="1752586238318" duration="6153000" />
+     </task>
+     <servers />
+   </component>

@@ -1,3 +1,4 @@
+import repository.UserRepository;
 import service.*;
 import ui.UserUI;
 import validation.UserValidator;
@@ -6,7 +7,8 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        UserService userService = UserService.getInstance();
+        UserRepository userRepository = new UserRepository();
+        UserService userService = new UserService(userRepository);
         PostService postService = PostService.getInstance();
         CommentService commentService = CommentService.getInstance();
         VoteService voteService = VoteService.getInstance();

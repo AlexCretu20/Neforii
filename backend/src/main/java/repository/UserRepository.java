@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class UserRepository implements ICrudRepository<User> {
+public class UserRepository implements IUserRepository {
 
     @Override
     public void save(User user) {
@@ -98,6 +98,7 @@ public class UserRepository implements ICrudRepository<User> {
         throw new OperationNotSupportedException("TO DO");
     }
 
+
     @Override
     public void deleteById(int id) {
         Optional<User> userOptional = findById(id);
@@ -126,5 +127,83 @@ public class UserRepository implements ICrudRepository<User> {
             }
         }
     }
+
+    @Override
+    public Optional<User> findByEmail(String email){
+        String sql="SELECT * FROM users WHERE email = ?";
+        try(Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+
+            preparedStatement.setString(1,email);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if(resultSet.next()){
+                User user = new User(
+                        resultSet.getString("username"),
+                        resultSet.getString("email"),
+                        resultSet.getString("password"),
+                        resultSet.getString("phone_number"),
+                        resultSet.getString("description")
+                );
+                user.setId(resultSet.getInt("id"));
+                user.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
+                return Optional.of(user);
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<User> findByEmailAndPassword(String email, String password){
+        String sql="SELECT * FROM users WHERE email = ? AND password = ?";
+        try(Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+
+            preparedStatement.setString(1,email);
+            preparedStatement.setString(2,password);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if(resultSet.next()){
+                User user = new User(
+                        resultSet.getString("username"),
+                        resultSet.getString("email"),
+                        resultSet.getString("password"),
+                        resultSet.getString("phone_number"),
+                        resultSet.getString("description")
+                );
+                user.setId(resultSet.getInt("id"));
+                user.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
+                return Optional.of(user);
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isUsernameTaken(String username) {
+        String sql="SELECT 1 FROM users WHERE username = ?";
+        try(Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+
+            preparedStatement.setString(1,username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            return resultSet.next();
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
 
 }
