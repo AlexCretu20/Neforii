@@ -1,4 +1,5 @@
 import model.Comment;
+import model.Post;
 import model.User;
 import model.Vote;
 import repository.*;
@@ -17,13 +18,13 @@ public class Main {
         ICrudRepository<User> userRepository = new UserRepository();
         ICrudRepository<Vote> voteRepository = new VoteRepository();
         ICrudRepository<Comment> commentRepository = new CommentRepository(userRepository);
-        PostRepository postRepository = new PostRepository(userRepository);
+        ICrudRepository<Post> postRepository = new PostRepository(userRepository);
 
         UserService userService = new UserService((UserRepository) userRepository);
-        PostService postService = PostService.getInstance(postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
+        PostService postService = PostService.getInstance((PostRepository) postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
 
-        CommentService commentService = new CommentService((CommentRepository) commentRepository, (UserRepository) userRepository, (VoteRepository) voteRepository);
-        VoteService voteService = new VoteService(postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
+        CommentService commentService = new CommentService((CommentRepository) commentRepository, (UserRepository) userRepository, (PostRepository) postRepository,(VoteRepository) voteRepository);
+        VoteService voteService = new VoteService((PostRepository) postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
         Scanner scanner = new Scanner(System.in);
         UserValidator userValidator = new UserValidator();
         UserUI userUI = new UserUI(scanner, userService, userValidator);

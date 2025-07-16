@@ -21,8 +21,7 @@ public class CommentRepository implements ICrudRepository<Comment> {
 
     @Override
     public void save(Comment comment) {
-        String sql = "INSERT INTO comments (text, created_at, updated_at, user_id, post_id, parent_comment_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO comments (text, created_at, updated_at, user_id, post_id, parent_comment_id) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -35,19 +34,19 @@ public class CommentRepository implements ICrudRepository<Comment> {
             if (comment.getPostId() != null) {
                 stmt.setInt(5, comment.getPostId());
             } else {
-                stmt.setInt(5, Types.INTEGER);
+                stmt.setNull(5, Types.INTEGER);
             }
 
             if (comment.getParentCommentId() != null) {
                 stmt.setInt(6, comment.getParentCommentId());
             } else {
-                stmt.setInt(6, Types.INTEGER);
+                stmt.setNull(6, Types.INTEGER);
             }
 
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RepositoryCRUDException("Failed to save comment.");
         }
     }
 
@@ -80,12 +79,13 @@ public class CommentRepository implements ICrudRepository<Comment> {
                 );
                 comment.setCreatedAt(createdAt);
                 comment.setUpdatedAt(updatedAt);
+                comment.setId(id);
 
                 return Optional.of(comment);
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RepositoryCRUDException("Failed to find comment with id=" + id);
         }
 
         return Optional.empty();
@@ -145,7 +145,7 @@ public class CommentRepository implements ICrudRepository<Comment> {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RepositoryCRUDException("Failed to load all comments.");
         }
 
         return comments;
@@ -162,7 +162,7 @@ public class CommentRepository implements ICrudRepository<Comment> {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RepositoryCRUDException("Could not delete comment with id=" + id);
         }
     }
 
@@ -190,19 +190,50 @@ public class CommentRepository implements ICrudRepository<Comment> {
                 Integer parentCommentId = rs.getObject("parent_comment_id", Integer.class);
 
 
-                if(parentCommentId == null){
-                    Comment comment = new Comment(
-                            commentId, text, createdAt, updatedAt, userOpt.get(), postId, parentCommentId
-                    );
+                if (parentCommentId == null) {
+                    Comment comment = new Comment(commentId, text, createdAt, updatedAt, userOpt.get(), postId, parentCommentId);
                     comments.add(comment);
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RepositoryCRUDException("Failed to load comments for post with id=" + postId);
         }
 
         return comments;
+    }
+
+    public List<Comment> findByCommentId(int commentId) {
+        List<Comment> replies = new ArrayList<>();
+        String sql = "SELECT * FROM comments WHERE parent_comment_id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, commentId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    int userId = rs.getInt("user_id");
+                    Optional<User> userOpt = userRepository.findById(userId);
+                    if (userOpt.isEmpty()) continue;
+
+                    String text = rs.getString("text");
+                    LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
+                    Timestamp updatedAtTimestamp = rs.getTimestamp("updated_at");
+                    LocalDateTime updatedAt = (updatedAtTimestamp != null) ? updatedAtTimestamp.toLocalDateTime() : null;
+                    Integer postId = rs.getObject("post_id", Integer.class);
+
+                    if (postId == null) {
+                        Comment reply = new Comment(id, text, createdAt, updatedAt, userOpt.get(), postId, null);
+                        replies.add(reply);
+                    }
+                }
+            }
+            return replies;
+        } catch (SQLException e) {
+            throw new RepositoryCRUDException("Failed to load replies for comment with id=" + commentId);
+        }
     }
 
 }

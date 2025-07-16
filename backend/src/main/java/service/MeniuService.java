@@ -173,7 +173,7 @@ public class MeniuService {
                 case "2":
                     System.out.print("Write your comment: ");
                     String text = scanner.nextLine();
-//                    commentService.createComment(text, userService.getCurrentUser(), postId, null);
+                    commentService.createCommentOnPost(text, userService.getCurrentUser(), postId);
                     break;
 
                 case "3":
@@ -221,7 +221,7 @@ public class MeniuService {
                 case "1":
                     System.out.print("Write your reply: ");
                     String replyText = scanner.nextLine();
-//                    commentService.createComment(replyText, userService.getCurrentUser(), EntityType.COMMENT, commentId);
+                    commentService.createReplyToComment(replyText, userService.getCurrentUser(), commentId);
                     break;
 
                 case "2":
@@ -236,7 +236,7 @@ public class MeniuService {
                     break;
 
                 case "3":
-                    commentService.showReplies(commentId);
+                    commentService.showCommentsForComment(commentId);
                     break;
 
                 case "0":
