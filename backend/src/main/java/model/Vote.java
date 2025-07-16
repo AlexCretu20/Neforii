@@ -1,5 +1,7 @@
 package model;
 
+import exception.VoteNotOneTargetOnly;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -8,16 +10,19 @@ public class Vote {
     private boolean isUpvote;
     private LocalDateTime createdAt;
 
-    private EntityType entityType;
-    private int entityId;
+    private Integer postId;
+    private Integer commentId;
 
     private int userId;
 
-    public Vote(boolean isUpvote, LocalDateTime createdAt, EntityType entityType, int entityId, int userId) {
+    public Vote(boolean isUpvote, LocalDateTime createdAt, Integer postId, Integer commentId, int userId) {
         this.isUpvote = isUpvote;
         this.createdAt = createdAt;
-        this.entityType = entityType;
-        this.entityId = entityId;
+        if ((postId == null && commentId == null) || (postId != null && commentId != null)) {
+            throw new VoteNotOneTargetOnly("Votes must target either postId or commentId.");
+        }
+        this.postId = postId;
+        this.commentId = commentId;
         this.userId = userId;
     }
 
@@ -38,36 +43,27 @@ public class Vote {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Vote vote = (Vote) o;
-        return id == vote.id && isUpvote == vote.isUpvote && entityId == vote.entityId && userId == vote.userId && Objects.equals(createdAt, vote.createdAt) && entityType == vote.entityType;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, isUpvote, createdAt, entityType, entityId, userId);
-    }
-
-    @Override
     public String toString() {
         return "Vote{" +
                 "id=" + id +
                 ", isUpvote=" + isUpvote +
                 ", createdAt=" + createdAt +
-                ", entityType=" + entityType +
-                ", entityId=" + entityId +
+                ", postId=" + postId +
+                ", commentId=" + commentId +
                 ", userId=" + userId +
                 '}';
     }
 
-    public Vote(int id, boolean isUpvote, LocalDateTime createdAt, EntityType entityType, int entityId, int userId) {
-        this.id = id;
-        this.isUpvote = isUpvote;
-        this.createdAt = createdAt;
-        this.entityType = entityType;
-        this.entityId = entityId;
-        this.userId = userId;
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Vote vote = (Vote) o;
+        return id == vote.id && isUpvote == vote.isUpvote && userId == vote.userId && Objects.equals(createdAt, vote.createdAt) && Objects.equals(postId, vote.postId) && Objects.equals(commentId, vote.commentId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, isUpvote, createdAt, postId, commentId, userId);
     }
 
     public LocalDateTime getCreatedAt() {
@@ -78,20 +74,20 @@ public class Vote {
         this.createdAt = createdAt;
     }
 
-    public EntityType getEntityType() {
-        return entityType;
+    public Integer getPostId() {
+        return postId;
     }
 
-    public void setEntityType(EntityType entityType) {
-        this.entityType = entityType;
+    public void setPostId(Integer postId) {
+        this.postId = postId;
     }
 
-    public int getEntityId() {
-        return entityId;
+    public Integer getCommentId() {
+        return commentId;
     }
 
-    public void setEntityId(int entityId) {
-        this.entityId = entityId;
+    public void setCommentId(Integer commentId) {
+        this.commentId = commentId;
     }
 
     public int getUserId() {
@@ -101,5 +97,4 @@ public class Vote {
     public void setUserId(int userId) {
         this.userId = userId;
     }
-
 }

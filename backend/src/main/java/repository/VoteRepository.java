@@ -1,8 +1,9 @@
 package repository;
 
-import model.EntityType;
 import model.Vote;
 import utils.DatabaseConnection;
+import utils.logger.Logger;
+import utils.logger.LoggerType;
 
 import javax.naming.OperationNotSupportedException;
 import java.sql.*;
@@ -14,7 +15,7 @@ public class VoteRepository implements ICrudRepository<Vote> {
 
     @Override
     public void save(Vote vote) {
-        String sql = "INSERT INTO votes (is_upvote, created_at, entity_type, entity_id, user_id) " +
+        String sql = "INSERT INTO votes (is_upvote, created_at, post_id, comment_id, user_id) " +
                 "VALUES (?, ?, ?::entity_type, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -22,13 +23,14 @@ public class VoteRepository implements ICrudRepository<Vote> {
 
             stmt.setBoolean(1, vote.isUpvote());
             stmt.setTimestamp(2, Timestamp.valueOf(vote.getCreatedAt()));
-            stmt.setString(3, vote.getEntityType().getDbValue());
-            stmt.setInt(4, vote.getEntityId());
+            stmt.setInt(3, vote.getPostId());
+            stmt.setInt(4, vote.getCommentId());
             stmt.setInt(5, vote.getUserId());
 
             stmt.executeUpdate();
 
         } catch (SQLException e) {
+            Logger.log(LoggerType.FATAL, "VoteRepository save: Vote can't be saved to database.");
             e.printStackTrace();
         }
     }
@@ -47,8 +49,8 @@ public class VoteRepository implements ICrudRepository<Vote> {
                 Vote vote = new Vote(
                         rs.getBoolean("is_upvote"),
                         rs.getTimestamp("created_at").toLocalDateTime(),
-                        EntityType.fromDbValue(rs.getString("entity_type")),
-                        rs.getInt("entity_id"),
+                        rs.getInt("post_id"),
+                        rs.getInt("comment_id"),
                         rs.getInt("user_id")
                 );
 
@@ -57,6 +59,7 @@ public class VoteRepository implements ICrudRepository<Vote> {
             }
 
         } catch (SQLException e) {
+            Logger.log(LoggerType.FATAL, "VoteRepository findById: Vote can't be found in database.");
             e.printStackTrace();
         }
 
@@ -76,8 +79,8 @@ public class VoteRepository implements ICrudRepository<Vote> {
                 Vote vote = new Vote(
                         rs.getBoolean("is_upvote"),
                         rs.getTimestamp("created_at").toLocalDateTime(),
-                        EntityType.fromDbValue(rs.getString("entity_type")),
-                        rs.getInt("entity_id"),
+                        rs.getInt("post_id"),
+                        rs.getInt("comment_id"),
                         rs.getInt("user_id")
                 );
 
@@ -86,6 +89,7 @@ public class VoteRepository implements ICrudRepository<Vote> {
             }
 
         } catch (SQLException e) {
+            Logger.log(LoggerType.FATAL, "VoteRepository findAll: Vote can't be found in database.");
             e.printStackTrace();
         }
 
@@ -108,6 +112,7 @@ public class VoteRepository implements ICrudRepository<Vote> {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
+            Logger.log(LoggerType.FATAL, "VoteRepository deleteById: Vote can't be found in database.");
             e.printStackTrace();
         }
     }
