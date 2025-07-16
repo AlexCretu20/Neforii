@@ -4,7 +4,10 @@ import model.Vote;
 import repository.*;
 import service.*;
 import ui.UserUI;
-import utils.logger.*;
+import utils.logger.ConsoleLogger;
+import utils.logger.FileLogger;
+import utils.logger.LoggerManager;
+import utils.logger.LoggerType;
 import validation.UserValidator;
 
 import java.util.Scanner;

@@ -1,22 +1,19 @@
 package service;
 
-import model.EntityType;
 import model.Vote;
 import repository.CommentRepository;
 import repository.PostRepository;
 import repository.VoteRepository;
+import utils.logger.Logger;
+import utils.logger.LoggerType;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class VoteService {
     private static VoteService instance;
     private PostRepository postRepository;
     private VoteRepository voteRepository;
     private CommentRepository commentRepository;
-    private final List<Vote> votes = new ArrayList<>();
-    private int counter = 0;
 
 
     private VoteService() {
@@ -29,46 +26,44 @@ public class VoteService {
         return instance;
     }
 
-    public String createVote(int userId, EntityType entityType, int entityId, boolean isUpvote) {
-        votes.removeIf(vote -> vote.getUserId() == userId && vote.getEntityId() == entityId && vote.getEntityType() == entityType);
-
+    public String createVote(int userId, Integer postId, Integer commentId, boolean isUpvote) {
+        int checkIfAlreadyVoted = findVoteId(userId, postId, commentId);
+        if (checkIfAlreadyVoted != 0) {
+            voteRepository.deleteById(checkIfAlreadyVoted);
+        }
         Vote vote = new Vote(
-                counter++,
                 isUpvote,
                 LocalDateTime.now(),
-                entityType,
-                entityId,
+                postId,
+                commentId,
                 userId
         );
-
-        votes.add(vote);
-
+        voteRepository.save(vote);
 //        commentService.getCommentById(entityId).getVotes().add(vote);
 
-        if (entityType == EntityType.POST) {
-            PostService.getInstance(postRepository, voteRepository, commentRepository).AddVote(entityId,vote);
-//            postService.getPostById(entityId).setAwarded(true)
-        }
-        else {
-            CommentService.getInstance().addVote(entityId, vote);
-        }
+//        if (entityType == EntityType.POST) {
+//            PostService.getInstance(postRepository, voteRepository, commentRepository).AddVote(entityId,vote);
+////            postService.getPostById(entityId).setAwarded(true)
+//        }
+//        else {
+//            CommentService.getInstance().addVote(entityId, vote);
+//        }
         return "You have successfully voted!";
     }
 
 
-
-    public String deleteVote(int userId, EntityType entityType, int entityId) {
-        boolean removed = votes.removeIf(vote -> vote.getUserId() == userId && vote.getEntityType() == entityType && vote.getEntityId() == entityId);
-        if (removed) {
-            return "Vote deleted successfully!";
-        } else {
-            return "No vote found to delete.";
-        }
+    public void deleteVote(int voteId) {
+        voteRepository.deleteById(voteId);
+        Logger.log(LoggerType.INFO, "Vote with ID " + voteId + " deleted successfully.");
     }
 
-    public boolean hasUserVoted(int userId, EntityType entityType, int entityId) {
-        return votes.stream()
-                .anyMatch(vote -> vote.getUserId() == userId && vote.getEntityType() == entityType && vote.getEntityId() == entityId);
+    public int findVoteId(int userId, Integer postId, Integer commentId) {
+        return voteRepository.findAll().stream()
+                .filter(vote ->
+                        vote.getUserId() == userId && ((postId != null && postId.equals(vote.getPostId())) || (commentId != null && commentId.equals(vote.getCommentId()))))
+                .mapToInt(Vote::getId)
+                .findFirst()
+                .orElse(0);
     }
 
 

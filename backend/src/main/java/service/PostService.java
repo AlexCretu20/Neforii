@@ -19,7 +19,7 @@ public class PostService implements IVotable {
     private final CommentRepository commentRepository;
     private static int counter = 0;
 
-    private PostService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
+    public PostService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
         this.commentRepository = commentRepository;
@@ -86,31 +86,6 @@ public class PostService implements IVotable {
     public void DeletePost(int id) {
         postRepository.deleteById(id);
         System.out.println("The post was deleted.");
-    }
-
-    public void addComment(int id, Comment comment) {
-        Optional<Post> optionalPost = postRepository.findById(id);
-        if (optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            post.setComments(comment);
-            commentRepository.save(comment);
-
-
-        }
-        System.out.println("The commnet was added. ");
-
-    }
-
-
-    public void AddVote(int postid, Vote vote) {
-        Optional<Post> optionalPost = postRepository.findById(postid);
-        if (optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            post.setVotes(vote);
-            voteRepository.save(vote);
-
-        }
-        System.out.println("The vote was added.");
     }
 
     public void ExpandComments(int id) {
