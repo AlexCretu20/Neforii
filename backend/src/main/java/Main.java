@@ -28,21 +28,7 @@ public class Main {
         LoggerManager.getInstance().register(new ConsoleLogger(LoggerType.WARNING));
         LoggerManager.getInstance().register(new FileLogger(LoggerType.DEBUG, ".", "info.log" ));
 
-
-
-
-
-        Logger.log(LoggerType.FATAL, "User created");
-
-
-
-
-
-
-
-
-
-
+//        EXEMPLU CUM E FOLOSIT LOG-UL: Logger.log(LoggerType.FATAL, "User created");
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner, userUI);
         meniuService.displayLoginMeniu();
