@@ -100,11 +100,11 @@ public class MeniuService {
                 case "1":
                     System.out.println("Enter your text for the post:");
                     String text = scanner.nextLine();
-                    postService.CreatePost(userService.getCurrentUser(), text);
+                    postService.createPost(userService.getCurrentUser(), text);
                     break;
 
                 case "2":
-                    postService.DisplayPosts();
+                    postService.displayPosts();
                     break;
 
                 case "3":
@@ -118,7 +118,7 @@ public class MeniuService {
                     } else {
                         System.out.println("Enter the new text: ");
                         String newText = scanner.nextLine();
-                        postService.UpdatePost(number, newText);
+                        postService.updatePost(number, newText);
                     }
                     break;
 
@@ -130,7 +130,7 @@ public class MeniuService {
                     if (!userService.getCurrentUser().equals(postService.getPostById(number2).getUser())) {
                         System.out.println("You can't delete a post made by another user ");
                     } else {
-                        postService.DeletePost(number2);
+                        postService.deletePost(number2);
                     }
                     break;
 
@@ -167,7 +167,7 @@ public class MeniuService {
 
             switch (choice) {
                 case "1":
-                    postService.ExpandComments(postId); // afișare recursiva comentarii
+                    postService.expandComments(postId); // afișare recursiva comentarii
                     break;
 
                 case "2":

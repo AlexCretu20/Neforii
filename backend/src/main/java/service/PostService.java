@@ -60,7 +60,7 @@ public class PostService implements IVotable {
     }
 
 
-    public void CreatePost(User user, String text) {
+    public void createPost(User user, String text) {
         counter++;
         Post post = new Post(counter, text, LocalDateTime.now(), false, user);
 //        posts.put(counter, post);
@@ -69,7 +69,7 @@ public class PostService implements IVotable {
 
     }
 
-    public void UpdatePost(int id, String text) {
+    public void updatePost(int id, String text) {
         Optional<Post> post = postRepository.findById(id);
         if (post.isPresent()) {
             Post updatePost = post.get();
@@ -83,12 +83,12 @@ public class PostService implements IVotable {
 
     }
 
-    public void DeletePost(int id) {
+    public void deletePost(int id) {
         postRepository.deleteById(id);
         System.out.println("The post was deleted.");
     }
 
-    public void ExpandComments(int id) {
+    public void expandComments(int id) {
         boolean isNumber = false;
         Optional<Post> optionalPost = postRepository.findById(id);
         List<Comment> comments = new ArrayList<Comment>();
@@ -116,7 +116,7 @@ public class PostService implements IVotable {
         }
     }
 
-    public void DisplayPosts() {
+    public void displayPosts() {
         System.out.println("Loading...");
         List<Post> posts = postRepository.findAll();
         for (Post post : posts) {
