@@ -1,5 +1,7 @@
 package repository;
 
+import exception.CommentNotFoundException;
+import exception.RepositoryCRUDException;
 import model.Comment;
 import model.EntityType;
 import model.User;
@@ -80,6 +82,31 @@ public class CommentRepository implements ICrudRepository<Comment> {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public void update(Comment comment) {
+        int commentId = comment.getId();
+        Optional<Comment> commentToUpdateOptional = findById(commentId);
+        if (commentToUpdateOptional.isEmpty()) {
+            throw new CommentNotFoundException("Could not update comment with id: " + commentId);
+        }
+        LocalDateTime updateTime = LocalDateTime.now();
+        comment.setUpdatedAt(updateTime);
+
+        String sql = "UPDATE comments SET text = ?, updated_at = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, comment.getText());
+            stmt.setTimestamp(2, Timestamp.valueOf(comment.getUpdatedAt()));
+            stmt.setInt(3, commentId);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RepositoryCRUDException("Failed to update comment with id=" + commentId);
+        }
     }
 
     @Override

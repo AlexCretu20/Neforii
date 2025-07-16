@@ -4,6 +4,7 @@ import model.EntityType;
 import model.Vote;
 import utils.DatabaseConnection;
 
+import javax.naming.OperationNotSupportedException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +90,11 @@ public class VoteRepository implements ICrudRepository<Vote> {
         }
 
         return votes;
+    }
+
+    @Override
+    public void update(Vote entity) throws OperationNotSupportedException {
+        throw new OperationNotSupportedException("TO DO");
     }
 
     @Override

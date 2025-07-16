@@ -4,6 +4,7 @@ import model.Post;
 import model.User;
 import utils.DatabaseConnection;
 
+import javax.naming.OperationNotSupportedException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,11 @@ public class PostRepository implements ICrudRepository<Post>{
 
         return Optional.empty();
 
+    }
+
+    @Override
+    public void update(Post entity) throws OperationNotSupportedException {
+        throw new OperationNotSupportedException("TO DO");
     }
 
     @Override

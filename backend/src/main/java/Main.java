@@ -12,11 +12,9 @@ public class Main {
         VoteService voteService = VoteService.getInstance();
         Scanner scanner = new Scanner(System.in);
         UserValidator userValidator = new UserValidator();
-        UserUI userUI = new UserUI(scanner,userService,userValidator);
+        UserUI userUI = new UserUI(scanner, userService, userValidator);
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner, userUI);
         meniuService.displayLoginMeniu();
-
-
     }
 }

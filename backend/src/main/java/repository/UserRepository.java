@@ -3,6 +3,7 @@ package repository;
 import model.User;
 import utils.DatabaseConnection;
 
+import javax.naming.OperationNotSupportedException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -90,6 +91,11 @@ public class UserRepository implements ICrudRepository<User> {
             e.printStackTrace();
         }
         return List.of();
+    }
+
+    @Override
+    public void update(User entity) throws OperationNotSupportedException {
+        throw new OperationNotSupportedException("TO DO");
     }
 
     @Override
