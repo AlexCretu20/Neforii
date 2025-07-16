@@ -22,8 +22,8 @@ public class Main {
         UserService userService = new UserService((UserRepository) userRepository);
         PostService postService = PostService.getInstance(postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
 
-        CommentService commentService = CommentService.getInstance();
-        VoteService voteService = VoteService.getInstance();
+        CommentService commentService = new CommentService((CommentRepository) commentRepository, (UserRepository) userRepository, (VoteRepository) voteRepository);
+        VoteService voteService = new VoteService(postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
         Scanner scanner = new Scanner(System.in);
         UserValidator userValidator = new UserValidator();
         UserUI userUI = new UserUI(scanner, userService, userValidator);

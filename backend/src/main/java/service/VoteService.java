@@ -16,15 +16,18 @@ public class VoteService {
     private CommentRepository commentRepository;
 
 
-    private VoteService() {
+    public VoteService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
+        this.postRepository = postRepository;
+        this.voteRepository = voteRepository;
+        this.commentRepository = commentRepository;
     }
 
-    public static VoteService getInstance() {
-        if (instance == null) {
-            instance = new VoteService();
-        }
-        return instance;
-    }
+//    public static VoteService getInstance() {
+//        if (instance == null) {
+//            instance = new VoteService();
+//        }
+//        return instance;
+//    }
 
     public String createVote(int userId, Integer postId, Integer commentId, boolean isUpvote) {
         int checkIfAlreadyVoted = findVoteId(userId, postId, commentId);

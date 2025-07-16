@@ -1,6 +1,5 @@
 package service;
 
-import model.EntityType;
 import ui.UserUI;
 
 import java.util.Scanner;
@@ -168,13 +167,13 @@ public class MeniuService {
 
             switch (choice) {
                 case "1":
-                    postService.ExpandComments(postId); // afișare recursivă comentarii
+                    postService.ExpandComments(postId); // afișare recursiva comentarii
                     break;
 
                 case "2":
                     System.out.print("Write your comment: ");
                     String text = scanner.nextLine();
-                    commentService.createComment(text, userService.getCurrentUser(), EntityType.POST, postId);
+//                    commentService.createComment(text, userService.getCurrentUser(), postId, null);
                     break;
 
                 case "3":
@@ -222,7 +221,7 @@ public class MeniuService {
                 case "1":
                     System.out.print("Write your reply: ");
                     String replyText = scanner.nextLine();
-                    commentService.createComment(replyText, userService.getCurrentUser(), EntityType.COMMENT, commentId);
+//                    commentService.createComment(replyText, userService.getCurrentUser(), EntityType.COMMENT, commentId);
                     break;
 
                 case "2":

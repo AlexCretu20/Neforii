@@ -156,4 +156,49 @@ public class VoteRepository implements ICrudRepository<Vote> {
 
         return null;
     }
+
+    public int countVotesByCommentId(int commentId, boolean isUpvote) {
+        return countVotesByTargetId(null, commentId, isUpvote);
+    }
+    public int countVotesByPostId(int postId, boolean isUpvote) {
+        return countVotesByTargetId(postId, null, isUpvote);
+    }
+
+    private int countVotesByTargetId(Integer postId, Integer commentId, boolean isUpvote) {
+        if ((postId  == null && commentId == null) ||
+                (postId  != null && commentId != null)) {
+            throw new IllegalArgumentException(
+                    "Exactly one of postId or commentId must be provided"
+            );
+        }
+
+        final String sql;
+        final int targetId;
+        if (postId != null) {
+            sql      = "SELECT COUNT(*) FROM votes WHERE post_id = ? AND is_upvote = ?";
+            targetId = postId;
+        } else {
+            sql      = "SELECT COUNT(*) FROM votes WHERE comment_id = ? AND is_upvote = ?";
+            targetId = commentId;
+        }
+
+        // 3) execute
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, targetId);
+            stmt.setBoolean(2, isUpvote);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        } catch (SQLException e) {
+            Logger.log(LoggerType.FATAL,
+                    "VoteRepository countVotesByTargetId: cannot retrieve count.");
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+
 }

@@ -142,11 +142,11 @@ public class PostService implements IVotable {
 
 
     public int displayUpvotes(int id) {
-        return countVotes(id, true);
+        return voteRepository.countVotesByPostId(id, true);
     }
 
     public int displayDownvotes(int id) {
-        return countVotes(id, false);
+        return voteRepository.countVotesByPostId(id, false);
     }
 
     public void updateAward(int id) {
