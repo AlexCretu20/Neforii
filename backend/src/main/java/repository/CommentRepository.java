@@ -3,7 +3,6 @@ package repository;
 import exception.CommentNotFoundException;
 import exception.RepositoryCRUDException;
 import model.Comment;
-import model.EntityType;
 import model.User;
 import utils.DatabaseConnection;
 
@@ -23,18 +22,28 @@ public class CommentRepository implements ICrudRepository<Comment> {
 
     @Override
     public void save(Comment comment) {
-        String sql = "INSERT INTO comments (text, created_at, updated_at, user_id, entity_type, entity_id) " +
-                "VALUES (?, ?, ?, ?, ?::entity_type, ?)";
+        String sql = "INSERT INTO comments (text, created_at, updated_at, user_id, post_id, parent_comment_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, comment.getText());
             stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            stmt.setTimestamp(3, null); // no update yet
+            stmt.setNull(3, Types.TIMESTAMP); // no update yet
             stmt.setInt(4, comment.getUser().getId());
-            stmt.setString(5, comment.getEntityType().getDbValue());
-            stmt.setInt(6, comment.getEntityId());
+
+            if (comment.getPostId() != null) {
+                stmt.setInt(5, comment.getPostId());
+            } else {
+                stmt.setInt(5, Types.INTEGER);
+            }
+
+            if (comment.getParentCommentId() != null) {
+                stmt.setInt(6, comment.getParentCommentId());
+            } else {
+                stmt.setInt(6, Types.INTEGER);
+            }
 
             stmt.executeUpdate();
 
@@ -57,22 +66,21 @@ public class CommentRepository implements ICrudRepository<Comment> {
                 int userId = rs.getInt("user_id");
                 Optional<User> userOpt = userRepository.findById(userId);
 
-                if (userOpt.isEmpty()) return Optional.empty();
+                if (userOpt.isEmpty())
+                    return Optional.empty();
+
+                String text = rs.getString("text");
+                LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
+                Timestamp updatedAtTimestamp = rs.getTimestamp("updated_at");
+                LocalDateTime updatedAt = updatedAtTimestamp != null ? updatedAtTimestamp.toLocalDateTime() : null;
+                Integer postId = rs.getObject("post_id", Integer.class);
+                Integer parentCommentId = rs.getObject("parent_comment_id", Integer.class);
 
                 Comment comment = new Comment(
-                        rs.getString("text"),
-                        userOpt.get(),
-                        EntityType.fromDbValue(rs.getString("entity_type")),
-                        rs.getInt("entity_id")
+                        text, userOpt.get(), postId, parentCommentId
                 );
-
-                comment.setId(rs.getInt("id"));
-                comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-
-                Timestamp updatedAt = rs.getTimestamp("updated_at");
-                if (updatedAt != null) {
-                    comment.setUpdatedAt(updatedAt.toLocalDateTime());
-                }
+                comment.setCreatedAt(createdAt);
+                comment.setUpdatedAt(updatedAt);
 
                 return Optional.of(comment);
             }
@@ -122,22 +130,21 @@ public class CommentRepository implements ICrudRepository<Comment> {
                 int userId = rs.getInt("user_id");
                 Optional<User> userOpt = userRepository.findById(userId);
 
-                if (userOpt.isEmpty()) continue;
+                if (userOpt.isEmpty())
+//                    user not found so skip
+                    continue;
+
+                int id = rs.getInt("id");
+                String text = rs.getString("text");
+                LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
+                Timestamp updatedAtTimestamp = rs.getTimestamp("updated_at");
+                LocalDateTime updatedAt = (updatedAtTimestamp != null) ? updatedAtTimestamp.toLocalDateTime() : null;
+                Integer postId = rs.getObject("post_id", Integer.class); // int to integer
+                Integer parentCommentId = rs.getObject("parent_comment_id", Integer.class);
 
                 Comment comment = new Comment(
-                        rs.getString("text"),
-                        userOpt.get(),
-                        EntityType.fromDbValue(rs.getString("entity_type")),
-                        rs.getInt("entity_id")
+                        id, text, createdAt, updatedAt, userOpt.get(), postId, parentCommentId
                 );
-
-                comment.setId(rs.getInt("id"));
-                comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-
-                Timestamp updatedAt = rs.getTimestamp("updated_at");
-                if (updatedAt != null) {
-                    comment.setUpdatedAt(updatedAt.toLocalDateTime());
-                }
 
                 comments.add(comment);
             }

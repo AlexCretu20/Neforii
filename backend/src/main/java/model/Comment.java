@@ -1,8 +1,6 @@
 package model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class Comment {
@@ -12,32 +10,27 @@ public class Comment {
     private LocalDateTime updatedAt;
     private User user;
 
-    //EntityType is either POST or COMMENT to know if its reply or not
-    private EntityType entityType;
-    private int entityId;
+    //in the logic layer, we check by null if it belongs to post or comment
+    private Integer postId;
+    private Integer parentCommentId;
 
-    private List<Comment> replies;
-    private List<Vote> votes;
 
-    public Comment(int id, String text, LocalDateTime createdAt, LocalDateTime updatedAt, User user, EntityType entityType, int entityId, List<Comment> replies, List<Vote> votes) {
+
+    public Comment(int id, String text, LocalDateTime createdAt, LocalDateTime updatedAt, User user, Integer postId, Integer parentCommentId) {
         this.id = id;
         this.text = text;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.user = user;
-        this.entityType = entityType;
-        this.entityId = entityId;
-        this.replies = replies;
-        this.votes = votes;
+        this.postId = postId;
+        this.parentCommentId = parentCommentId;
     }
 
-    public Comment(String text, User user, EntityType entityType, int entityId) {
+    public Comment(String text, User user, Integer postId, Integer parentCommentId) {
         this.text = text;
         this.user = user;
-        this.entityType = entityType;
-        this.entityId = entityId;
-        this.replies = new ArrayList<>();
-        this.votes = new ArrayList<>();
+        this.postId = postId;
+        this.parentCommentId = parentCommentId;
     }
 
     public int getId() {
@@ -80,52 +73,43 @@ public class Comment {
         this.user = user;
     }
 
-    public EntityType getEntityType() {
-        return entityType;
+    public Integer getPostId() {
+        return postId;
     }
 
-    public void setEntityType(EntityType entityType) {
-        this.entityType = entityType;
+    public void setPostId(Integer postId) {
+        this.postId = postId;
     }
 
-    public int getEntityId() {
-        return entityId;
+    public Integer getParentCommentId() {
+        return parentCommentId;
     }
 
-    public void setEntityId(int entityId) {
-        this.entityId = entityId;
-    }
-
-    public List<Comment> getReplies() {
-        return replies;
-    }
-
-    public void setReplies(Comment replie) {
-        replies.add(replie);
-    }
-
-    public List<Vote> getVotes() {
-        return votes;
-    }
-
-    public void setVotes(Vote vote) {
-        votes.add(vote);
+    public void setParentCommentId(Integer parentCommentId) {
+        this.parentCommentId = parentCommentId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Comment comment)) return false;
-        return id == comment.id && entityId == comment.entityId && Objects.equals(text, comment.text) && Objects.equals(createdAt, comment.createdAt) && Objects.equals(updatedAt, comment.updatedAt) && Objects.equals(user, comment.user) && entityType == comment.entityType && Objects.equals(replies, comment.replies) && Objects.equals(votes, comment.votes);
+        return id == comment.id && Objects.equals(text, comment.text) && Objects.equals(createdAt, comment.createdAt) && Objects.equals(updatedAt, comment.updatedAt) && Objects.equals(user, comment.user) && Objects.equals(postId, comment.postId) && Objects.equals(parentCommentId, comment.parentCommentId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, text, createdAt, updatedAt, user, entityType, entityId, replies, votes);
+        return Objects.hash(id, text, createdAt, updatedAt, user, postId, parentCommentId);
     }
 
     @Override
     public String toString() {
-        return id + "\n" + text + "\n Created at :" + createdAt  +  " " + "Created by : " + user.getUsername();
+        return "Comment{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", user=" + user +
+                ", postId=" + postId +
+                ", parentCommentId=" + parentCommentId +
+                '}';
     }
-
 }
