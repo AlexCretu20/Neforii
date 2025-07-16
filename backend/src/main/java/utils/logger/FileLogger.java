@@ -35,11 +35,9 @@ public class FileLogger extends AbstractLogger {
         String cwd = System.getProperty("user.dir");
         String filePath = cwd + File.separator + fileName;
 
-        // 3) write to it (it will create the file if it doesn’t exist)
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
             writer.write(logMessage);
             writer.newLine();
-            System.out.println("Log written to file: " + filePath);
         } catch (IOException e) {
             System.err.println("Failed to write to log file: " + e.getMessage());
         }

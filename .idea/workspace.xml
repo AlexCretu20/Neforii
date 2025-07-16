@@ -5,12 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0cd84363-df02-4696-9c84-f8a6d3d1234e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/utils/logger/ConsoleLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/utils/logger/ConsoleLogger.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/utils/logger/FileLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/utils/logger/FileLogger.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/utils/logger/ILogger.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/utils/logger/Logger.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/utils/logger/Logger.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/utils/logger/LoggerManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/utils/logger/LoggerManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/utils/logger/LoggerType.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/utils/logger/LoggerType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/info.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/personal/src/main/java/alexandru/TestAlex.java" beforeDir="false" afterPath="$PROJECT_DIR$/personal/src/main/java/alexandru/TestAlex.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -64,6 +62,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Info\ZTH\Proiect 1 CLI\backend\src\main\java\utils" />
       <recent name="C:\Users\amito\IdeaProjects\Neforii" />
     </key>
   </component>

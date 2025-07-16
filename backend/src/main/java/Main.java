@@ -4,6 +4,7 @@ import model.Vote;
 import repository.*;
 import service.*;
 import ui.UserUI;
+import utils.logger.*;
 import validation.UserValidator;
 
 import java.util.Scanner;
@@ -23,6 +24,25 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         UserValidator userValidator = new UserValidator();
         UserUI userUI = new UserUI(scanner, userService, userValidator);
+
+        LoggerManager.getInstance().register(new ConsoleLogger(LoggerType.WARNING));
+        LoggerManager.getInstance().register(new FileLogger(LoggerType.DEBUG, ".", "info.log" ));
+
+
+
+
+
+        Logger.log(LoggerType.FATAL, "User created");
+
+
+
+
+
+
+
+
+
+
 
         MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner, userUI);
         meniuService.displayLoginMeniu();
