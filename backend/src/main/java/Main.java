@@ -1,4 +1,7 @@
-import repository.UserRepository;
+import model.Comment;
+import model.User;
+import model.Vote;
+import repository.*;
 import service.*;
 import ui.UserUI;
 import validation.UserValidator;
@@ -7,9 +10,14 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        UserRepository userRepository = new UserRepository();
-        UserService userService = new UserService(userRepository);
-        PostService postService = PostService.getInstance();
+        ICrudRepository<User> userRepository = new UserRepository();
+        ICrudRepository<Vote> voteRepository = new VoteRepository();
+        ICrudRepository<Comment> commentRepository = new CommentRepository(userRepository);
+        PostRepository postRepository = new PostRepository(userRepository);
+
+        UserService userService = new UserService((UserRepository) userRepository);
+        PostService postService = PostService.getInstance(postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
+
         CommentService commentService = CommentService.getInstance();
         VoteService voteService = VoteService.getInstance();
         Scanner scanner = new Scanner(System.in);

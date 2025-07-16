@@ -1,12 +1,18 @@
 package service;
 
 import model.*;
+import repository.CommentRepository;
+import repository.PostRepository;
+import repository.VoteRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class CommentService implements IVotable {
     private static CommentService instance;
+    private PostRepository postRepository;
+    private  VoteRepository voteRepository;
+    private CommentRepository commentRepository;
 
     private int cnt = 1;
     private Map<Integer, Comment> comments = new HashMap<>();
@@ -39,7 +45,7 @@ public class CommentService implements IVotable {
         Comment comment = new Comment(cnt, text, now, now, user, entityType, entityId, new ArrayList<>(), new ArrayList<>());
 
         if (entityType == EntityType.POST) {
-            Post post = PostService.getInstance().getPostById(entityId);
+            Post post = PostService.getInstance(postRepository, voteRepository, commentRepository).getPostById(entityId);
             if (post != null) {
                 post.getComments().add(comment);
                 comments.put(cnt, comment);

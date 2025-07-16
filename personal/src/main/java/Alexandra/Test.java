@@ -1,7 +1,6 @@
 package Alexandra;
 
 import model.User;
-import service.PostService;
 
 public class Test {
     public static void main(String[] args) {
@@ -15,14 +14,14 @@ public class Test {
 //        Vote vote = new Vote(1,true, LocalDateTime.now(), EntityType.POST,1,1);
 
         //test service
-        PostService postService = PostService.getInstance();
-
-        postService.CreatePost(user,"Ana are mere");
-        postService.CreatePost(user,"sdfghjhgfddfghjm");
-        postService.CreatePost(user,"capsuni si mere ");
-        postService.DisplayPosts();
-        postService.UpdatePost(2, "bauu saluuut");
-        postService.DeletePost(3);
+//        PostService postService = PostService.getInstance();
+//
+//        postService.CreatePost(user,"Ana are mere");
+//        postService.CreatePost(user,"sdfghjhgfddfghjm");
+//        postService.CreatePost(user,"capsuni si mere ");
+//        postService.DisplayPosts();
+//        postService.UpdatePost(2, "bauu saluuut");
+//        postService.DeletePost(3);
 //        postService.AddComment(1,comment);
 //        postService.AddVote(1,vote);
 //        postService.ExpandComments(1);

@@ -2,6 +2,9 @@ package service;
 
 import model.EntityType;
 import model.Vote;
+import repository.CommentRepository;
+import repository.PostRepository;
+import repository.VoteRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,6 +12,9 @@ import java.util.List;
 
 public class VoteService {
     private static VoteService instance;
+    private PostRepository postRepository;
+    private VoteRepository voteRepository;
+    private CommentRepository commentRepository;
     private final List<Vote> votes = new ArrayList<>();
     private int counter = 0;
 
@@ -40,7 +46,7 @@ public class VoteService {
 //        commentService.getCommentById(entityId).getVotes().add(vote);
 
         if (entityType == EntityType.POST) {
-            PostService.getInstance().AddVote(entityId,vote);
+            PostService.getInstance(postRepository, voteRepository, commentRepository).AddVote(entityId,vote);
 //            postService.getPostById(entityId).setAwarded(true)
         }
         else {

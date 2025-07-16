@@ -113,7 +113,8 @@ public class MeniuService {
                     System.out.println("Enter the id of the post you want to modify");
                     int number =  scanner.nextInt();
                     scanner.nextLine();
-                    if ( userService.getCurrentUser() != postService.getPostById(number).getUser()){
+
+                    if (!userService.getCurrentUser().equals(postService.getPostById(number).getUser())){
                         System.out.println("You can't modify a post made by another user ");
                     }
                     else {
@@ -128,7 +129,7 @@ public class MeniuService {
                     System.out.println("Enter the id of the post you want to modify");
                     int number2 =  scanner.nextInt();
                     scanner.nextLine();
-                    if ( userService.getCurrentUser() != postService.getPostById(number2).getUser()){
+                    if ( !userService.getCurrentUser().equals(postService.getPostById(number2).getUser())){
                         System.out.println("You can't delete a post made by another user ");
                     }
                     else {
