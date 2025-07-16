@@ -1,6 +1,5 @@
 package repository;
 
-import exception.CommentNotFoundException;
 import exception.RepositoryCRUDException;
 import model.Comment;
 import model.User;
@@ -95,10 +94,6 @@ public class CommentRepository implements ICrudRepository<Comment> {
     @Override
     public void update(Comment comment) {
         int commentId = comment.getId();
-        Optional<Comment> commentToUpdateOptional = findById(commentId);
-        if (commentToUpdateOptional.isEmpty()) {
-            throw new CommentNotFoundException("Could not update comment with id: " + commentId);
-        }
         LocalDateTime updateTime = LocalDateTime.now();
         comment.setUpdatedAt(updateTime);
 
@@ -170,4 +165,44 @@ public class CommentRepository implements ICrudRepository<Comment> {
             e.printStackTrace();
         }
     }
+
+
+    public List<Comment> findByPostId(int postId) {
+        List<Comment> comments = new ArrayList<>();
+        String sql = "SELECT * FROM comments WHERE post_id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, postId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int commentId = rs.getInt("id");
+                int userId = rs.getInt("user_id");
+                Optional<User> userOpt = userRepository.findById(userId);
+                if (userOpt.isEmpty()) continue;
+
+                String text = rs.getString("text");
+                LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
+                Timestamp updatedAtTimestamp = rs.getTimestamp("updated_at");
+                LocalDateTime updatedAt = (updatedAtTimestamp != null) ? updatedAtTimestamp.toLocalDateTime() : null;
+                Integer parentCommentId = rs.getObject("parent_comment_id", Integer.class);
+
+
+                if(parentCommentId == null){
+                    Comment comment = new Comment(
+                            commentId, text, createdAt, updatedAt, userOpt.get(), postId, parentCommentId
+                    );
+                    comments.add(comment);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return comments;
+    }
+
 }
