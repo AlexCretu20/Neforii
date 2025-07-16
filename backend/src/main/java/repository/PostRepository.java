@@ -3,8 +3,9 @@ package repository;
 import model.Post;
 import model.User;
 import utils.DatabaseConnection;
+import utils.logger.Logger;
+import utils.logger.LoggerType;
 
-import javax.naming.OperationNotSupportedException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ public class PostRepository implements ICrudRepository<Post>{
             stmt.executeUpdate();
 
         } catch (Exception e) {
+            Logger.log(LoggerType.FATAL, "PostRepository save: Post can't be saved to database.");
             e.printStackTrace();
         }
 
@@ -61,6 +63,7 @@ public class PostRepository implements ICrudRepository<Post>{
             }
 
         } catch (Exception e) {
+            Logger.log(LoggerType.FATAL, "PostRepository findById: Post can't be found in database.");
             e.printStackTrace();
         }
 
@@ -69,9 +72,32 @@ public class PostRepository implements ICrudRepository<Post>{
     }
 
     @Override
-    public void update(Post entity) throws OperationNotSupportedException {
-        throw new OperationNotSupportedException("TO DO");
+    public void update(Post post) {
+        String sql = "UPDATE posts SET text = ?, created_at = ?, is_awarded = ?, user_id = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, post.getText());
+            stmt.setTimestamp(2, Timestamp.valueOf(post.getCreatedAt()));
+            stmt.setBoolean(3, post.isAwarded());
+            stmt.setInt(4, post.getUser().getId());
+            stmt.setInt(5, post.getId());
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows == 0) {
+                System.out.println("No post found with id " + post.getId() + " to update.");
+            } else {
+                System.out.println("Post updated successfully.");
+            }
+
+        } catch (SQLException e) {
+            Logger.log(LoggerType.FATAL, "PostRepository update: Post can't be found in database.");
+            e.printStackTrace();
+        }
     }
+
 
     @Override
     public List<Post> findAll() {
@@ -95,6 +121,7 @@ public class PostRepository implements ICrudRepository<Post>{
             }
 
         } catch (Exception e) {
+            Logger.log(LoggerType.FATAL, "PostRepository findAll: Post can't be found in database.");
             e.printStackTrace();
         }
 
@@ -113,6 +140,7 @@ public class PostRepository implements ICrudRepository<Post>{
             stmt.executeUpdate();
 
         } catch (Exception e) {
+            Logger.log(LoggerType.FATAL, "PostRepository deleteById: Post can't be found in database.");
             e.printStackTrace();
         }
     }

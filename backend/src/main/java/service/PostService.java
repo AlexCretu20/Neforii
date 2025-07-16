@@ -74,7 +74,7 @@ public class PostService implements IVotable {
         if (post.isPresent()) {
             Post updatePost = post.get();
             updatePost.setText(text);
-            postRepository.save(updatePost);
+            postRepository.update(updatePost);
             System.out.println("The post was updated.");
         } else {
             System.out.println("The post doesn't exists.");
