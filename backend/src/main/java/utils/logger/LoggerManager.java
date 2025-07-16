@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LoggerManager {
-    static LoggerManager instance;
-    List<ILogger> loggers = new ArrayList<>();
+    private static LoggerManager instance;
+    List<AbstractLogger> loggers = new ArrayList<>();
 
     private LoggerManager() {
-        loggers.add(new ConsoleLogger()); // default logger
     }
 
     public static LoggerManager getInstance() {
@@ -18,19 +17,26 @@ public class LoggerManager {
         return instance;
     }
 
-    public void register(ILogger logger) {
+
+
+    public void register(AbstractLogger logger) {
         loggers.add(logger);
     }
 
-    public void remove(ILogger logger) {
+    public void remove(AbstractLogger logger) {
         loggers.remove(logger);
     }
 
 
-    public void logAll(LoggerType type, String message) {
+    public void logAll(LoggerType loggerType, String message) {
+        if (loggers.isEmpty()) {
+            loggers.add(new ConsoleLogger()); // un fel de lazy loading, default daca nu e nimic altceva
+        }
 
-        for (ILogger logger : loggers) {
-            logger.log(type, message);
+        for (AbstractLogger logger : loggers) {
+            if (loggerType.getPriority() >= logger.getLogLevel().getPriority()) {
+                logger.log(loggerType, message);
+            }
         }
     }
 }

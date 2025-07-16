@@ -1,10 +1,11 @@
 package alexandru;
 
-import utils.logger.Logger;
-import utils.logger.LoggerType;
+import utils.logger.*;
 
 public class TestAlex {
     public static void main(String[] args) {
-        Logger.log(LoggerType.DEBUG, "Build success");
+        LoggerManager.getInstance().register(new ConsoleLogger(LoggerType.INFO));
+        LoggerManager.getInstance().register(new FileLogger(LoggerType.INFO, ".", "info.log" ));
+        Logger.log(LoggerType.WARNING, "Build success");
     }
 }
