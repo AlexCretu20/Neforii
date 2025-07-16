@@ -1,160 +1,124 @@
 package service;
 
-import model.*;
+import exception.CommentNotFoundException;
+import model.Comment;
+import model.User;
+import model.Vote;
 import repository.CommentRepository;
-import repository.PostRepository;
-import repository.VoteRepository;
+import repository.ICrudRepository;
+import repository.UserRepository;
+import utils.logger.Logger;
+import utils.logger.LoggerType;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public class CommentService implements IVotable {
-    private static CommentService instance;
-    private PostRepository postRepository;
-    private  VoteRepository voteRepository;
-    private CommentRepository commentRepository;
+    //private static CommentService instance;
+    private CommentRepository commentRepo;
+    private UserRepository userRepo;
 
-    private int cnt = 1;
-    private Map<Integer, Comment> comments = new HashMap<>();
-
-    private CommentService() {
+    private CommentService(CommentRepository commentRepo, UserRepository userRepo) {
+        this.commentRepo = commentRepo;
+        this.userRepo = userRepo;
     }
 
-    public synchronized static CommentService getInstance() {
-        if (instance == null) {
-            instance = new CommentService();
+//    public synchronized static CommentService getInstance() {
+//        if (instance == null) {
+//            instance = new CommentService();
+//        }
+//        return instance;
+//    }
+
+
+    public List<Comment> getComments() {
+        return commentRepo.findAll();
+    }
+
+    public Comment getComment(int id) {
+        Optional<Comment> comment = commentRepo.findById(id);
+        if(comment.isEmpty()){
+            throw new CommentNotFoundException("The comment with id "+id +"does not exist");
         }
-        return instance;
+        return comment.get();
     }
 
-    public void initService() {
-        comments.clear();
-        cnt = 1;
-    }
-
-    public Map<Integer, Comment> getComments() {
-        return comments;
-    }
-
-    public Optional<Comment> getComment(int id) {
-        return Optional.ofNullable(comments.get(id));
-    }
-
-    public void createComment(String text, User user, EntityType entityType, int entityId) {
-        LocalDateTime now = LocalDateTime.now();
-        Comment comment = new Comment(cnt, text, now, now, user, entityType, entityId, new ArrayList<>(), new ArrayList<>());
-
-        if (entityType == EntityType.POST) {
-            Post post = PostService.getInstance(postRepository, voteRepository, commentRepository).getPostById(entityId);
-            if (post != null) {
-                post.getComments().add(comment);
-                comments.put(cnt, comment);
-                System.out.println("Comment added to post.\n");
-            } else {
-                System.out.println("Post not found.\n");
-                return;
-            }
-
-        } else if (entityType == EntityType.COMMENT) {
-            Optional<Comment> parentOpt = getComment(entityId);
-            if (parentOpt.isPresent()) {
-                Comment parent = parentOpt.get();
-                parent.getReplies().add(comment);
-                comments.put(cnt, comment);
-                System.out.println("Reply added to comment.\n");
-            } else {
-                System.out.println("Comment not found.\n");
-                return;
-            }
-        }
-
-        cnt++;
+    public void createComment(String text, User user, Integer postId, Integer parentCommentId) {
+        Comment comment = new Comment(text, user, postId, parentCommentId);
+        commentRepo.save(comment);
         System.out.println("The comment has been successfully added!\n");
     }
 
-    public void updateComment(int id, String updateText) {
-        Optional<Comment> opt = getComment(id);
-        if (opt.isPresent()) {
-            Comment comment = opt.get();
-            comment.setText(updateText);
-            comment.setUpdatedAt(LocalDateTime.now());
-            System.out.println("Comment updated successfully.\n");
-        } else {
-            System.out.println("Comment not found.\n");
+    public void updateComment(int id, Comment comment) {
+        Optional<Comment> commentOptional = commentRepo.findById(id);
+        if(commentOptional.isEmpty()){
+            throw new CommentNotFoundException("The comment with id "+id +"does not exist");
+        }
+        Comment commentToUpdate = commentOptional.get();
+        try{
+            commentRepo.update(commentToUpdate);
+            Logger.log(LoggerType.INFO, "Comment upgrated successfully!");
+        }catch(Exception e){
+            Logger.log(LoggerType.FATAL, "Comment could not update!");
         }
     }
 
     public void deleteComment(int id) {
-        if (comments.containsKey(id)) {
-            comments.remove(id);
-            System.out.println("Comment deleted successfully.\n");
-        } else {
-            System.out.println("Comment not found.\n");
+        Optional<Comment> commentOptional = commentRepo.findById(id);
+        if(commentOptional.isEmpty()){
+            throw new CommentNotFoundException("The comment with id "+id +"does not exist");
+        }
+        try{
+            commentRepo.deleteById(id);
+            Logger.log(LoggerType.INFO, "Comment deleted successfully!");
+        }catch(Exception e){
+            Logger.log(LoggerType.FATAL, "Comment could not delete!");
         }
     }
 
     public void showReplies(int id) {
-        Optional<Comment> opt = getComment(id);
-        if (opt.isPresent()) {
-            Comment comment = opt.get();
+        commentRepo.findByPostId(id);
+        for(Comment comment : commentRepo.findByPostId(id)){
             System.out.println(comment);
-            System.out.println("Upvotes: " + displayUpvotes(id) + " Downvotes: " + displayDownvotes(id));
-            if (comment.getReplies().isEmpty()) {
-                System.out.println("No replies yet.\n");
-            } else {
-                System.out.println("Replies:");
-                for (Comment reply : comment.getReplies()) {
-                    System.out.println(reply);
-                }
-            }
-        } else {
-            System.out.println("Comment not found.\n");
         }
+
     }
 
-    public void addVote(int id, Vote vote) {
-        Optional<Comment> opt = getComment(id);
-        if (opt.isPresent()) {
-            Comment comment = opt.get();
-            comment.getVotes().add(vote);
-            System.out.println("Vote added.\n");
-        } else {
-            System.out.println("Comment not found.\n");
-        }
-    }
+
 
     public int displayUpvotes(int id) {
-        int counter = 0;
-        List<Vote> votes;
-        for (Integer key : comments.keySet()) {
-            if (key == id) {
-                votes = comments.get(key).getVotes();
-                for (Vote vote : votes) {
-                    if (vote.isUpvote() == true) {
-                        counter++;
-                    }
-                }
-                return counter;
-
-            }
-        }
-
-        return 0;
+//        int counter = 0;
+//        List<Vote> votes;
+//        for (Integer key : comments.keySet()) {
+//            if (key == id) {
+//                votes = comments.get(key).getVotes();
+//                for (Vote vote : votes) {
+//                    if (vote.isUpvote() == true) {
+//                        counter++;
+//                    }
+//                }
+//                return counter;
+//
+//            }
+//        }
+//
+//        return 0;
 
 
     }
 
     public int displayDownvotes(int id) {
-        List<Vote> votes;
-        for (Integer key : comments.keySet()) {
-            if (key == id) {
-                votes = comments.get(key).getVotes();
-                return votes.size() - displayUpvotes(id);
-
-            }
-
-        }
-        return 0;
+//        List<Vote> votes;
+//        for (Integer key : comments.keySet()) {
+//            if (key == id) {
+//                votes = comments.get(key).getVotes();
+//                return votes.size() - displayUpvotes(id);
+//
+//            }
+//
+//        }
+//        return 0;
 
     }
 }
