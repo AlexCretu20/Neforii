@@ -88,31 +88,27 @@ public class PostService implements IVotable {
         System.out.println("The post was deleted.");
     }
 
-    public void expandComments(int id) {
-        boolean isNumber = false;
-        Optional<Post> optionalPost = postRepository.findById(id);
-        List<Comment> comments = new ArrayList<Comment>();
-        if (optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            comments = post.getComments();
-            System.out.println(post);
-            System.out.println("Upvotes " + displayUpvotes(id) + "\n" + "Downvotes " + displayDownvotes(id));
-            isNumber = true;
-
-
+    public void expandComments(int postId) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if(optionalPost.isEmpty()){
+            System.out.println("The post doesn't exists!");
+            return;
         }
 
-        if (isNumber) {
-            System.out.println("Comments");
-            for (Comment cm : comments) {
-                System.out.println(cm.getId() + " " + cm.getText());
-            }
-            if (comments.size() == 0) {
-                System.out.println("The post doesn't have comments.");
-            }
+        Post post = optionalPost.get();
+        System.out.println(post);
+        System.out.println("UpVotes: "+displayUpvotes(postId));
+        System.out.println("DownVotes: "+displayDownvotes(postId));
 
-        } else {
-            System.out.println("The post doesn't exist.");
+        List <Comment> comments = commentRepository.findByPostId(postId);
+
+        if(comments.isEmpty()){
+            System.out.println("The post doesn't have comments!");
+        }else{
+            System.out.println("\nComments:");
+            for(Comment comment:comments){
+                System.out.println(comment.getId() + ". " + comment.getText() +" ---  by " + comment.getUser().getUsername() + " posted at " + comment.getCreatedAt()  );
+            }
         }
     }
 
@@ -120,19 +116,27 @@ public class PostService implements IVotable {
         System.out.println("Loading...");
         List<Post> posts = postRepository.findAll();
         for (Post post : posts) {
-            updateAward(post.getId());
+            boolean updated = updateAward(post);
+            if (updated) {
+                postRepository.update(post);
+            }
             System.out.println(post);
         }
-
     }
+
 
     public void displayOnePost(int id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
-            updateAward(post.getId());
+
+            boolean updated = updateAward(post);
+            if(updated){
+                postRepository.update(post);
+            }
+
             // update
-            postRepository.save(post);
+
             System.out.println(post);
             System.out.println("Upvotes " + displayUpvotes(id) + "\n" + "Downvotes " + displayDownvotes(id));
         } else {
@@ -149,10 +153,12 @@ public class PostService implements IVotable {
         return voteRepository.countVotesByPostId(id, false);
     }
 
-    public void updateAward(int id) {
-        if (displayUpvotes(id) > 1 && displayUpvotes(id) - displayDownvotes(id) > 0) {
-            getPostById(id).setAwarded(true);
+    public boolean updateAward(Post post) {
+        if (displayUpvotes(post.getId()) > 1 && displayUpvotes(post.getId()) - displayDownvotes(post.getId()) > 0 && !post.isAwarded()) {
+            post.setAwarded(true);
+            return true;
         }
+        return false;
     }
 
 }

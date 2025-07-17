@@ -142,7 +142,7 @@ public class CommentService implements IVotable {
         else {
             Logger.log(LoggerType.INFO, "Displaying " + replies.size() + " replies for comment id=" + commentId);
             for (Comment reply : replies) {
-                System.out.println(reply);
+                System.out.println(reply.getId()+". " + reply.getText()+" ---   by " + reply.getUser().getUsername()+"  posted at " + reply.getCreatedAt()  );
             }
         }
     }
