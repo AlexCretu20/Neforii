@@ -100,11 +100,20 @@ public class PostService implements IVotable {
     }
 
     public boolean updateAward(Post post) {
-        if (displayUpvotes(post.getId()) > 1 && displayUpvotes(post.getId()) - displayDownvotes(post.getId()) > 0 && !post.isAwarded()) {
+        int upvotes = displayUpvotes(post.getId());
+        int downvotes = displayDownvotes(post.getId());
+        int diff = upvotes - downvotes;
+
+        if (diff > 2 && !post.isAwarded()) {
             post.setAwarded(true);
             return true;
+        } else if (diff <= 2 && post.isAwarded()) {
+            post.setAwarded(false);
+            return true;
         }
+
         return false;
     }
+
 
 }

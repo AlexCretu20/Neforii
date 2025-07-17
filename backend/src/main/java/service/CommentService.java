@@ -102,9 +102,7 @@ public class CommentService implements IVotable {
             throw new PostNotFoundException("Could not find post with id=" + postId);
         }
 
-        Post post = postOptional.get();
 
-        System.out.println(post);
         System.out.println("Upvotes: " + voteRepo.countVotesByPostId(postId, true));
         System.out.println("Downvotes: " + voteRepo.countVotesByPostId(postId, false));
 

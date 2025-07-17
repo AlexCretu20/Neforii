@@ -88,8 +88,6 @@ public class PostRepository implements ICrudRepository<Post>{
 
             if (affectedRows == 0) {
                 System.out.println("No post found with id " + post.getId() + " to update.");
-            } else {
-                System.out.println("Post updated successfully.");
             }
 
         } catch (SQLException e) {
