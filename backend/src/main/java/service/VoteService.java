@@ -10,24 +10,15 @@ import utils.logger.LoggerType;
 import java.time.LocalDateTime;
 
 public class VoteService {
-    private static VoteService instance;
     private PostRepository postRepository;
     private VoteRepository voteRepository;
     private CommentRepository commentRepository;
-
 
     public VoteService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
         this.commentRepository = commentRepository;
     }
-
-//    public static VoteService getInstance() {
-//        if (instance == null) {
-//            instance = new VoteService();
-//        }
-//        return instance;
-//    }
 
     public String createVote(int userId, Integer postId, Integer commentId, boolean isUpvote) {
         int checkIfAlreadyVoted = findVoteId(userId, postId, commentId);
@@ -42,18 +33,8 @@ public class VoteService {
                 userId
         );
         voteRepository.save(vote);
-//        commentService.getCommentById(entityId).getVotes().add(vote);
-
-//        if (entityType == EntityType.POST) {
-//            PostService.getInstance(postRepository, voteRepository, commentRepository).AddVote(entityId,vote);
-////            postService.getPostById(entityId).setAwarded(true)
-//        }
-//        else {
-//            CommentService.getInstance().addVote(entityId, vote);
-//        }
         return "You have successfully voted!";
     }
-
 
     public void deleteVote(int voteId) {
         voteRepository.deleteById(voteId);

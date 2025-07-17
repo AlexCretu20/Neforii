@@ -2,7 +2,6 @@ package service;
 
 import model.Post;
 import model.User;
-import model.Vote;
 import repository.CommentRepository;
 import repository.PostRepository;
 import repository.VoteRepository;
@@ -13,7 +12,6 @@ import java.util.Optional;
 
 public class PostService implements IVotable {
 
-    private static PostService instance;
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
     private final CommentRepository commentRepository;
@@ -27,31 +25,6 @@ public class PostService implements IVotable {
 
     ;
 
-    private int countVotes(int id, boolean isUpvote) {
-        int counter = 0;
-        List<Vote> votes;
-        Optional<Post> optionalPost = postRepository.findById(id);
-        if (optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            votes = post.getVotes();
-            for (Vote vote : votes) {
-                if (vote.isUpvote() == isUpvote) {
-                    counter++;
-                }
-            }
-            return counter;
-        }
-
-        return 0;
-
-    }
-
-    public static PostService getInstance(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
-        if (instance == null) {
-            instance = new PostService(postRepository, voteRepository, commentRepository);
-        }
-        return instance;
-    }
 
     public Post getPostById(int id) {
         Optional<Post> post = postRepository.findById(id);
@@ -62,7 +35,6 @@ public class PostService implements IVotable {
     public void createPost(User user, String text) {
         counter++;
         Post post = new Post(counter, text, LocalDateTime.now(), false, user);
-//        posts.put(counter, post);
         postRepository.save(post);
         System.out.println("The post was created.");
 
@@ -110,8 +82,6 @@ public class PostService implements IVotable {
             if(updated){
                 postRepository.update(post);
             }
-
-            // update
 
             System.out.println(post);
             System.out.println("Upvotes " + displayUpvotes(id) + "\n" + "Downvotes " + displayDownvotes(id));

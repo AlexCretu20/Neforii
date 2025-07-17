@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class CommentService implements IVotable {
-    //private static CommentService instance;
     private CommentRepository commentRepo;
     private UserRepository userRepo;
     private PostRepository postRepo;
@@ -28,13 +27,6 @@ public class CommentService implements IVotable {
         this.postRepo = postRepo;
         this.voteRepo = voteRepo;
     }
-
-//    public synchronized static CommentService getInstance() {
-//        if (instance == null) {
-//            instance = new CommentService();
-//        }
-//        return instance;
-//    }
 
     //all existing comments
     public List<Comment> getComments() {
@@ -50,12 +42,6 @@ public class CommentService implements IVotable {
         Logger.log(LoggerType.INFO, "Fetched comment with id=" + id);
         return comment.get();
     }
-//generic method for creating comment which is replacd by createCommentOnPost and createReplyToComment
-//    public void createComment(String text, User user, Integer postId, Integer parentCommentId) {
-//        Comment comment = new Comment(text, user, postId, parentCommentId);
-//        commentRepo.save(comment);
-//        System.out.println("The comment has been successfully added!\n");
-//    }
 
     public void createCommentOnPost(String text, User user, int postId) {
         if (postRepo.findById(postId).isEmpty()) {

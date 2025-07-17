@@ -7,18 +7,8 @@ import java.util.Optional;
 
 public class UserService implements IUserService {
     private User currentUser;
-    //private static UserService instance;
-    private final UserRepository userRepo;
 
-//    private UserService() {
-//    }
-//
-//    public static UserService getInstance() {
-//        if (instance == null) {
-//            instance = new UserService();
-//        }
-//        return instance;
-//    }
+    private final UserRepository userRepo;
 
     public UserService(UserRepository userRepo){
         this.userRepo = userRepo;

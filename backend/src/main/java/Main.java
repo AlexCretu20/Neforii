@@ -21,8 +21,7 @@ public class Main {
         ICrudRepository<Post> postRepository = new PostRepository(userRepository);
 
         UserService userService = new UserService((UserRepository) userRepository);
-        PostService postService = PostService.getInstance((PostRepository) postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
-
+        PostService postService = new PostService((PostRepository) postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
         CommentService commentService = new CommentService((CommentRepository) commentRepository, (UserRepository) userRepository, (PostRepository) postRepository,(VoteRepository) voteRepository);
         VoteService voteService = new VoteService((PostRepository) postRepository, (VoteRepository) voteRepository, (CommentRepository) commentRepository);
         Scanner scanner = new Scanner(System.in);
