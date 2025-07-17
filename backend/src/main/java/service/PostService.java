@@ -1,6 +1,5 @@
 package service;
 
-import model.Comment;
 import model.Post;
 import model.User;
 import model.Vote;
@@ -9,7 +8,8 @@ import repository.PostRepository;
 import repository.VoteRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public class PostService implements IVotable {
 
@@ -23,7 +23,6 @@ public class PostService implements IVotable {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
         this.commentRepository = commentRepository;
-
     }
 
     ;
@@ -88,29 +87,6 @@ public class PostService implements IVotable {
         System.out.println("The post was deleted.");
     }
 
-    public void expandComments(int postId) {
-        Optional<Post> optionalPost = postRepository.findById(postId);
-        if(optionalPost.isEmpty()){
-            System.out.println("The post doesn't exists!");
-            return;
-        }
-
-        Post post = optionalPost.get();
-        System.out.println(post);
-        System.out.println("UpVotes: "+displayUpvotes(postId));
-        System.out.println("DownVotes: "+displayDownvotes(postId));
-
-        List <Comment> comments = commentRepository.findByPostId(postId);
-
-        if(comments.isEmpty()){
-            System.out.println("The post doesn't have comments!");
-        }else{
-            System.out.println("\nComments:");
-            for(Comment comment:comments){
-                System.out.println(comment.getId() + ". " + comment.getText() +" ---  by " + comment.getUser().getUsername() + " posted at " + comment.getCreatedAt()  );
-            }
-        }
-    }
 
     public void displayPosts() {
         System.out.println("Loading...");

@@ -109,26 +109,36 @@ public class CommentService implements IVotable {
         }
     }
 
-    public void showCommentsForPost(int postId){
+    public void showCommentsForPost(int postId) {
         Optional<Post> postOptional = postRepo.findById(postId);
-        if(postOptional.isEmpty()){
+        if (postOptional.isEmpty()) {
             Logger.log(LoggerType.FATAL, "Attempt to list comments for nonexistent post id=" + postId);
-            throw new PostNotFoundException("Could not find post with id="+postId);
+            throw new PostNotFoundException("Could not find post with id=" + postId);
         }
+
+        Post post = postOptional.get();
+
+        System.out.println(post);
+        System.out.println("Upvotes: " + voteRepo.countVotesByPostId(postId, true));
+        System.out.println("Downvotes: " + voteRepo.countVotesByPostId(postId, false));
+
         List<Comment> comments = commentRepo.findByPostId(postId);
         if (comments.isEmpty()) {
-            Logger.log(LoggerType.INFO, "No comments found for post id=" + postId);
-            System.out.println("No comments on post " + postId + ".\n");
-        }
-        else {
-            Logger.log(LoggerType.INFO, "Displaying " + comments.size() + " comments for post id=" + postId);
-            for (Comment c : comments) {
-                System.out.println(c);
+            System.out.println("This post has no comments yet.\n");
+        } else {
+            System.out.println("Comments:");
+            for (Comment comment : comments) {
+                System.out.println(comment.getId() + ". " + comment.getText() + " --- by " + comment.getUser().getUsername() +" at " + comment.getCreatedAt());
+                System.out.println("Upvotes : " + displayUpvotes(comment.getId()) + " Downvotes : " + displayDownvotes(comment.getId()));
             }
         }
     }
 
-    public void showCommentsForComment(int commentId){
+    public void showCommentsForComment(int commentId) {
+        System.out.println("Upvotes : " + displayUpvotes(commentId));
+        System.out.println("Downvotes : " + displayDownvotes(commentId));
+        System.out.println("────────────────────────────");
+        System.out.println("Replies");
         Optional<Comment> commentOptional = commentRepo.findById(commentId);
         if (commentOptional.isEmpty()) {
             Logger.log(LoggerType.FATAL, "Attempt to list replies for nonexistent comment id=" + commentId);
@@ -138,11 +148,10 @@ public class CommentService implements IVotable {
         if (replies.isEmpty()) {
             Logger.log(LoggerType.INFO, "No replies found for comment id=" + commentId);
             System.out.println("No replies to comment " + commentId + ".\n");
-        }
-        else {
+        } else {
             Logger.log(LoggerType.INFO, "Displaying " + replies.size() + " replies for comment id=" + commentId);
             for (Comment reply : replies) {
-                System.out.println(reply.getId()+". " + reply.getText()+" ---   by " + reply.getUser().getUsername()+"  posted at " + reply.getCreatedAt()  );
+                System.out.println(reply.getId() + ". " + reply.getText() + " ---   by " + reply.getUser().getUsername() + "  posted at " + reply.getCreatedAt());
             }
         }
     }

@@ -107,10 +107,20 @@ public class Post {
 
     @Override
     public String toString() {
-        if (isAwarded == true){
-            return id +" ✬" + "\n" + text + "\n Created at :" + createdAt + " " + "Created by : " + user.getUsername();
+        StringBuilder sb = new StringBuilder();
+        sb.append("────────────────────────────\n");
+        sb.append("ID: ").append(id);
+        if (isAwarded) {
+            sb.append("✬");
         }
-        return id + "\n" + text + "\n Created at :" + createdAt + " " + "Created by : " + user.getUsername();
+        sb.append("\n");
+        sb.append("Text: ").append(text).append("\n");
+        sb.append("Created at: ").append(createdAt).append("\n");
+        sb.append("Created by: ").append(user.getUsername()).append("\n");
+        sb.append("────────────────────────────");
+
+        return sb.toString();
     }
+
 
 }

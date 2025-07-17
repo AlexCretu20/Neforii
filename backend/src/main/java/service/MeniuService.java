@@ -167,7 +167,7 @@ public class MeniuService {
 
             switch (choice) {
                 case "1":
-                    postService.expandComments(postId); // afișare recursiva comentarii
+                    commentService.showCommentsForPost(postId);// afișare recursiva comentarii
                     break;
 
                 case "2":
@@ -212,7 +212,7 @@ public class MeniuService {
             System.out.println("\n--- Comment Menu ---");
             System.out.println("1. Reply to this comment");
             System.out.println("2. Upvote/downvote this comment");
-            System.out.println("3. Show replies to this comment");
+            System.out.println("3. Show votes and replies to this comment");
             System.out.println("0. Back");
             System.out.print("Enter your choice: ");
             String choice = scanner.nextLine();
@@ -248,5 +248,7 @@ public class MeniuService {
             }
         }
     }
+
+//    public void displayReplyMenu
 
 }
