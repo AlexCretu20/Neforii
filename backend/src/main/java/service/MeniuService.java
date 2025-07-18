@@ -2,6 +2,7 @@ package service;
 
 import exception.CommentNotFoundException;
 import model.Post;
+import ui.PostUI;
 import ui.UserUI;
 
 import java.util.Scanner;
@@ -13,16 +14,18 @@ public class MeniuService {
     private final VoteService voteService;
     private final Scanner scanner;
     private final UserUI userUI;
+    private final PostUI postUI;
 
     public MeniuService(CommentService commentService, PostService postService,
                         UserService userService, VoteService voteService,
-                        Scanner scanner, UserUI userUI) {
+                        Scanner scanner, UserUI userUI, PostUI postUI) {
         this.commentService = commentService;
         this.postService = postService;
         this.userService = userService;
         this.voteService = voteService;
         this.scanner = scanner;
         this.userUI = userUI;
+        this.postUI = postUI;
     }
 
     private void tryToLogin() {
@@ -90,39 +93,18 @@ public class MeniuService {
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1" -> {
-                    System.out.print("Enter your text for the post: ");
-                    String text = scanner.nextLine();
-                    postService.createPost(userService.getCurrentUser(), text);
-                }
-                case "2" -> postService.displayPosts();
-                case "3" -> {
-                    int postId = readValidPostId("Enter the ID of the post you want to modify: ");
-                    Post post = postService.getPostById(postId);
-                    if (!userService.getCurrentUser().equals(post.getUser())) {
-                        System.out.println("You can't modify a post made by another user.");
-                    } else {
-                        System.out.print("Enter the new text: ");
-                        String newText = scanner.nextLine();
-                        postService.updatePost(postId, newText);
-                    }
-                }
-                case "4" -> {
-                    int postId = readValidPostId("Enter the ID of the post you want to delete: ");
-                    Post post = postService.getPostById(postId);
-                    if (!userService.getCurrentUser().equals(post.getUser())) {
-                        System.out.println("You can't delete a post made by another user.");
-                    } else {
-                        postService.deletePost(postId);
-                    }
-                }
+                case "1" -> postUI.createPostUI(userService.getCurrentUser());
+                case "2" -> postUI.displayAllPostsUI();
+                case "3" -> postUI.updatePostUI(userService.getCurrentUser());
+                case "4" -> postUI.deletePostUI(userService.getCurrentUser());
                 case "5" -> {
-                    int postId = readValidPostId("Enter the ID of the post to view: ");
-                    postService.displayOnePost(postId);
-                    displayPostMenu(postId);
+                    int postId=postUI.displayOnePostUI();
+                    if(postService.getPostById(postId)!=null){
+                        displayPostMenu(postId);
+                    }
                 }
                 case "0" -> flag = false;
-                default -> System.out.println("Invalid option.");
+                default -> postUI.invalidOption();
             }
         }
     }

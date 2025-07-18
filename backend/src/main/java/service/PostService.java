@@ -15,7 +15,6 @@ public class PostService implements IVotable {
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
     private final CommentRepository commentRepository;
-    private static int counter = 0;
 
     public PostService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
         this.postRepository = postRepository;
@@ -23,81 +22,72 @@ public class PostService implements IVotable {
         this.commentRepository = commentRepository;
     }
 
-    ;
-
-
     public Post getPostById(int id) {
-        Optional<Post> post = postRepository.findById(id);
-        return post.orElse(null);
+        Optional<Post> postOptional = postRepository.findById(id);
+        return postOptional.orElse(null);
     }
 
+    public List<Post> getAllPosts(){
+        return postRepository.findAll();
+    }
 
-    public void createPost(User user, String text) {
-        counter++;
-        Post post = new Post(counter, text, LocalDateTime.now(), false, user);
+    public Post createPost(User user, String text) {
+        Post post = new Post(text, LocalDateTime.now(), false, user);
         postRepository.save(post);
-        System.out.println("The post was created.");
-
+        return post;
     }
 
-    public void updatePost(int id, String text) {
-        Optional<Post> post = postRepository.findById(id);
-        if (post.isPresent()) {
-            Post updatePost = post.get();
-            updatePost.setText(text);
-            postRepository.update(updatePost);
-            System.out.println("The post was updated.");
-        } else {
-            System.out.println("The post doesn't exists.");
+    public boolean updatePost(int id, String text) {
+        Optional<Post> postOptional = postRepository.findById(id);
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            post.setText(text);
+            postRepository.update(post);
+            return true;
         }
-
-
+        return false;
     }
 
-    public void deletePost(int id) {
-        postRepository.deleteById(id);
-        System.out.println("The post was deleted.");
+    public boolean deletePost(int id) {
+        Optional<Post> postOptional = postRepository.findById(id);
+        if (postOptional.isPresent()) {
+            postRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
-
-    public void displayPosts() {
-        System.out.println("Loading...");
+    public void updateAwardsForAllPosts() {
         List<Post> posts = postRepository.findAll();
-        for (Post post : posts) {
+        for (int i = 0; i < posts.size(); i++) {
+            Post post = posts.get(i);
             boolean updated = updateAward(post);
             if (updated) {
                 postRepository.update(post);
             }
-            System.out.println(post);
         }
     }
 
-
-    public void displayOnePost(int id) {
+    public void updateAwardsForOnePost(int id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
-
             boolean updated = updateAward(post);
-            if(updated){
+            if (updated) {
                 postRepository.update(post);
             }
-
-            System.out.println(post);
-            System.out.println("Upvotes " + displayUpvotes(id) + "\n" + "Downvotes " + displayDownvotes(id));
-        } else {
-            System.out.println("The post doesn't exists.");
         }
     }
-
 
     public int displayUpvotes(int id) {
         return voteRepository.countVotesByPostId(id, true);
     }
 
+
     public int displayDownvotes(int id) {
         return voteRepository.countVotesByPostId(id, false);
     }
+
 
     public boolean updateAward(Post post) {
         int upvotes = displayUpvotes(post.getId());
@@ -111,9 +101,6 @@ public class PostService implements IVotable {
             post.setAwarded(false);
             return true;
         }
-
         return false;
     }
-
-
 }
