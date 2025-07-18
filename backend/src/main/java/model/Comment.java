@@ -14,8 +14,6 @@ public class Comment {
     private Integer postId;
     private Integer parentCommentId;
 
-
-
     public Comment(int id, String text, LocalDateTime createdAt, LocalDateTime updatedAt, User user, Integer postId, Integer parentCommentId) {
         this.id = id;
         this.text = text;

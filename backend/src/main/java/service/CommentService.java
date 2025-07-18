@@ -65,6 +65,7 @@ public class CommentService implements IVotable {
         System.out.println("Reply added to comment " + parentCommentId + " with id=" + reply.getId());
     }
 
+
     //se paseaza updatedComment ca parametru, repositoryul obtine commentul si ii inlocuieste field-urile cu commentul din acest parametru
     public void updateComment(int id, Comment comment) {
         Optional<Comment> commentOptional = commentRepo.findById(id);
@@ -113,7 +114,9 @@ public class CommentService implements IVotable {
             System.out.println("Comments:");
             for (Comment comment : comments) {
                 System.out.println(comment.getId() + ". " + comment.getText() + " --- by " + comment.getUser().getUsername() +" at " + comment.getCreatedAt());
-                System.out.println("Upvotes : " + displayUpvotes(comment.getId()) + " Downvotes : " + displayDownvotes(comment.getId()));
+//                System.out.println("Upvotes : " + displayUpvotes(comment.getId()) + " Downvotes : " + displayDownvotes(comment.getId()));
+                showCommentsForComment(comment.getId());
+                System.out.println("\n");
             }
         }
     }
@@ -134,8 +137,22 @@ public class CommentService implements IVotable {
             System.out.println("No replies to comment " + commentId + ".\n");
         } else {
             Logger.log(LoggerType.INFO, "Displaying " + replies.size() + " replies for comment id=" + commentId);
-            for (Comment reply : replies) {
-                System.out.println(reply.getId() + ". " + reply.getText() + " ---   by " + reply.getUser().getUsername() + "  posted at " + reply.getCreatedAt());
+            List<Comment> allReplies = commentRepo.findAll();
+            displayAllReplys(allReplies, commentId, 0);
+
+//            for (Comment reply : replies) {
+//                System.out.println(reply.getId() + ". " + reply.getText() + " ---   by " + reply.getUser().getUsername() + "  posted at " + reply.getCreatedAt());
+//            }
+        }
+    }
+
+    private void displayAllReplys(List<Comment> comments, int parentId, int level) {
+        for (Comment comment : comments) {
+            if (comment.getParentCommentId() != null && comment.getParentCommentId() == parentId) {
+                System.out.println("  ".repeat(level) + "- " + comment.getId() + ". " + comment.getText() +
+                        " --- by " + comment.getUser().getUsername() + " at " + comment.getCreatedAt());
+                // Apelează recursiv pentru a afișa răspunsurile la acest comentariu
+                displayAllReplys(comments, comment.getId(), level + 1);
             }
         }
     }

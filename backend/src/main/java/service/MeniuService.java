@@ -1,7 +1,6 @@
 package service;
 
 import exception.CommentNotFoundException;
-import model.Post;
 import ui.PostUI;
 import ui.UserUI;
 
@@ -141,6 +140,7 @@ public class MeniuService {
                 }
                 case "4" -> {
                     int commentId = readValidCommentId("Enter the ID of the comment to interact with: ");
+                    commentService.showCommentsForComment(commentId);
                     displayCommentMenu(commentId);
                 }
                 case "0" -> flag = false;
@@ -155,8 +155,9 @@ public class MeniuService {
         while (flag) {
             System.out.println("\n--- Comment Menu ---");
             System.out.println("1. Reply to this comment");
-            System.out.println("2. Upvote/downvote this comment");
-            System.out.println("3. Show votes and replies to this comment");
+            System.out.println("2. Reply to another reply");
+            System.out.println("3. Upvote/downvote this comment");
+            System.out.println("4. Show votes and replies to this comment");
             System.out.println("0. Back");
             System.out.print("Enter your choice: ");
             String choice = scanner.nextLine();
@@ -168,6 +169,15 @@ public class MeniuService {
                     commentService.createReplyToComment(replyText, userService.getCurrentUser(), commentId);
                 }
                 case "2" -> {
+                    System.out.print("Enter the ID of the comment you want to reply to: ");
+                    int parrentId = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.print("Write your reply: ");
+                    String replyText2 = scanner.nextLine();
+                    commentService.createReplyToComment(replyText2, userService.getCurrentUser(), parrentId);
+                }
+
+                case "3" -> {
                     System.out.println("1. Upvote");
                     System.out.println("2. Downvote");
                     String voteChoice = scanner.nextLine();
@@ -177,7 +187,7 @@ public class MeniuService {
                         System.out.println(result);
                     }
                 }
-                case "3" -> commentService.showCommentsForComment(commentId);
+                case "4" -> commentService.showCommentsForComment(commentId);
                 case "0" -> flag = false;
                 default -> System.out.println("Invalid option.");
             }
