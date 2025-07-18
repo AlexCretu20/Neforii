@@ -50,6 +50,11 @@ public class CommentUI {
     public void showRepliesForComment(int commentId) {
         int upVotes = commentService.displayUpvotes(commentId);
         int downVotes = commentService.displayDownvotes(commentId);
+        Comment comment = commentService.getComment(commentId);
+
+        System.out.println("────────────────────────────");
+        System.out.println(comment.getId() + ". " + comment.getText() +
+                " --- by " + comment.getUser().getUsername() + " at " + comment.getCreatedAt());
         System.out.println("\nUpvotes: " + upVotes);
         System.out.println("Downvotes: " + downVotes);
         System.out.println("────────────────────────────");
@@ -101,5 +106,47 @@ public class CommentUI {
 
     public void invalidOption() {
         System.out.println("Invalid option.");
+    }
+
+    public void updateComment(User user,int commentId){
+        Comment originalComment = commentService.getComment(commentId);
+
+        if(user.getId()!=originalComment.getUser().getId()){
+            System.out.println("You are not allowed to edit someone else's comment.");
+            return;
+        }
+
+        System.out.println("Previous text: " + originalComment.getText());
+        System.out.println("Enter the new text (leave blank to cancel):");
+        String text = scanner.nextLine().trim();
+
+        if (text.isEmpty()) {
+            System.out.println("Update canceled.");
+            return;
+        }
+
+        Comment updatedComment = new Comment(commentId,text,originalComment.getCreatedAt(),null,originalComment.getUser(), originalComment.getPostId(), originalComment.getParentCommentId());
+
+        commentService.updateComment(commentId,updatedComment);
+        System.out.println("Comment with id "+commentId+" updated successfully!");
+    }
+
+    public void deleteComment(User user,int commentId){
+        Comment originalComment = commentService.getComment(commentId);
+
+        if(user.getId()!=originalComment.getUser().getId()){
+            System.out.println("You are not allowed to delete someone else's comment.");
+            return;
+        }
+
+        System.out.print("Are you sure you want to delete this comment? (y/n): ");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+        if (!confirmation.equals("y")) {
+            System.out.println("Deletion canceled.");
+            return;
+        }
+
+        commentService.deleteComment(commentId);
+        System.out.println("Comment with id "+commentId+" deleted successfully!");
     }
 }

@@ -152,6 +152,8 @@ public class MeniuService {
             System.out.println("2. Reply to another reply");
             System.out.println("3. Upvote/downvote this comment");
             System.out.println("4. Show votes and replies to this comment");
+            System.out.println("5. Update this comment");
+            System.out.println("6. Delete this comment");
             System.out.println("0. Back");
             System.out.print("Enter your choice: ");
             String choice = scanner.nextLine();
@@ -166,6 +168,8 @@ public class MeniuService {
                     voteUI.createVoteUI(userService.getCurrentUser(), commentId);
                 }
                 case "4" -> commentUI.showRepliesForComment(commentId);
+                case "5" -> commentUI.updateComment(userService.getCurrentUser(),commentId);
+                case "6" -> commentUI.deleteComment(userService.getCurrentUser(),commentId);
                 case "0" -> flag = false;
                 default -> commentUI.invalidOption();
             }
