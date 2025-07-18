@@ -1,6 +1,7 @@
 package service;
 
 import exception.CommentNotFoundException;
+import ui.CommentUI;
 import ui.PostUI;
 import ui.UserUI;
 
@@ -14,10 +15,11 @@ public class MeniuService {
     private final Scanner scanner;
     private final UserUI userUI;
     private final PostUI postUI;
+    private final CommentUI commentUI;
 
     public MeniuService(CommentService commentService, PostService postService,
                         UserService userService, VoteService voteService,
-                        Scanner scanner, UserUI userUI, PostUI postUI) {
+                        Scanner scanner, UserUI userUI, PostUI postUI, CommentUI commentUI) {
         this.commentService = commentService;
         this.postService = postService;
         this.userService = userService;
@@ -25,6 +27,7 @@ public class MeniuService {
         this.scanner = scanner;
         this.userUI = userUI;
         this.postUI = postUI;
+        this.commentUI = commentUI;
     }
 
     private void tryToLogin() {
@@ -97,8 +100,8 @@ public class MeniuService {
                 case "3" -> postUI.updatePostUI(userService.getCurrentUser());
                 case "4" -> postUI.deletePostUI(userService.getCurrentUser());
                 case "5" -> {
-                    int postId=postUI.displayOnePostUI();
-                    if(postService.getPostById(postId)!=null){
+                    int postId = postUI.displayOnePostUI();
+                    if (postService.getPostById(postId) != null) {
                         displayPostMenu(postId);
                     }
                 }
@@ -113,7 +116,7 @@ public class MeniuService {
 
         while (flag) {
             System.out.println("\n--- Post Menu ---");
-            System.out.println("1. Show comments and votes");
+            System.out.println("1. Show comments");
             System.out.println("2. Leave a comment on this post");
             System.out.println("3. Upvote/downvote this post");
             System.out.println("4. Select a comment to interact with");
@@ -122,12 +125,8 @@ public class MeniuService {
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1" -> commentService.showCommentsForPost(postId);
-                case "2" -> {
-                    System.out.print("Write your comment: ");
-                    String text = scanner.nextLine();
-                    commentService.createCommentOnPost(text, userService.getCurrentUser(), postId);
-                }
+                case "1" -> commentUI.showCommentsForPost(postId);
+                case "2" -> commentUI.addCommentToPost(userService.getCurrentUser(), postId);
                 case "3" -> {
                     System.out.println("1. Upvote");
                     System.out.println("2. Downvote");
@@ -139,12 +138,12 @@ public class MeniuService {
                     }
                 }
                 case "4" -> {
-                    int commentId = readValidCommentId("Enter the ID of the comment to interact with: ");
-                    commentService.showCommentsForComment(commentId);
+                    int commentId = commentUI.readValidCommentId("Enter the ID of the comment to interact with: ");
+                    commentUI.showRepliesForComment(commentId);
                     displayCommentMenu(commentId);
                 }
                 case "0" -> flag = false;
-                default -> System.out.println("Invalid option.");
+                default -> commentUI.invalidOption();
             }
         }
     }
@@ -163,20 +162,11 @@ public class MeniuService {
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1" -> {
-                    System.out.print("Write your reply: ");
-                    String replyText = scanner.nextLine();
-                    commentService.createReplyToComment(replyText, userService.getCurrentUser(), commentId);
-                }
+                case "1" -> commentUI.replyToComment(userService.getCurrentUser(), commentId);
                 case "2" -> {
-                    System.out.print("Enter the ID of the comment you want to reply to: ");
-                    int parrentId = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Write your reply: ");
-                    String replyText2 = scanner.nextLine();
-                    commentService.createReplyToComment(replyText2, userService.getCurrentUser(), parrentId);
+                    int parentId = commentUI.readValidCommentId("Enter the ID of the comment you want to reply to: ");
+                    commentUI.replyToComment(userService.getCurrentUser(), parentId);
                 }
-
                 case "3" -> {
                     System.out.println("1. Upvote");
                     System.out.println("2. Downvote");
@@ -187,43 +177,12 @@ public class MeniuService {
                         System.out.println(result);
                     }
                 }
-                case "4" -> commentService.showCommentsForComment(commentId);
+                case "4" -> commentUI.showRepliesForComment(commentId);
                 case "0" -> flag = false;
-                default -> System.out.println("Invalid option.");
+                default -> commentUI.invalidOption();
             }
         }
     }
 
-    private int readValidPostId(String prompt) {
-        int postId;
-        while (true) {
-            try {
-                System.out.print(prompt);
-                postId = Integer.parseInt(scanner.nextLine());
-                if (postService.getPostById(postId) == null) {
-                    System.out.println("No post found with that ID. Try again.");
-                } else {
-                    return postId;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number. Please enter a valid post ID.");
-            }
-        }
-    }
 
-    private int readValidCommentId(String prompt) {
-        int commentId;
-        while (true) {
-            try {
-                System.out.print(prompt);
-                commentId = Integer.parseInt(scanner.nextLine());
-                commentService.getComment(commentId);
-                return commentId;
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number. Please enter a valid comment ID.");
-            } catch (CommentNotFoundException e) {
-                System.out.println("No comment found with that ID. Try again.");
-            }
-        }
-    }
 }

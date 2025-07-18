@@ -12,14 +12,15 @@ import repository.VoteRepository;
 import utils.logger.Logger;
 import utils.logger.LoggerType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class CommentService implements IVotable {
-    private CommentRepository commentRepo;
-    private UserRepository userRepo;
-    private PostRepository postRepo;
-    private VoteRepository voteRepo;
+    private final CommentRepository commentRepo;
+    private final UserRepository userRepo;
+    private final PostRepository postRepo;
+    private final VoteRepository voteRepo;
 
     public CommentService(CommentRepository commentRepo, UserRepository userRepo, PostRepository postRepo, VoteRepository voteRepo) {
         this.commentRepo = commentRepo;
@@ -28,19 +29,15 @@ public class CommentService implements IVotable {
         this.voteRepo = voteRepo;
     }
 
-    //all existing comments
     public List<Comment> getComments() {
         return commentRepo.findAll();
     }
 
     public Comment getComment(int id) {
-        Optional<Comment> comment = commentRepo.findById(id);
-        if (comment.isEmpty()) {
+        return commentRepo.findById(id).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Comment with id=" + id + " not found in getComment()");
-            throw new CommentNotFoundException("The comment with id " + id + "does not exist");
-        }
-        Logger.log(LoggerType.INFO, "Fetched comment with id=" + id);
-        return comment.get();
+            return new CommentNotFoundException("Comment with id " + id + " does not exist");
+        });
     }
 
     public void createCommentOnPost(String text, User user, int postId) {
@@ -51,7 +48,6 @@ public class CommentService implements IVotable {
         Comment comment = new Comment(text, user, postId, null);
         commentRepo.save(comment);
         Logger.log(LoggerType.INFO, "Created comment id=" + comment.getId() + " on post id=" + postId);
-        System.out.println("Comment added to post " + postId + " with id=" + comment.getId());
     }
 
     public void createReplyToComment(String text, User user, int parentCommentId) {
@@ -62,32 +58,20 @@ public class CommentService implements IVotable {
         Comment reply = new Comment(text, user, null, parentCommentId);
         commentRepo.save(reply);
         Logger.log(LoggerType.INFO, "Created reply id=" + reply.getId() + " to comment id=" + parentCommentId);
-        System.out.println("Reply added to comment " + parentCommentId + " with id=" + reply.getId());
     }
 
-
-    //se paseaza updatedComment ca parametru, repositoryul obtine commentul si ii inlocuieste field-urile cu commentul din acest parametru
-    public void updateComment(int id, Comment comment) {
-        Optional<Comment> commentOptional = commentRepo.findById(id);
-        if (commentOptional.isEmpty()) {
-            Logger.log(LoggerType.FATAL, "Attempt to update nonexistent comment id=" + id);
-            throw new CommentNotFoundException("The comment with id " + id + "does not exist");
-        }
-        Comment commentToUpdate = commentOptional.get();
+    public void updateComment(int id, Comment updatedComment) {
+        Comment existing = getComment(id);
         try {
-            commentRepo.update(commentToUpdate);
-            Logger.log(LoggerType.INFO, "Comment upgrated successfully!");
+            commentRepo.update(updatedComment);
+            Logger.log(LoggerType.INFO, "Comment updated successfully!");
         } catch (Exception e) {
             Logger.log(LoggerType.FATAL, "Failed to update comment id=" + id);
         }
     }
 
     public void deleteComment(int id) {
-        Optional<Comment> commentOptional = commentRepo.findById(id);
-        if (commentOptional.isEmpty()) {
-            Logger.log(LoggerType.FATAL, "Attempt to delete nonexistent comment id=" + id);
-            throw new CommentNotFoundException("The comment with id " + id + "does not exist");
-        }
+        getComment(id);
         try {
             commentRepo.deleteById(id);
             Logger.log(LoggerType.INFO, "Comment id=" + id + " deleted successfully");
@@ -96,67 +80,19 @@ public class CommentService implements IVotable {
         }
     }
 
-    public void showCommentsForPost(int postId) {
-        Optional<Post> postOptional = postRepo.findById(postId);
-        if (postOptional.isEmpty()) {
-            Logger.log(LoggerType.FATAL, "Attempt to list comments for nonexistent post id=" + postId);
-            throw new PostNotFoundException("Could not find post with id=" + postId);
-        }
 
-
-        System.out.println("Upvotes: " + voteRepo.countVotesByPostId(postId, true));
-        System.out.println("Downvotes: " + voteRepo.countVotesByPostId(postId, false));
-
-        List<Comment> comments = commentRepo.findByPostId(postId);
-        if (comments.isEmpty()) {
-            System.out.println("This post has no comments yet.\n");
-        } else {
-            System.out.println("Comments:");
-            for (Comment comment : comments) {
-                System.out.println(comment.getId() + ". " + comment.getText() + " --- by " + comment.getUser().getUsername() +" at " + comment.getCreatedAt());
-//                System.out.println("Upvotes : " + displayUpvotes(comment.getId()) + " Downvotes : " + displayDownvotes(comment.getId()));
-                showCommentsForComment(comment.getId());
-                System.out.println("\n");
-            }
-        }
+    public List<Comment> getRepliesForComment(int commentId) {
+        getComment(commentId);
+        return commentRepo.findByCommentId(commentId);
     }
 
-    public void showCommentsForComment(int commentId) {
-        System.out.println("Upvotes : " + displayUpvotes(commentId));
-        System.out.println("Downvotes : " + displayDownvotes(commentId));
-        System.out.println("────────────────────────────");
-        System.out.println("Replies");
-        Optional<Comment> commentOptional = commentRepo.findById(commentId);
-        if (commentOptional.isEmpty()) {
-            Logger.log(LoggerType.FATAL, "Attempt to list replies for nonexistent comment id=" + commentId);
-            throw new CommentNotFoundException("Could not find comment with id=" + commentId);
-        }
-        List<Comment> replies = commentRepo.findByCommentId(commentId);
-        if (replies.isEmpty()) {
-            Logger.log(LoggerType.INFO, "No replies found for comment id=" + commentId);
-            System.out.println("No replies to comment " + commentId + ".\n");
-        } else {
-            Logger.log(LoggerType.INFO, "Displaying " + replies.size() + " replies for comment id=" + commentId);
-            List<Comment> allReplies = commentRepo.findAll();
-            displayAllReplys(allReplies, commentId, 0);
 
-//            for (Comment reply : replies) {
-//                System.out.println(reply.getId() + ". " + reply.getText() + " ---   by " + reply.getUser().getUsername() + "  posted at " + reply.getCreatedAt());
-//            }
-        }
+
+    public List<Comment> getTopLevelComments(int postId) {
+        return commentRepo.findByPostId(postId).stream()
+                .filter(c -> c.getParentCommentId() == null)
+                .toList();
     }
-
-    private void displayAllReplys(List<Comment> comments, int parentId, int level) {
-        for (Comment comment : comments) {
-            if (comment.getParentCommentId() != null && comment.getParentCommentId() == parentId) {
-                System.out.println("  ".repeat(level) + "- " + comment.getId() + ". " + comment.getText() +
-                        " --- by " + comment.getUser().getUsername() + " at " + comment.getCreatedAt());
-                // Apelează recursiv pentru a afișa răspunsurile la acest comentariu
-                displayAllReplys(comments, comment.getId(), level + 1);
-            }
-        }
-    }
-
 
     public int displayUpvotes(int id) {
         return voteRepo.countVotesByCommentId(id, true);
@@ -165,4 +101,5 @@ public class CommentService implements IVotable {
     public int displayDownvotes(int id) {
         return voteRepo.countVotesByCommentId(id, false);
     }
+
 }

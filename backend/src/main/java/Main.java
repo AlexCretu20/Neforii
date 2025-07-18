@@ -4,6 +4,7 @@ import model.User;
 import model.Vote;
 import repository.*;
 import service.*;
+import ui.CommentUI;
 import ui.PostUI;
 import ui.UserUI;
 import utils.logger.ConsoleLogger;
@@ -29,13 +30,14 @@ public class Main {
         UserValidator userValidator = new UserValidator();
         UserUI userUI = new UserUI(scanner, userService, userValidator);
         PostUI postUI = new PostUI(scanner,postService);
+        CommentUI commentUI = new CommentUI(scanner,commentService);
 
         LoggerManager.getInstance().register(new ConsoleLogger(LoggerType.WARNING));
         LoggerManager.getInstance().register(new FileLogger(LoggerType.DEBUG, ".", "info.log" ));
 
 //        EXEMPLU CUM E FOLOSIT LOG-UL: Logger.log(LoggerType.FATAL, "User created");
 
-        MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner, userUI,postUI);
+        MeniuService meniuService = new MeniuService(commentService, postService, userService, voteService, scanner, userUI, postUI, commentUI);
         meniuService.displayLoginMeniu();
     }
 }
