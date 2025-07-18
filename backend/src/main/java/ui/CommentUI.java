@@ -24,12 +24,17 @@ public class CommentUI {
         System.out.println("Comment added to the post with id: " + postId);
     }
 
-    public void replyToComment(User user, int commentId) {
-        System.out.print("Write your reply: ");
-        String replyText = scanner.nextLine();
-        commentService.createReplyToComment(replyText, user, commentId);
-        System.out.println("Reply added to comment " + commentId);
-    }
+    public void replyToComment(User user, int commentId, int postId) {
+        if (postId == commentService.findPostIdForComment(commentId)) {
+            System.out.print("Write your reply: ");
+            String replyText = scanner.nextLine();
+            commentService.createReplyToComment(replyText, user, commentId);
+            System.out.println("Reply added to comment " + commentId);
+        } else {
+            System.out.println("The comment doesn't belog to post with id " + postId);
+        }
+
+}
 
     public void showCommentsForPost(int postId) {
 //        System.out.println("Upvotes: " + commentService.displayUpvotes(postId));
@@ -148,5 +153,15 @@ public class CommentUI {
 
         commentService.deleteComment(commentId);
         System.out.println("Comment with id "+commentId+" deleted successfully!");
+    }
+
+    public boolean checkPoostId(int postId, int commentId) {
+        if (postId == commentService.findPostIdForComment(commentId)) {
+           return true;
+        } else {
+            System.out.println("The comment doesn't belog to post with id " + postId);
+            return false;
+        }
+
     }
 }

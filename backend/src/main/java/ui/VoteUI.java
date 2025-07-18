@@ -14,13 +14,24 @@ public class VoteUI {
         this.voteService = voteService;
     }
 
-    public void createVoteUI(User currentUser, int postId) {
+    public void createVoteUiPost(User currentUser, int postId) {
         System.out.println("1. Upvote");
         System.out.println("2. Downvote");
         String voteChoice = scanner.nextLine();
         if (voteChoice.equals("1") || voteChoice.equals("2")) {
             boolean isUpvote = voteChoice.equals("1");
             String result = voteService.createVote(currentUser.getId(), postId, null, isUpvote);
+            System.out.println(result);
+        }
+    }
+
+    public void createVoteUiComment(User currentUser, int commentId) {
+        System.out.println("1. Upvote");
+        System.out.println("2. Downvote");
+        String voteChoice = scanner.nextLine();
+        if (voteChoice.equals("1") || voteChoice.equals("2")) {
+            boolean isUpvote = voteChoice.equals("1");
+            String result = voteService.createVote(currentUser.getId(), null, commentId, isUpvote);
             System.out.println(result);
         }
     }

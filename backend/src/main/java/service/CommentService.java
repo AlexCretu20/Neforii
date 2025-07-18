@@ -3,7 +3,6 @@ package service;
 import exception.CommentNotFoundException;
 import exception.PostNotFoundException;
 import model.Comment;
-import model.Post;
 import model.User;
 import repository.CommentRepository;
 import repository.PostRepository;
@@ -12,7 +11,6 @@ import repository.VoteRepository;
 import utils.logger.Logger;
 import utils.logger.LoggerType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +82,22 @@ public class CommentService implements IVotable {
     public List<Comment> getRepliesForComment(int commentId) {
         getComment(commentId);
         return commentRepo.findByCommentId(commentId);
+    }
+
+    public Integer findPostIdForComment(int commentId) {
+        Optional<Comment> currentOptional = commentRepo.findById(commentId);
+
+        while (currentOptional.isPresent()) {
+            Comment current = currentOptional.get();
+            if (current.getPostId() != null) {
+                return current.getPostId();
+            }
+            Integer parentId = current.getParentCommentId();
+            if (parentId == null) break;
+            currentOptional = commentRepo.findById(parentId);
+        }
+
+        throw new IllegalStateException("Could not trace postId for comment id=" + commentId);
     }
 
 

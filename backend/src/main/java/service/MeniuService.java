@@ -130,12 +130,14 @@ public class MeniuService {
                 case "1" -> commentUI.showCommentsForPost(postId);
                 case "2" -> commentUI.addCommentToPost(userService.getCurrentUser(), postId);
                 case "3" -> {
-                   voteUI.createVoteUI(userService.getCurrentUser(), postId);
+                   voteUI.createVoteUiPost(userService.getCurrentUser(), postId);
                 }
                 case "4" -> {
                     int commentId = commentUI.readValidCommentId("Enter the ID of the comment to interact with: ");
-                    commentUI.showRepliesForComment(commentId);
-                    displayCommentMenu(commentId);
+                    if (commentUI.checkPoostId(postId, commentId)){
+                        commentUI.checkPoostId(postId, commentId);
+                        displayCommentMenu(commentId, postId);
+                    }
                 }
                 case "0" -> flag = false;
                 default -> commentUI.invalidOption();
@@ -143,7 +145,7 @@ public class MeniuService {
         }
     }
 
-    public void displayCommentMenu(int commentId) {
+    public void displayCommentMenu(int commentId, int postId) {
         boolean flag = true;
 
         while (flag) {
@@ -159,13 +161,13 @@ public class MeniuService {
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1" -> commentUI.replyToComment(userService.getCurrentUser(), commentId);
+                case "1" -> commentUI.replyToComment(userService.getCurrentUser(), commentId, postId);
                 case "2" -> {
                     int parentId = commentUI.readValidCommentId("Enter the ID of the comment you want to reply to: ");
-                    commentUI.replyToComment(userService.getCurrentUser(), parentId);
+                    commentUI.replyToComment(userService.getCurrentUser(), parentId, postId);
                 }
                 case "3" -> {
-                    voteUI.createVoteUI(userService.getCurrentUser(), commentId);
+                    voteUI.createVoteUiComment(userService.getCurrentUser(), commentId);
                 }
                 case "4" -> commentUI.showRepliesForComment(commentId);
                 case "5" -> commentUI.updateComment(userService.getCurrentUser(),commentId);
