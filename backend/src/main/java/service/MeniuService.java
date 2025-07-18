@@ -1,9 +1,9 @@
 package service;
 
-import exception.CommentNotFoundException;
 import ui.CommentUI;
 import ui.PostUI;
 import ui.UserUI;
+import ui.VoteUI;
 
 import java.util.Scanner;
 
@@ -16,10 +16,11 @@ public class MeniuService {
     private final UserUI userUI;
     private final PostUI postUI;
     private final CommentUI commentUI;
+    private final VoteUI voteUI;
 
     public MeniuService(CommentService commentService, PostService postService,
                         UserService userService, VoteService voteService,
-                        Scanner scanner, UserUI userUI, PostUI postUI, CommentUI commentUI) {
+                        Scanner scanner, UserUI userUI, PostUI postUI, CommentUI commentUI, VoteUI voteUI) {
         this.commentService = commentService;
         this.postService = postService;
         this.userService = userService;
@@ -28,6 +29,7 @@ public class MeniuService {
         this.userUI = userUI;
         this.postUI = postUI;
         this.commentUI = commentUI;
+        this.voteUI = voteUI;
     }
 
     private void tryToLogin() {
@@ -128,14 +130,7 @@ public class MeniuService {
                 case "1" -> commentUI.showCommentsForPost(postId);
                 case "2" -> commentUI.addCommentToPost(userService.getCurrentUser(), postId);
                 case "3" -> {
-                    System.out.println("1. Upvote");
-                    System.out.println("2. Downvote");
-                    String voteChoice = scanner.nextLine();
-                    if (voteChoice.equals("1") || voteChoice.equals("2")) {
-                        boolean isUpvote = voteChoice.equals("1");
-                        String result = voteService.createVote(userService.getCurrentUser().getId(), postId, null, isUpvote);
-                        System.out.println(result);
-                    }
+                   voteUI.createVoteUI(userService.getCurrentUser(), postId);
                 }
                 case "4" -> {
                     int commentId = commentUI.readValidCommentId("Enter the ID of the comment to interact with: ");
@@ -168,14 +163,7 @@ public class MeniuService {
                     commentUI.replyToComment(userService.getCurrentUser(), parentId);
                 }
                 case "3" -> {
-                    System.out.println("1. Upvote");
-                    System.out.println("2. Downvote");
-                    String voteChoice = scanner.nextLine();
-                    if (voteChoice.equals("1") || voteChoice.equals("2")) {
-                        boolean isUpvote = voteChoice.equals("1");
-                        String result = voteService.createVote(userService.getCurrentUser().getId(), null, commentId, isUpvote);
-                        System.out.println(result);
-                    }
+                    voteUI.createVoteUI(userService.getCurrentUser(), commentId);
                 }
                 case "4" -> commentUI.showRepliesForComment(commentId);
                 case "0" -> flag = false;
