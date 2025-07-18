@@ -1,9 +1,6 @@
 package service;
 
-import ui.CommentUI;
-import ui.PostUI;
-import ui.UserUI;
-import ui.VoteUI;
+import ui.*;
 
 import java.util.Scanner;
 
@@ -17,10 +14,11 @@ public class MeniuService {
     private final PostUI postUI;
     private final CommentUI commentUI;
     private final VoteUI voteUI;
+    private final MenuUI menuUI;
 
     public MeniuService(CommentService commentService, PostService postService,
                         UserService userService, VoteService voteService,
-                        Scanner scanner, UserUI userUI, PostUI postUI, CommentUI commentUI, VoteUI voteUI) {
+                        Scanner scanner, UserUI userUI, PostUI postUI, CommentUI commentUI, VoteUI voteUI, MenuUI menuUI) {
         this.commentService = commentService;
         this.postService = postService;
         this.userService = userService;
@@ -30,6 +28,7 @@ public class MeniuService {
         this.postUI = postUI;
         this.commentUI = commentUI;
         this.voteUI = voteUI;
+        this.menuUI = menuUI;
     }
 
     private void tryToLogin() {
@@ -42,13 +41,9 @@ public class MeniuService {
     public void displayLoginMeniu() {
         boolean flag = true;
         while (flag) {
-            System.out.println("Welcome to Neforii!\n");
-            if (userService.getCurrentUser() == null) {
-                System.out.println("1. Register");
-                System.out.println("2. Login");
-                System.out.println("0. Exit");
-                System.out.print("Enter your choice: ");
-                String choice = scanner.nextLine();
+            boolean isLogged = userService.getCurrentUser()!=null;
+            String choice = menuUI.displayLoginMenu(isLogged);
+            if (!isLogged) {
                 switch (choice) {
                     case "1" -> {
                         userUI.registerUserUI();
@@ -56,27 +51,19 @@ public class MeniuService {
                     }
                     case "2" -> tryToLogin();
                     case "0" -> {
-                        System.out.println("Stopping the application!\n");
+                        menuUI.stopApplication();
                         flag = false;
                     }
-                    default -> System.out.println("Invalid choice! Please try again!\n");
+                    default -> menuUI.invalidOption();
                 }
             } else {
-                System.out.println("1. Logout");
-                System.out.println("0. Exit");
-                System.out.print("Enter your choice: ");
-                String choice = scanner.nextLine();
                 switch (choice) {
-                    case "1" -> {
-                        String username = userService.getCurrentUser().getUsername();
-                        userService.logoutUser();
-                        System.out.println(username + " has logged out! See you next time!");
-                    }
+                    case "1" -> userUI.logoutUserUI();
                     case "0" -> {
-                        System.out.println("Stopping the application!\n");
+                        menuUI.stopApplication();
                         flag = false;
                     }
-                    default -> System.out.println("Invalid choice! Please try again!\n");
+                    default -> menuUI.invalidOption();
                 }
             }
         }
@@ -86,15 +73,7 @@ public class MeniuService {
         boolean flag = true;
 
         while (flag) {
-            System.out.println("\n--- Main Menu ---");
-            System.out.println("1. Create a post");
-            System.out.println("2. See all posts");
-            System.out.println("3. Update a post");
-            System.out.println("4. Delete a post");
-            System.out.println("5. See a post");
-            System.out.println("0. Back");
-            System.out.print("Enter your choice: ");
-            String choice = scanner.nextLine();
+            String choice = menuUI.displayMainMenu();
 
             switch (choice) {
                 case "1" -> postUI.createPostUI(userService.getCurrentUser());
@@ -108,7 +87,7 @@ public class MeniuService {
                     }
                 }
                 case "0" -> flag = false;
-                default -> postUI.invalidOption();
+                default -> menuUI.invalidOption();
             }
         }
     }
@@ -117,14 +96,7 @@ public class MeniuService {
         boolean flag = true;
 
         while (flag) {
-            System.out.println("\n--- Post Menu ---");
-            System.out.println("1. Show comments");
-            System.out.println("2. Leave a comment on this post");
-            System.out.println("3. Upvote/downvote this post");
-            System.out.println("4. Select a comment to interact with");
-            System.out.println("0. Back to main menu");
-            System.out.print("Enter your choice: ");
-            String choice = scanner.nextLine();
+            String choice = menuUI.displayPostMenu();
 
             switch (choice) {
                 case "1" -> commentUI.showCommentsForPost(postId);
@@ -140,7 +112,7 @@ public class MeniuService {
                     }
                 }
                 case "0" -> flag = false;
-                default -> commentUI.invalidOption();
+                default -> menuUI.invalidOption();
             }
         }
     }
@@ -149,16 +121,7 @@ public class MeniuService {
         boolean flag = true;
 
         while (flag) {
-            System.out.println("\n--- Comment Menu ---");
-            System.out.println("1. Reply to this comment");
-            System.out.println("2. Reply to another reply");
-            System.out.println("3. Upvote/downvote this comment");
-            System.out.println("4. Show votes and replies to this comment");
-            System.out.println("5. Update this comment");
-            System.out.println("6. Delete this comment");
-            System.out.println("0. Back");
-            System.out.print("Enter your choice: ");
-            String choice = scanner.nextLine();
+            String choice = menuUI.displayCommentMenu();
 
             switch (choice) {
                 case "1" -> commentUI.replyToComment(userService.getCurrentUser(), commentId, postId);
@@ -173,7 +136,7 @@ public class MeniuService {
                 case "5" -> commentUI.updateComment(userService.getCurrentUser(),commentId);
                 case "6" -> commentUI.deleteComment(userService.getCurrentUser(),commentId);
                 case "0" -> flag = false;
-                default -> commentUI.invalidOption();
+                default -> menuUI.invalidOption();
             }
         }
     }

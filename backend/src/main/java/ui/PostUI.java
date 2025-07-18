@@ -124,8 +124,5 @@ public class PostUI {
         }
     }
 
-    public void invalidOption(){
-        System.out.println("Invalid option.");
-    }
 }
 

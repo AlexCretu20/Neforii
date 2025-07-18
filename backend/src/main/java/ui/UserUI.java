@@ -88,4 +88,10 @@ public class UserUI {
         }
 
     }
+
+    public void logoutUserUI() {
+        String username = userService.getCurrentUser().getUsername();
+        userService.logoutUser();
+        System.out.println("\n"+username + " has logged out! See you next time!");
+    }
 }

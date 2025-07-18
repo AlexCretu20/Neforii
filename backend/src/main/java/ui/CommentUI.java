@@ -109,9 +109,6 @@ public class CommentUI {
         }
     }
 
-    public void invalidOption() {
-        System.out.println("Invalid option.");
-    }
 
     public void updateComment(User user,int commentId){
         Comment originalComment = commentService.getComment(commentId);
