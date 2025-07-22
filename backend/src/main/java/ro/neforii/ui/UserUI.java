@@ -4,6 +4,7 @@ import ro.neforii.model.User;
 import ro.neforii.service.IUserService;
 import ro.neforii.validation.UserValidator;
 
+import java.sql.SQLOutput;
 import java.util.Scanner;
 
 public class UserUI {
@@ -94,4 +95,34 @@ public class UserUI {
         userService.logoutUser();
         System.out.println("\n"+username + " has logged out! See you next time!");
     }
+
+    public void displayUserProfile(User user){
+        System.out.println("\n--- My Details ---");
+        System.out.println("Username: " + user.getUsername());
+        System.out.println("Email: " + user.getEmail());
+        System.out.println("Phone Number: " + user.getPhoneNumber());
+        System.out.println("Description: " + user.getDescription());
+        System.out.println("Created at: " + user.getCreatedAt());
+    }
+
+    public void deleteUser(User user) {
+        String response;
+
+        while (true) {
+            System.out.print("Are you sure that you want to delete your account? (y/n): ");
+            response = scanner.nextLine().trim().toLowerCase();
+
+            if (response.equals("y")) {
+                userService.deleteUser(user);
+                System.out.println("Account deleted successfully!");
+                break;
+            } else if (response.equals("n")) {
+                System.out.println("Account deletion canceled.");
+                break;
+            } else {
+                System.out.println("Invalid input. Please enter 'y' or 'n'.");
+            }
+        }
+    }
+
 }

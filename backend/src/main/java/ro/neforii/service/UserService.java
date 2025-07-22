@@ -50,6 +50,11 @@ public class UserService implements IUserService {
     public void setCurrentUser(User currentUser) {
         this.currentUser = currentUser;
     }
+
+    public void deleteUser(User user){
+        userRepo.deleteById(user.getId());
+        logoutUser();
+    }
 }
 
 
