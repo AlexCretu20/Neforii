@@ -1,12 +1,12 @@
 package alexandru;
 
-import model.Vote;
-import repository.CommentRepository;
-import repository.PostRepository;
-import repository.UserRepository;
-import repository.VoteRepository;
-import service.PostService;
-import service.UserService;
+import ro.neforii.model.Vote;
+import ro.neforii.repository.CommentRepository;
+import ro.neforii.repository.PostRepository;
+import ro.neforii.repository.UserRepository;
+import ro.neforii.repository.VoteRepository;
+import ro.neforii.service.PostService;
+import ro.neforii.service.UserService;
 
 import java.time.LocalDateTime;
 

@@ -1,6 +1,6 @@
 package Alexandra;
 
-import model.User;
+import ro.neforii.model.User;
 
 public class Test {
     public static void main(String[] args) {
@@ -13,7 +13,7 @@ public class Test {
 //        Comment comment = new Comment(1,"salut ana", LocalDateTime.now(),LocalDateTime.now(),user);
 //        Vote vote = new Vote(1,true, LocalDateTime.now(), EntityType.POST,1,1);
 
-        //test service
+        //test org.example.service
 //        PostService postService = PostService.getInstance();
 //
 //        postService.CreatePost(user,"Ana are mere");
