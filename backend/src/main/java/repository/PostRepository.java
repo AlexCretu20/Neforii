@@ -142,4 +142,40 @@ public class PostRepository implements ICrudRepository<Post>{
             e.printStackTrace();
         }
     }
+
+    public List<Post> findAllByUserId(int id) {
+        String sql = "SELECT * FROM posts WHERE user_id = ?";
+        List<Post> posts = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Post post = new Post();
+                post.setId(rs.getInt("id"));
+                post.setText(rs.getString("text"));
+                post.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                post.setAwarded(rs.getBoolean("is_awarded"));
+
+                int userId = rs.getInt("user_id");
+                Optional<User> user = userRepository.findById(userId);
+                if (user.isPresent()) {
+                    post.setUser(user.get());
+                    posts.add(post);
+                } else {
+                    Logger.log(LoggerType.ERROR, "User not found for post with ID " + post.getId());
+                }
+            }
+
+        } catch (Exception e) {
+            Logger.log(LoggerType.FATAL, "PostRepository findAllByUserId: Error loading posts.");
+            e.printStackTrace();
+        }
+
+        return posts;
+    }
+
 }

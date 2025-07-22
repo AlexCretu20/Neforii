@@ -29,9 +29,21 @@ public class MenuUI {
         System.out.println("\n--- Main Menu ---");
         System.out.println("1. Create a post");
         System.out.println("2. See all posts");
+        System.out.println("3. My Profile");
+        System.out.println("4. See a post");
+        System.out.println("0. Back");
+
+        System.out.print("Enter your choice: ");
+        return scanner.nextLine();
+    }
+
+    public String displayUserProfileMenu(){
+        System.out.println("\n--- My Profile ---");
+        System.out.println("1. My Details");
+        System.out.println("2. My Posts");
         System.out.println("3. Update a post");
         System.out.println("4. Delete a post");
-        System.out.println("5. See a post");
+        System.out.println("5. Delete account");
         System.out.println("0. Back");
 
         System.out.print("Enter your choice: ");

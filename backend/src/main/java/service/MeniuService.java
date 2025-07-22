@@ -78,9 +78,8 @@ public class MeniuService {
             switch (choice) {
                 case "1" -> postUI.createPostUI(userService.getCurrentUser());
                 case "2" -> postUI.displayAllPostsUI();
-                case "3" -> postUI.updatePostUI(userService.getCurrentUser());
-                case "4" -> postUI.deletePostUI(userService.getCurrentUser());
-                case "5" -> {
+                case "3" -> displayProfileMenu();
+                case "4" -> {
                     int postId = postUI.displayOnePostUI();
                     if (postService.getPostById(postId) != null) {
                         displayPostMenu(postId);
@@ -90,6 +89,25 @@ public class MeniuService {
                 default -> menuUI.invalidOption();
             }
         }
+    }
+
+    public void displayProfileMenu(){
+        boolean flag = true;
+
+        while(flag){
+            String choice=menuUI.displayUserProfileMenu();
+
+            switch(choice){
+                case "1" -> userUI.displayUserProfile(userService.getCurrentUser());  //e gata
+                case "2" -> postUI.displayPostsForUser(userService.getCurrentUser().getId()); //mai trebuie adaugate comentariile pentru o postare
+                case "3" -> postUI.updatePostUI(userService.getCurrentUser());  //e gata
+                case "4" -> postUI.deletePostUI(userService.getCurrentUser());  //e gata
+                case "5" -> userUI.deleteUser(userService.getCurrentUser());//e gata
+                case "0" -> flag = false;
+                default -> menuUI.invalidOption();
+            }
+        }
+
     }
 
     public void displayPostMenu(int postId) {

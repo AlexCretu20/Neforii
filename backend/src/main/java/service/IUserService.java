@@ -10,4 +10,5 @@ public interface IUserService {
     void logoutUser();
     User getCurrentUser();
     void setCurrentUser(User user);
+    void deleteUser(User user);
 }

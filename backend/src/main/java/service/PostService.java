@@ -103,4 +103,8 @@ public class PostService implements IVotable {
         }
         return false;
     }
+
+    public List<Post> findAllPostsByUser(int userId){
+        return postRepository.findAllByUserId(userId);
+    }
 }

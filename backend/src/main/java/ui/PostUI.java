@@ -26,17 +26,24 @@ public class PostUI {
     }
 
     public void updatePostUI(User currentUser) {
-        System.out.print("Enter the ID of the post to update: ");
-        int postId = readInt();
+        List<Post> posts = postService.findAllPostsByUser(currentUser.getId());
 
-        Post post = postService.getPostById(postId);
-        if (post == null) {
-            System.out.println("Post not found.");
+        if (posts.isEmpty()) {
+            System.out.println("You have no posts to update.");
             return;
         }
 
-        if (!post.getUser().equals(currentUser)) {
-            System.out.println("You can only update your own posts.");
+        displayPostsForUser(currentUser.getId());
+
+        System.out.print("Enter the ID of the post you want to update: ");
+        int postId = readInt();
+
+        Optional<Post> optionalPost = posts.stream()
+                .filter(p -> p.getId() == postId)
+                .findFirst();
+
+        if (optionalPost.isEmpty()) {
+            System.out.println("Invalid post ID. Please choose one from your list.");
             return;
         }
 
@@ -44,35 +51,36 @@ public class PostUI {
         String newText = scanner.nextLine();
 
         boolean success = postService.updatePost(postId, newText);
-        if (success) {
-            System.out.println("Post updated successfully.");
-        } else {
-            System.out.println("Failed to update post.");
-        }
+        System.out.println(success ? "Post updated successfully." : "Failed to update post.");
     }
 
-    public void deletePostUI(User currentUser) {
-        System.out.print("Enter the ID of the post to delete: ");
-        int postId = readInt();
 
-        Post post = postService.getPostById(postId);
-        if (post == null) {
-            System.out.println("Post not found.");
+    public void deletePostUI(User currentUser) {
+        List<Post> posts = postService.findAllPostsByUser(currentUser.getId());
+
+        if (posts.isEmpty()) {
+            System.out.println("You have no posts to delete.");
             return;
         }
 
-        if (!post.getUser().equals(currentUser)) {
-            System.out.println("You can only delete your own posts.");
+        displayPostsForUser(currentUser.getId());
+
+        System.out.print("Enter the ID of the post you want to delete: ");
+        int postId = readInt();
+
+        Optional<Post> optionalPost = posts.stream()
+                .filter(p -> p.getId() == postId)
+                .findFirst();
+
+        if (optionalPost.isEmpty()) {
+            System.out.println("Invalid post ID. Please choose one from your list.");
             return;
         }
 
         boolean success = postService.deletePost(postId);
-        if (success) {
-            System.out.println("Post deleted successfully.");
-        } else {
-            System.out.println("Failed to delete post.");
-        }
+        System.out.println(success ? "Post deleted successfully." : "Failed to delete post.");
     }
+
 
     public void displayAllPostsUI() {
         postService.updateAwardsForAllPosts();
@@ -121,6 +129,20 @@ public class PostUI {
             } catch (NumberFormatException e) {
                 System.out.print("Invalid input. Please enter a valid number: ");
             }
+        }
+    }
+
+    public void displayPostsForUser(int userId){
+        List <Post> posts = postService.findAllPostsByUser(userId);
+
+        if(posts.isEmpty()){
+            System.out.println("No posts available.");
+            return;
+        }
+
+        System.out.println("\n--- My Posts ---");
+        for (Post post : posts) {
+            displayPostDetails(post);
         }
     }
 
