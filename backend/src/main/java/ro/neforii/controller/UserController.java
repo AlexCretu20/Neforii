@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ro.neforii.mapper.UserMapper;
 import ro.neforii.dto.user.UserResponseDto;
 import ro.neforii.dto.user.login.UserLoginRequestDto;
 import ro.neforii.model.User;
@@ -15,9 +16,11 @@ import ro.neforii.service.IUserService;
 @RequestMapping("/user")
 public class UserController {
     private final IUserService userService;
+    private final UserMapper userMapper;
 
-    public UserController(IUserService userService) {
+    public UserController(IUserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @PostMapping("/login")
@@ -26,19 +29,9 @@ public class UserController {
         if (user == null) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED) // 401 daca nu se logheaza bn
-                    .build();//null body
+                    .build(); //null body
         }
 
-        //user exists
-        UserResponseDto userResponseDto = new UserResponseDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPhoneNumber(),
-                user.getDescription()
-        );
-
-        return ResponseEntity
-                .ok(userResponseDto);
+        return ResponseEntity.ok(userMapper.userToUserResponseDto(user));
     }
 }
