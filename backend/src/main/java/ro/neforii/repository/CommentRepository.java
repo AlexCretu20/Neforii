@@ -26,7 +26,7 @@ public class CommentRepository implements ICrudRepository<Comment> {
         String sql = "INSERT INTO comments (text, created_at, updated_at, user_id, post_id, parent_comment_id) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, comment.getText());
             stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
@@ -47,9 +47,19 @@ public class CommentRepository implements ICrudRepository<Comment> {
 
             stmt.executeUpdate();
 
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    comment.setId(keys.getInt(1));
+                } else {
+                    throw new RepositoryCRUDException("Failed to save comment because no ID could be generated.");
+                }
+            }
+
         } catch (SQLException e) {
-            throw new RepositoryCRUDException("Failed to save comment.");
+            throw new RepositoryCRUDException("Failed to save comment");
         }
+
+
     }
 
     @Override

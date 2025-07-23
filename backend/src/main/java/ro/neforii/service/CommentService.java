@@ -40,7 +40,7 @@ public class CommentService implements IVotable {
         });
     }
 
-    public void createCommentOnPost(String text, User user, int postId) {
+    public Comment createCommentOnPost(String text, User user, int postId) {
         if (postRepo.findById(postId).isEmpty()) {
             Logger.log(LoggerType.FATAL, "Attempt to comment on nonexistent post id=" + postId);
             throw new PostNotFoundException("Post with id=" + postId + " not found");
@@ -48,9 +48,10 @@ public class CommentService implements IVotable {
         Comment comment = new Comment(text, user, postId, null);
         commentRepo.save(comment);
         Logger.log(LoggerType.INFO, "Created comment id=" + comment.getId() + " on post id=" + postId);
+        return comment;
     }
 
-    public void createReplyToComment(String text, User user, int parentCommentId) {
+    public Comment createReplyToComment(String text, User user, int parentCommentId) {
         if (commentRepo.findById(parentCommentId).isEmpty()) {
             Logger.log(LoggerType.FATAL, "Attempt to reply to nonexistent comment id=" + parentCommentId);
             throw new CommentNotFoundException("Could not find comment with id=" + parentCommentId);
@@ -58,6 +59,7 @@ public class CommentService implements IVotable {
         Comment reply = new Comment(text, user, null, parentCommentId);
         commentRepo.save(reply);
         Logger.log(LoggerType.INFO, "Created reply id=" + reply.getId() + " to comment id=" + parentCommentId);
+        return reply;
     }
 
     public void updateComment(int id, Comment updatedComment) {
