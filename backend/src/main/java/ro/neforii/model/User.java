@@ -3,7 +3,7 @@ package ro.neforii.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class User{
+public class User {
     private int id;
     private String username;
     private String email;
@@ -77,6 +77,7 @@ public class User{
         return createdAt;
     }
 
+    //folosita in User Service sa stim daca modelul de user primit pentru update e la fel cu userul existent
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

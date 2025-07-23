@@ -12,7 +12,7 @@ public class UserService implements IUserService {
 
     private final UserRepository userRepo;
 
-    public UserService(UserRepository userRepo){
+    public UserService(UserRepository userRepo) {
         this.userRepo = userRepo;
     }
 
@@ -28,16 +28,47 @@ public class UserService implements IUserService {
         return userRepo.findByEmail(email).isPresent();
     }
 
-
-    public User loginUser(String email, String password) {
-        Optional<User> user = userRepo.findByEmailAndPassword(email, password);
+    public User findByUsername(String username) {
+        Optional<User> user = userRepo.findByUsername(username);
         if (user.isPresent()) {
-            this.currentUser = user.get();
-            return this.currentUser;
+            return user.get();
         }
         return null;
     }
 
+    public User findById(int id) {
+        Optional<User> user = userRepo.findById(id);
+        if (user.isPresent()) {
+            return user.get();
+        }
+        return null;
+    }
+
+    public User loginUser(String email, String password) {
+        Optional<User> user = userRepo.findByEmailAndPassword(email, password);
+        if (user.isPresent()) {
+            return user.get();
+        }
+        return null;
+    }
+
+    public User updateUser(int id, User user) {
+        Optional<User> existingUserOpt = userRepo.findById(id);
+        if (existingUserOpt.isEmpty()) {
+            return null;
+        }
+        //verific daca modelul update e acelasi, ca sa nu ocup DB pool degeaba
+        User existingUser = existingUserOpt.get();
+        //setez campurile care nu se pot schimba pt equals
+        user.setId(id);
+        user.setCreatedAt(existingUser.getCreatedAt());
+        if (existingUser.equals(user)) {
+            return existingUser;
+        }
+
+        userRepo.update(user);
+        return user;
+    }
 
     public void logoutUser() {
         currentUser = null;
@@ -51,7 +82,7 @@ public class UserService implements IUserService {
         this.currentUser = currentUser;
     }
 
-    public void deleteUser(User user){
+    public void deleteUser(User user) {
         userRepo.deleteById(user.getId());
         logoutUser();
     }

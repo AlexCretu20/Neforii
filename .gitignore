@@ -12,6 +12,6 @@
 *.log
 
 **/__pycache__/
-
+.idea/httpRequests/
 backend/production/
 
