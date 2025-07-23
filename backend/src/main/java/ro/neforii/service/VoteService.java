@@ -45,7 +45,10 @@ public class VoteService implements IVoteService {
     }
 
     public Vote getVoteById(int voteId) {
-        return voteRepository.findById(voteId).orElseThrow(() -> new VoteNotFoundException(voteId));
+        return voteRepository.findById(voteId).orElseThrow(() -> {
+            Logger.log(LoggerType.DEBUG, "Vote with ID " + voteId + " not found.");
+            return new VoteNotFoundException(voteId);
+        });
     }
 
 //    public int findVoteId(int userId, Integer postId, Integer commentId) {
