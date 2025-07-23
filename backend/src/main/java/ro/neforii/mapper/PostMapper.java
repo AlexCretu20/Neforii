@@ -7,7 +7,7 @@ import ro.neforii.model.Post;
 
 @Component
 public class PostMapper {
-    public static PostRequestDto postToPostRequestDto(Post post) {
+    public PostRequestDto postToPostRequestDto(Post post) {
         if (post == null) {
             return null;
         }
@@ -18,7 +18,7 @@ public class PostMapper {
         );
     }
 
-    public static Post postRequestDtoToPost(PostRequestDto postRequestDto) {
+    public Post postRequestDtoToPost(PostRequestDto postRequestDto) {
         if (postRequestDto == null) {
             return null;
         }
@@ -30,7 +30,7 @@ public class PostMapper {
         );
     }
 
-    public static PostResponseDto postToPostResponseDto(Post post) {
+    public PostResponseDto postToPostResponseDto(Post post) {
         if (post == null) {
             return null;
         }
@@ -44,7 +44,7 @@ public class PostMapper {
         );
     }
 
-    public static Post postResponseToPost(PostResponseDto postResponseDto) {
+    public Post postResponseToPost(PostResponseDto postResponseDto) {
         if (postResponseDto == null) {
             return null;
         }

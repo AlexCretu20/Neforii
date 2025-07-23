@@ -11,7 +11,7 @@ import ro.neforii.model.Vote;
 import ro.neforii.service.IVoteService;
 
 @RestController
-@RequestMapping("/vote")
+@RequestMapping("/votes")
 public class VoteController {
     private final IVoteService voteService;
     private final VoteMapper voteMapper;

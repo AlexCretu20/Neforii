@@ -20,7 +20,7 @@ public class CommentController {
     private final UserService userService;
     private final CommentMapper commentMapper;
 
-    public CommentController(CommentService commentService, UserService userService,  CommentMapper commentMapper) {
+    public CommentController(CommentService commentService, UserService userService, CommentMapper commentMapper) {
         this.commentService = commentService;
         this.userService = userService;
         this.commentMapper = commentMapper;
@@ -42,7 +42,7 @@ public class CommentController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable int id, @RequestBody CommentUpdateRequestDto request){
+    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable int id, @RequestBody CommentUpdateRequestDto request) {
         User user = userService.findById(request.userId());
         Comment updated = commentService.updateComment(id, request.text(), user);
         CommentResponseDto response = commentMapper.toCommentDto(updated);

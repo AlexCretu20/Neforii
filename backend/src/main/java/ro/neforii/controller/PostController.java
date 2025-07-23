@@ -12,7 +12,7 @@ import ro.neforii.service.UserService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/posts")
 public class PostController {
     private final PostService postService;
     private final PostMapper postMapper;
@@ -26,10 +26,10 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<PostResponseDto> newPost(@RequestBody PostResponseDto postResponseDto){
+    public ResponseEntity<PostResponseDto> newPost(@RequestBody PostResponseDto postResponseDto) {
         Integer userId = postResponseDto.userId();
         Post post = postService.createPost(userService.findById(userId), postResponseDto.text());
-        if (post == null){
+        if (post == null) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED) // 401
                     .build();
@@ -42,7 +42,7 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Integer id, @RequestBody PostResponseDto postResponseDto) {
         boolean isUpdated = postService.updatePost(id, postResponseDto.text());
-        if(!isUpdated){
+        if (!isUpdated) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().build();
@@ -50,9 +50,9 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id){
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         boolean isDeleted = postService.deletePost(id);
-        if (!isDeleted){
+        if (!isDeleted) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().build();
@@ -63,16 +63,16 @@ public class PostController {
         List<Post> posts = postService.getAllPosts();
 
         List<PostResponseDto> postResponseDtos = posts.stream()
-                                        .map(PostMapper::postToPostResponseDto)
-                                        .toList();
+                .map(post -> postMapper.postToPostResponseDto(post))
+                .toList();
         return ResponseEntity.ok(postResponseDtos);
 
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDto> displayById(@PathVariable Integer id){
+    public ResponseEntity<PostResponseDto> displayById(@PathVariable Integer id) {
         Post post = postService.getPostById(id);
-        if (post == null){
+        if (post == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(postMapper.postToPostResponseDto(post));

@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.model.Comment;
 import ro.neforii.service.CommentService;
-import ro.neforii.service.VoteService;
 
 @Component
 public class CommentMapper {
@@ -14,8 +13,8 @@ public class CommentMapper {
         this.commentService = commentService;
     }
 
-    public CommentResponseDto toCommentDto(Comment comment){
-        if(comment == null){
+    public CommentResponseDto toCommentDto(Comment comment) {
+        if (comment == null) {
             return null;
         }
 

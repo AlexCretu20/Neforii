@@ -12,7 +12,7 @@ import ro.neforii.model.User;
 import ro.neforii.service.IUserService;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
     private final IUserService userService;
     private final UserMapper userMapper;
