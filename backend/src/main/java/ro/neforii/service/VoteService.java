@@ -1,6 +1,7 @@
 package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
+import ro.neforii.exception.VoteNotFoundException;
 import ro.neforii.model.Vote;
 import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
@@ -9,7 +10,6 @@ import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class VoteService implements IVoteService {
@@ -45,13 +45,7 @@ public class VoteService implements IVoteService {
     }
 
     public Vote getVoteById(int voteId) {
-        Optional<Vote> vote = voteRepository.findById(voteId);
-        if (vote.isPresent()) {
-            return vote.get();
-        } else {
-            Logger.log(LoggerType.ERROR, "Vote with ID " + voteId + " not found.");
-            return null;
-        }
+        return voteRepository.findById(voteId).orElseThrow(() -> new VoteNotFoundException(voteId));
     }
 
 //    public int findVoteId(int userId, Integer postId, Integer commentId) {

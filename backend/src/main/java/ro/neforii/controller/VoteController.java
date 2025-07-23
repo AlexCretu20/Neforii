@@ -22,10 +22,9 @@ public class VoteController {
 
     @GetMapping("/{id}")
     public ResponseEntity<VoteResponseDto> getVoteById(int id) {
-        Vote vote = voteService.getVoteById(id);
-        if (vote == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(voteMapper.voteToVoteResponseDto(vote));
+        Vote vote = voteService.getVoteById(id); // daca nu e null, da throw VoteNotFoundException si se stie controllerul sa se ocupe
+        return ResponseEntity.ok(
+                voteMapper.voteToVoteResponseDto(vote)
+        );
     }
 }
