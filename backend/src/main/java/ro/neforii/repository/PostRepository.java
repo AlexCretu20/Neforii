@@ -1,6 +1,7 @@
 package ro.neforii.repository;
 
 import org.springframework.stereotype.Repository;
+import ro.neforii.exception.RepositoryCRUDException;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.utils.DatabaseConnection;
@@ -24,7 +25,7 @@ public class PostRepository implements ICrudRepository<Post>{
         String sql = "INSERT INTO posts (text, created_at, is_awarded, user_id) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, post.getText());
             stmt.setTimestamp(2, Timestamp.valueOf(post.getCreatedAt()));
@@ -34,6 +35,17 @@ public class PostRepository implements ICrudRepository<Post>{
             stmt.setInt(4, post.getUser().getId());
 
             stmt.executeUpdate();
+
+            try(ResultSet keys = stmt.getGeneratedKeys()){
+                if(keys.next()) {
+                    post.setId(keys.getInt(1));
+                }
+                else {
+                    throw new RepositoryCRUDException("Failed to save post because no id could be generated.");
+                }
+            }catch (SQLException e) {
+                throw new RepositoryCRUDException("Failed to save post because no id could be generated.");
+            }
 
         } catch (Exception e) {
             Logger.log(LoggerType.FATAL, "PostRepository save: Post can't be saved to database.");

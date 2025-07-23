@@ -1,29 +1,30 @@
 package ro.neforii.mapper;
 
 import org.springframework.stereotype.Component;
-import ro.neforii.dto.post.PostDto;
+import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.model.Post;
 
 @Component
 public class PostMapper {
-    public static  PostDto postToPostDto(Post post){
+    public static PostResponseDto postToPostDto(Post post){
         if (post == null){
             return null;
         }
 
-        return new PostDto(
+        return new PostResponseDto(
+                post.getId(),
                 post.getText(),
-                post.getUser()
+                post.getUser().getId()
         );
     }
 
-    public static Post postDtoToPost(PostDto postDto) {
-        if (postDto == null) {
+    public static Post postDtoToPost(PostResponseDto postResponseDto) {
+        if (postResponseDto == null) {
             return null;
         }
         return new Post(
-                postDto.text(),
-                postDto.user()
+                postResponseDto.text(),
+                postResponseDto.userId()
 
         );
     }

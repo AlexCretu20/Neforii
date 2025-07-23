@@ -47,6 +47,12 @@ public class Post {
         this.user = user;
     }
 
+    public Post(String text, Integer integer) {
+        this.text = text;
+        this.createdAt = LocalDateTime.now();
+        this.user.setId(integer);
+    }
+
 
     public int getId() {
         return id;
