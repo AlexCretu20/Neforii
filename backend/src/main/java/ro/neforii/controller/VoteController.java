@@ -15,8 +15,6 @@ public class VoteController {
     private final IVoteService voteService;
     private final VoteMapper voteMapper;
 
-    // private final UserService userService;
-
     public VoteController(IVoteService voteService, VoteMapper voteMapper) {
         this.voteService = voteService;
         this.voteMapper = voteMapper;
