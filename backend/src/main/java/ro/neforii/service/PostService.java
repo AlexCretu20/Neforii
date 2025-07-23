@@ -1,5 +1,6 @@
 package ro.neforii.service;
 
+import org.springframework.stereotype.Service;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.repository.CommentRepository;
@@ -10,7 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public class PostService implements IVotable {
+@Service
+public class PostService implements IVotable, IPostService {
 
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;

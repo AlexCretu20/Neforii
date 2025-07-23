@@ -1,5 +1,6 @@
 package ro.neforii.repository;
 
+import org.springframework.stereotype.Repository;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.utils.DatabaseConnection;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class PostRepository implements ICrudRepository<Post>{
     private final ICrudRepository userRepository;
 

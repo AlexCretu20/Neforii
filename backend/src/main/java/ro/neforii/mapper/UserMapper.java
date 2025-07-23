@@ -6,7 +6,7 @@ import ro.neforii.model.User;
 
 @Component
 public class UserMapper {
-    public UserResponseDto userToUserResponseDto(User user) {
+    public static UserResponseDto userToUserResponseDto(User user) {
         if (user == null) {
             return null;
         }

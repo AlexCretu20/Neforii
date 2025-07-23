@@ -1,5 +1,6 @@
 package ro.neforii.service;
 
+import org.springframework.stereotype.Service;
 import ro.neforii.model.Vote;
 import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
@@ -9,6 +10,7 @@ import ro.neforii.utils.logger.LoggerType;
 
 import java.time.LocalDateTime;
 
+@Service
 public class VoteService {
     private PostRepository postRepository;
     private VoteRepository voteRepository;

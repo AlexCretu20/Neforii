@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-07-23T08:37:06.632+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "path": "/post"
+}

@@ -1,0 +1,421 @@
+PUT http://localhost:8080/post/1
+Content-Length: 28
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noul update "
+}
+
+<> 2025-07-23T120455.415.json
+
+###
+
+PUT http://localhost:8080/post/1
+Content-Length: 42
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noul update ",
+  "user": {}
+}
+
+<> 2025-07-23T120249.415.json
+
+###
+
+PUT http://localhost:8080/post/1
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-07-23T120055.400.json
+
+###
+
+GET http://localhost:8080/post/1
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T120023.200.json
+
+###
+
+GET http://localhost:8080/post
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T115956.200.json
+
+###
+
+GET http://localhost:8080/post
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T115732.200.json
+
+###
+
+GET http://localhost:8080/post
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T115357.200.json
+
+###
+
+GET http://localhost:8080/posts
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T115319.404.json
+
+###
+
+GET http://localhost:8080/posts
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T115308.404.json
+
+###
+
+GET http://localhost:8080/posts
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T115236.404.json
+
+###
+
+GET http://localhost:8080/post/posts
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T115056.200.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 35
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "ghjjh",
+  "user": {}
+}
+
+<> 2025-07-23T114951.201.json
+
+###
+
+GET http://localhost:8080/posts
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T114815.404.json
+
+###
+
+GET http://localhost:8080/posts
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T114441.404.json
+
+###
+
+GET http://localhost:8080/post
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T114417.405.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 43
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "user": {}
+}
+
+<> 2025-07-23T114353.201.json
+
+###
+
+POST http://localhost:8080/post
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-07-23T114318.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 76
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "ghjjh",
+  "createdAt": "",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T114232.201.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 94
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T113810.400.json
+
+###
+
+GET http://localhost:8080/api/content
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T113733.404.json
+
+###
+
+GET http://localhost:8080/api/content
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-07-23T113730.404.json
+
+###
+
+PUT http://localhost:8080/post/
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-07-23T113722.404.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 94
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T113706.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 94
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T113252.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 94
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T113249.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 94
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T113025.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 94
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T113024.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 94
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T113019.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 105
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 1,
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T112958.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 105
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 1,
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T112724.400.json
+
+###
+
+POST http://localhost:8080/post
+Content-Type: application/json
+Content-Length: 105
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 1,
+  "text": "noua postare ",
+  "createdAt": "23.07.2025",
+  "isAwarded": false,
+  "user": {}
+}
+
+<> 2025-07-23T112705.400.json
+
+###
+
+PUT http://localhost:8080/post/id
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.3.4.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-07-23T112623.400.json
+
+###
+
