@@ -7,8 +7,8 @@ import ro.neforii.model.Post;
 
 @Component
 public class PostMapper {
-    public static PostRequestDto postToPostRequestDto(Post post){
-        if (post == null){
+    public static PostRequestDto postToPostRequestDto(Post post) {
+        if (post == null) {
             return null;
         }
 
@@ -23,14 +23,15 @@ public class PostMapper {
             return null;
         }
         return new Post(
-                postRequestDto.text(),
-                postRequestDto.userId()
-
+                //am comentat ca nu facea build ca userId nu e in Post
+                //to do
+//                postRequestDto.text(),
+//                postRequestDto.userId()
         );
     }
 
-    public static PostResponseDto postToPostResponseDto(Post post){
-        if (post == null){
+    public static PostResponseDto postToPostResponseDto(Post post) {
+        if (post == null) {
             return null;
         }
 
@@ -40,19 +41,20 @@ public class PostMapper {
                 post.getUser().getId(),
                 post.getCreatedAt(),
                 post.isAwarded()
-                );
+        );
     }
 
-    public static Post postResponseToPost(PostResponseDto postResponseDto){
-        if(postResponseDto == null){
+    public static Post postResponseToPost(PostResponseDto postResponseDto) {
+        if (postResponseDto == null) {
             return null;
         }
 
         return new Post(
-                postResponseDto.text(),
-                postResponseDto.createdAt(),
-                postResponseDto.isAwarded(),
-                postResponseDto.userId()
-                );
+//                postResponseDto.text(),
+//                postResponseDto.createdAt(),
+//                postResponseDto.isAwarded();
+                //to do
+//                postResponseDto.userId()
+        );
     }
 }
