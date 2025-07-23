@@ -129,7 +129,7 @@ public class CommentUI {
 
         Comment updatedComment = new Comment(commentId,text,originalComment.getCreatedAt(),null,originalComment.getUser(), originalComment.getPostId(), originalComment.getParentCommentId());
 
-        commentService.updateComment(commentId,updatedComment);
+        commentService.updateComment(commentId,text,user);
         System.out.println("Comment with id "+commentId+" updated successfully!");
     }
 
