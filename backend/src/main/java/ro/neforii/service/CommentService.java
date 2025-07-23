@@ -12,6 +12,7 @@ import ro.neforii.repository.VoteRepository;
 import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,13 +63,19 @@ public class CommentService implements IVotable {
         return reply;
     }
 
-    public void updateComment(int id, Comment updatedComment) {
+    public Comment updateComment(int id, String newText, User user) {
         Comment existing = getComment(id);
+
+        existing.setText(newText);
+        existing.setUpdatedAt(LocalDateTime.now());
+
         try {
-            commentRepo.update(updatedComment);
+            commentRepo.update(existing);
             Logger.log(LoggerType.INFO, "Comment updated successfully!");
+            return existing;
         } catch (Exception e) {
             Logger.log(LoggerType.FATAL, "Failed to update comment id=" + id);
+            throw new RuntimeException("Failed to update comment");
         }
     }
 
