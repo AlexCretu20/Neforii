@@ -2,6 +2,7 @@ package ro.neforii.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ro.neforii.dto.vote.VoteResponseDto;
@@ -21,7 +22,7 @@ public class VoteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VoteResponseDto> getVoteById(int id) {
+    public ResponseEntity<VoteResponseDto> getVoteById(@PathVariable int id) {
         Vote vote = voteService.getVoteById(id); // daca nu e null, da throw VoteNotFoundException si se stie controllerul sa se ocupe
         return ResponseEntity.ok(
                 voteMapper.voteToVoteResponseDto(vote)
