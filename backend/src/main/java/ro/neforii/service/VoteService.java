@@ -9,9 +9,10 @@ import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
-public class VoteService {
+public class VoteService implements IVoteService {
     private PostRepository postRepository;
     private VoteRepository voteRepository;
     private CommentRepository commentRepository;
@@ -23,7 +24,7 @@ public class VoteService {
     }
 
     public String createVote(int userId, Integer postId, Integer commentId, boolean isUpvote) {
-        int checkIfAlreadyVoted = findVoteId(userId, postId, commentId);
+        int checkIfAlreadyVoted = voteRepository.findVoteByTargetId(userId, postId, commentId).getId();
         if (checkIfAlreadyVoted != 0) {
             voteRepository.deleteById(checkIfAlreadyVoted);
         }
@@ -43,14 +44,22 @@ public class VoteService {
         Logger.log(LoggerType.INFO, "Vote with ID " + voteId + " deleted successfully.");
     }
 
-    public int findVoteId(int userId, Integer postId, Integer commentId) {
-        return voteRepository.findAll().stream()
-                .filter(vote ->
-                        vote.getUserId() == userId && ((postId != null && postId.equals(vote.getPostId())) || (commentId != null && commentId.equals(vote.getCommentId()))))
-                .mapToInt(Vote::getId)
-                .findFirst()
-                .orElse(0);
+    public Vote getVoteById(int voteId) {
+        Optional<Vote> vote = voteRepository.findById(voteId);
+        if (vote.isPresent()) {
+            return vote.get();
+        } else {
+            Logger.log(LoggerType.ERROR, "Vote with ID " + voteId + " not found.");
+            return null;
+        }
     }
 
-
+//    public int findVoteId(int userId, Integer postId, Integer commentId) {
+//        return voteRepository.findAll().stream()
+//                .filter(vote ->
+//                        vote.getUserId() == userId && ((postId != null && postId.equals(vote.getPostId())) || (commentId != null && commentId.equals(vote.getCommentId()))))
+//                .mapToInt(Vote::getId)
+//                .findFirst()
+//                .orElse(0);
+//    }
 }

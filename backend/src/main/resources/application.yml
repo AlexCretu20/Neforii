@@ -1,0 +1,16 @@
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /docs
+
+logging:
+  level:
+    org.springdoc: DEBUG
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: mappings

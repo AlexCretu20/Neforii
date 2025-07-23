@@ -1,0 +1,33 @@
+package ro.neforii.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ro.neforii.dto.vote.VoteResponseDto;
+import ro.neforii.mapper.VoteMapper;
+import ro.neforii.model.Vote;
+import ro.neforii.service.IVoteService;
+
+@RestController
+@RequestMapping("/vote")
+public class VoteController {
+    private final IVoteService voteService;
+    private final VoteMapper voteMapper;
+
+    // private final UserService userService;
+
+    public VoteController(IVoteService voteService, VoteMapper voteMapper) {
+        this.voteService = voteService;
+        this.voteMapper = voteMapper;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VoteResponseDto> getVoteById(int id) {
+        Vote vote = voteService.getVoteById(id);
+        if (vote == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(voteMapper.voteToVoteResponseDto(vote));
+    }
+}
