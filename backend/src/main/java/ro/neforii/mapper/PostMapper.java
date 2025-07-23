@@ -1,12 +1,35 @@
 package ro.neforii.mapper;
 
 import org.springframework.stereotype.Component;
+import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.model.Post;
 
 @Component
 public class PostMapper {
-    public static PostResponseDto postToPostDto(Post post){
+    public static PostRequestDto postToPostRequestDto(Post post){
+        if (post == null){
+            return null;
+        }
+
+        return new PostRequestDto(
+                post.getText(),
+                post.getUser().getId()
+        );
+    }
+
+    public static Post postRequestDtoToPost(PostRequestDto postRequestDto) {
+        if (postRequestDto == null) {
+            return null;
+        }
+        return new Post(
+                postRequestDto.text(),
+                postRequestDto.userId()
+
+        );
+    }
+
+    public static PostResponseDto postToPostResponseDto(Post post){
         if (post == null){
             return null;
         }
@@ -14,18 +37,22 @@ public class PostMapper {
         return new PostResponseDto(
                 post.getId(),
                 post.getText(),
-                post.getUser().getId()
-        );
+                post.getUser().getId(),
+                post.getCreatedAt(),
+                post.isAwarded()
+                );
     }
 
-    public static Post postDtoToPost(PostResponseDto postResponseDto) {
-        if (postResponseDto == null) {
+    public static Post postResponseToPost(PostResponseDto postResponseDto){
+        if(postResponseDto == null){
             return null;
         }
+
         return new Post(
                 postResponseDto.text(),
+                postResponseDto.createdAt(),
+                postResponseDto.isAwarded(),
                 postResponseDto.userId()
-
-        );
+                );
     }
 }

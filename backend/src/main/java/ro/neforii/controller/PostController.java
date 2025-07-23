@@ -36,7 +36,7 @@ public class PostController {
         }
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(postMapper.postToPostDto(post));
+                .body(postMapper.postToPostResponseDto(post));
     }
 
     @PutMapping("/{id}")
@@ -63,7 +63,7 @@ public class PostController {
         List<Post> posts = postService.getAllPosts();
 
         List<PostResponseDto> postResponseDtos = posts.stream()
-                                        .map(PostMapper::postToPostDto)
+                                        .map(PostMapper::postToPostResponseDto)
                                         .toList();
         return ResponseEntity.ok(postResponseDtos);
 
@@ -75,7 +75,7 @@ public class PostController {
         if (post == null){
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(postMapper.postToPostDto(post));
+        return ResponseEntity.ok(postMapper.postToPostResponseDto(post));
     }
 
 }
