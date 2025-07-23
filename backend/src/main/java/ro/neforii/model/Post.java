@@ -38,6 +38,16 @@ public class Post {
         this.votes = new ArrayList<>();
     }
 
+    public Post(String text, LocalDateTime createdAt, boolean awarded, Integer integer) {
+    }
+
+    public Post(String text, User user) {
+        this.text = text;
+        this.createdAt = LocalDateTime.now();
+        this.user = user;
+    }
+
+
     public int getId() {
         return id;
     }

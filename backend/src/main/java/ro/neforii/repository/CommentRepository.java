@@ -1,5 +1,6 @@
 package ro.neforii.repository;
 
+import org.springframework.stereotype.Repository;
 import ro.neforii.exception.RepositoryCRUDException;
 import ro.neforii.model.Comment;
 import ro.neforii.model.User;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class CommentRepository implements ICrudRepository<Comment> {
 
     private final ICrudRepository<User> userRepository;

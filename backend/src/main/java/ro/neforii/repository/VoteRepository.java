@@ -1,5 +1,6 @@
 package ro.neforii.repository;
 
+import org.springframework.stereotype.Repository;
 import ro.neforii.model.Vote;
 import ro.neforii.utils.DatabaseConnection;
 import ro.neforii.utils.logger.Logger;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class VoteRepository implements ICrudRepository<Vote> {
 
     @Override

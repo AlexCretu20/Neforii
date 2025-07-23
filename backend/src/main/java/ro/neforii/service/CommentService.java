@@ -1,5 +1,6 @@
 package ro.neforii.service;
 
+import org.springframework.stereotype.Service;
 import ro.neforii.exception.CommentNotFoundException;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.model.Comment;
@@ -14,6 +15,7 @@ import ro.neforii.utils.logger.LoggerType;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class CommentService implements IVotable {
     private final CommentRepository commentRepo;
     private final UserRepository userRepo;
