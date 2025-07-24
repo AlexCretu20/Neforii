@@ -1,19 +1,75 @@
 package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
+import ro.neforii.dto.user.update.UserUpdateRequestDto;
+import ro.neforii.exception.EmailAlreadyInUseException;
+import ro.neforii.exception.UserNotFoundException;
+import ro.neforii.exception.UsernameAlreadyInUseException;
 import ro.neforii.model.User;
 import ro.neforii.repository.UserRepository;
+import ro.neforii.service.crud.CrudService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserService implements IUserService {
+public class UserService implements CrudService<User, Integer> {
     private User currentUser;
-
     private final UserRepository userRepo;
 
     public UserService(UserRepository userRepo) {
         this.userRepo = userRepo;
+    }
+
+    //CREATE methods
+    @Override
+    public User create(User user) {
+        return userRepo.save(user);
+    }
+
+    //READ methods
+    @Override
+    public Optional<User> findById(Integer id) {
+        return userRepo.findById(id);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepo.findAll();
+    }
+
+    //UPDATE methods
+    @Override
+    public User update(Integer id, UserUpdateRequestDto requestDto) {
+        Optional<User> existingUserOpt = findById(id);
+        if (existingUserOpt.isEmpty()) {
+            throw new UserNotFoundException("The user with id " + id + " does not exist.");
+        }
+        if(isUsernameExisting(requestDto.username())){
+            throw new UsernameAlreadyInUseException("The username " + requestDto.username() + " is already in use.");
+        }
+        if(isEmailExisting(requestDto.email())){
+            throw new EmailAlreadyInUseException("The email " + requestDto.email() + " is already in use.");
+        }
+
+        User existingUser = existingUserOpt.get();
+        existingUser.setUsername(requestDto.username());
+        existingUser.setEmail(requestDto.email());
+        existingUser.setPassword(requestDto.password());
+        existingUser.setPhoneNumber(requestDto.phoneNumber());
+        existingUser.setDescription(requestDto.description());
+
+        return userRepo.save(existingUser);
+    }
+
+    //DELETE methods
+    @Override
+    public void deleteById(Integer id) {
+        userRepo.deleteById(id);
+        //stergem current User
+        if (currentUser != null && currentUser.getId() == id) {
+            currentUser = null;
+        }
     }
 
     public void registerUser(User user) {
@@ -50,23 +106,6 @@ public class UserService implements IUserService {
             return user.get();
         }
         return null;
-    }
-
-    public User updateUser(int id, User user) {
-        Optional<User> existingUserOpt = userRepo.findById(id);
-        if (existingUserOpt.isEmpty()) {
-            return null;
-        }
-        //verific daca modelul update e acelasi, ca sa nu ocup DB pool degeaba
-        User existingUser = existingUserOpt.get();
-        //setez campurile care nu se pot schimba pt equals
-        user.setId(id);
-        user.setCreatedAt(existingUser.getCreatedAt());
-        if (existingUser.equals(user)) {
-            return existingUser;
-        }
-
-        return userRepo.save(user);  //daca Spring-ul vede ca id-ul e deja folosit face update in loc de insert
     }
 
     public void logoutUser() {
