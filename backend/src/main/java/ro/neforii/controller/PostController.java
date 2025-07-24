@@ -28,7 +28,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostResponseDto> newPost(@RequestBody PostResponseDto postResponseDto) {
         Integer userId = postResponseDto.userId();
-        Post post = postService.createPost(userService.findById(userId), postResponseDto.text());
+        Post post = postService.createPost(userService.findById(userId), postResponseDto.content(), postResponseDto.title());
         if (post == null) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED) // 401
@@ -41,7 +41,7 @@ public class PostController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Integer id, @RequestBody PostResponseDto postResponseDto) {
-        boolean isUpdated = postService.updatePost(id, postResponseDto.text());
+        boolean isUpdated = postService.updatePost(id, postResponseDto.content());
         if (!isUpdated) {
             return ResponseEntity.notFound().build();
         }

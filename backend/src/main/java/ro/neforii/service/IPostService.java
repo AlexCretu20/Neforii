@@ -8,7 +8,7 @@ import java.util.List;
 public interface IPostService {
     public List<Post> getAllPosts();
 
-    public Post createPost(User user, String text);
+    public Post createPost(User user, String content, String title);
 
     public boolean updatePost(int id, String text);
 

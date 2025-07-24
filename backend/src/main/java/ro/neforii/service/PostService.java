@@ -33,11 +33,22 @@ public class PostService implements IVotable, IPostService {
         return postRepository.findAll();
     }
 
-    public Post createPost(User user, String content, String path, String ) {
-        Post post = new Post();
-        postRepository.save(post);
-        return post;
+    public Post createPost(User user, String title, String content) {
+        if (user == null) {
+            return null; // sau throw UnauthorizedException
+        }
+
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .createdAt(LocalDateTime.now())
+                .isAwarded(false)
+                .user(user)
+                .build();
+
+        return postRepository.save(post);
     }
+
 
     public boolean updatePost(int id, String text) {
         Optional<Post> postOptional = postRepository.findById(id);
@@ -82,12 +93,14 @@ public class PostService implements IVotable, IPostService {
     }
 
     public int displayUpvotes(int id) {
-        return voteRepository.countVotesByPostId(id, true);
+        Post post = postRepository.findById(id).orElseThrow();
+        return voteRepository.countByPostAndIsUpvote(post, true);
     }
 
 
     public int displayDownvotes(int id) {
-        return voteRepository.countVotesByPostId(id, false);
+        Post post = postRepository.findById(id).orElseThrow();
+        return voteRepository.countByPostAndIsUpvote(post, false);
     }
 
 

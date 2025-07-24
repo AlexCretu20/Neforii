@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import ro.neforii.exception.CommentNotFoundException;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.model.Comment;
+import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
@@ -42,22 +43,37 @@ public class CommentService implements IVotable {
     }
 
     public Comment createCommentOnPost(String text, User user, int postId) {
-        if (postRepo.findById(postId).isEmpty()) {
+        Post post = postRepo.findById(postId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to comment on nonexistent post id=" + postId);
-            throw new PostNotFoundException("Post with id=" + postId + " not found");
-        }
-        Comment comment = new Comment(text, user, postId, null);
+            return new PostNotFoundException("Post with id=" + postId + " not found");
+        });
+
+        Comment comment = Comment.builder()
+                .text(text)
+                .user(user)
+                .post(post)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
         commentRepo.save(comment);
         Logger.log(LoggerType.INFO, "Created comment id=" + comment.getId() + " on post id=" + postId);
         return comment;
     }
 
     public Comment createReplyToComment(String text, User user, int parentCommentId) {
-        if (commentRepo.findById(parentCommentId).isEmpty()) {
+        Comment parent = commentRepo.findById(parentCommentId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to reply to nonexistent comment id=" + parentCommentId);
-            throw new CommentNotFoundException("Could not find comment with id=" + parentCommentId);
-        }
-        Comment reply = new Comment(text, user, null, parentCommentId);
+            return new CommentNotFoundException("Could not find comment with id=" + parentCommentId);
+        });
+
+        Comment reply = Comment.builder()
+                .text(text)
+                .user(user)
+                .parentComment(parent)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
         commentRepo.save(reply);
         Logger.log(LoggerType.INFO, "Created reply id=" + reply.getId() + " to comment id=" + parentCommentId);
         return reply;
@@ -70,7 +86,7 @@ public class CommentService implements IVotable {
         existing.setUpdatedAt(LocalDateTime.now());
 
         try {
-            commentRepo.update(existing);
+            commentRepo.save(existing);
             Logger.log(LoggerType.INFO, "Comment updated successfully!");
             return existing;
         } catch (Exception e) {
@@ -101,12 +117,12 @@ public class CommentService implements IVotable {
 
         while (currentOptional.isPresent()) {
             Comment current = currentOptional.get();
-            if (current.getPostId() != null) {
-                return current.getPostId();
+            if (current.getPost() != null) {
+                return current.getPost().getId();
             }
-            Integer parentId = current.getParentCommentId();
-            if (parentId == null) break;
-            currentOptional = commentRepo.findById(parentId);
+            Comment parent = current.getParentComment();
+            if (parent == null) break;
+            currentOptional = commentRepo.findById(parent.getId());
         }
 
         throw new IllegalStateException("Could not trace postId for comment id=" + commentId);
@@ -116,16 +132,18 @@ public class CommentService implements IVotable {
 
     public List<Comment> getTopLevelComments(int postId) {
         return commentRepo.findByPostId(postId).stream()
-                .filter(c -> c.getParentCommentId() == null)
+                .filter(c -> c.getParentComment() == null)
                 .toList();
     }
 
     public int displayUpvotes(int id) {
-        return voteRepo.countVotesByCommentId(id, true);
+        Comment comment = commentRepo.findById(id).orElseThrow();
+        return voteRepo.countByCommentAndIsUpvote(comment, true);
     }
 
     public int displayDownvotes(int id) {
-        return voteRepo.countVotesByCommentId(id, false);
+        Comment comment = commentRepo.findById(id).orElseThrow();
+        return voteRepo.countByCommentAndIsUpvote(comment, false);
     }
 
 }
