@@ -21,7 +21,7 @@ public class UserService implements IUserService {
     }
 
     public boolean isUsernameExisting(String username) {
-        return userRepo.isUsernameTaken(username);
+        return userRepo.existsByUsername(username);
     }
 
     public boolean isEmailExisting(String email) {
@@ -66,8 +66,7 @@ public class UserService implements IUserService {
             return existingUser;
         }
 
-        userRepo.update(user);
-        return user;
+        return userRepo.save(user);  //daca Spring-ul vede ca id-ul e deja folosit face update in loc de insert
     }
 
     public void logoutUser() {

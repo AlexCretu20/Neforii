@@ -33,8 +33,8 @@ public class PostService implements IVotable, IPostService {
         return postRepository.findAll();
     }
 
-    public Post createPost(User user, String text) {
-        Post post = new Post(text, LocalDateTime.now(), false, user);
+    public Post createPost(User user, String content, String path, String ) {
+        Post post = new Post();
         postRepository.save(post);
         return post;
     }
@@ -43,8 +43,8 @@ public class PostService implements IVotable, IPostService {
         Optional<Post> postOptional = postRepository.findById(id);
         if (postOptional.isPresent()) {
             Post post = postOptional.get();
-            post.setText(text);
-            postRepository.update(post);
+            post.setContent(text);
+            postRepository.save(post);
             return true;
         }
         return false;
@@ -65,7 +65,7 @@ public class PostService implements IVotable, IPostService {
             Post post = posts.get(i);
             boolean updated = updateAward(post);
             if (updated) {
-                postRepository.update(post);
+                postRepository.save(post);
             }
         }
     }
@@ -76,7 +76,7 @@ public class PostService implements IVotable, IPostService {
             Post post = optionalPost.get();
             boolean updated = updateAward(post);
             if (updated) {
-                postRepository.update(post);
+                postRepository.save(post);
             }
         }
     }

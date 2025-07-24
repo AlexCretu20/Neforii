@@ -2,41 +2,61 @@ package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
 import ro.neforii.exception.VoteNotFoundException;
+import ro.neforii.model.Comment;
+import ro.neforii.model.Post;
+import ro.neforii.model.User;
 import ro.neforii.model.Vote;
 import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
+import ro.neforii.repository.UserRepository;
 import ro.neforii.repository.VoteRepository;
 import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
-import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class VoteService implements IVoteService {
-    private PostRepository postRepository;
-    private VoteRepository voteRepository;
-    private CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final VoteRepository voteRepository;
+    private final CommentRepository commentRepository;
 
-    public VoteService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
+    public VoteService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository, UserRepository userRepository) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
         this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
     }
 
     public String createVote(int userId, Integer postId, Integer commentId, boolean isUpvote) {
-        int checkIfAlreadyVoted = voteRepository.findVoteByTargetId(userId, postId, commentId).getId();
-        if (checkIfAlreadyVoted != 0) {
-            voteRepository.deleteById(checkIfAlreadyVoted);
+        User user =  userRepository.findById(userId).orElseThrow();
+        Optional<Vote> existingVoteOpt;
+
+        if(postId != null && commentId==null){
+            Post post = postRepository.findById(postId).orElseThrow();
+            existingVoteOpt=voteRepository.findByPostAndUser(post,user);
+
+            existingVoteOpt.ifPresent(v -> voteRepository.deleteById(v.getId()));
+
+            Vote vote = new Vote(isUpvote,post,null, user);
+            voteRepository.save(vote);
         }
-        Vote vote = new Vote(
-                isUpvote,
-                LocalDateTime.now(),
-                postId,
-                commentId,
-                userId
-        );
-        voteRepository.save(vote);
+        else if (commentId != null && postId == null) {
+            Comment comment = commentRepository.findById(commentId).orElseThrow();
+            existingVoteOpt = voteRepository.findByCommentAndUser(comment, user);
+
+            existingVoteOpt.ifPresent(v -> voteRepository.deleteById(v.getId()));
+
+            Vote vote = new Vote(isUpvote, null, comment, user);
+            voteRepository.save(vote);
+        }
+        else {
+            throw new IllegalArgumentException("Vote must target either a post or a comment");
+        }
+
         return "You have successfully voted!";
+
     }
 
     public void deleteVote(int voteId) {
