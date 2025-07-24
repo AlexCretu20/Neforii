@@ -4,10 +4,12 @@ import java.time.LocalDateTime;
 
 public record PostResponseDto(
         Integer id,
-        String text,
+        String title,
+        String content,
         Integer userId,
         LocalDateTime createdAt,
-        Boolean isAwarded
+        Boolean isAwarded,
+        String imagePath
 ) {
 }
 

@@ -22,7 +22,7 @@ public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
 
-        ICrudRepository<User> userRepository = new UserRepository();
+         IuserRepository = new UserRepository();
         ICrudRepository<Vote> voteRepository = new VoteRepository();
         ICrudRepository<Comment> commentRepository = new CommentRepository(userRepository);
         ICrudRepository<Post> postRepository = new PostRepository(userRepository);

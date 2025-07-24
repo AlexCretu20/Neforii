@@ -1,34 +1,11 @@
 package ro.neforii.mapper;
 
 import org.springframework.stereotype.Component;
-import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.model.Post;
 
 @Component
 public class PostMapper {
-    public PostRequestDto postToPostRequestDto(Post post) {
-        if (post == null) {
-            return null;
-        }
-
-        return new PostRequestDto(
-                post.getText(),
-                post.getUser().getId()
-        );
-    }
-
-    public Post postRequestDtoToPost(PostRequestDto postRequestDto) {
-        if (postRequestDto == null) {
-            return null;
-        }
-        return new Post(
-                //am comentat ca nu facea build ca userId nu e in Post
-                //to do
-//                postRequestDto.text(),
-//                postRequestDto.userId()
-        );
-    }
 
     public PostResponseDto postToPostResponseDto(Post post) {
         if (post == null) {
@@ -37,24 +14,13 @@ public class PostMapper {
 
         return new PostResponseDto(
                 post.getId(),
-                post.getText(),
+                post.getTitle(),
+                post.getContent(),
                 post.getUser().getId(),
                 post.getCreatedAt(),
-                post.isAwarded()
+                post.isAwarded(),
+                post.getImagePath()
         );
     }
 
-    public Post postResponseToPost(PostResponseDto postResponseDto) {
-        if (postResponseDto == null) {
-            return null;
-        }
-
-        return new Post(
-//                postResponseDto.text(),
-//                postResponseDto.createdAt(),
-//                postResponseDto.isAwarded();
-                //to do
-//                postResponseDto.userId()
-        );
-    }
 }

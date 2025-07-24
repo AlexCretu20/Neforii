@@ -22,7 +22,10 @@ public class Post {
     private int id;
 
     @Column(nullable = false, length = 255)
-    private String text;
+    private String title;
+
+    @Column(nullable = false, length = 255)
+    private String content;
 
     @Column(name = "image_path", length = 2048)
     String imagePath;
@@ -54,8 +57,9 @@ public class Post {
     )
     private List<Vote> votes = new ArrayList<>();
 
-    public Post(String text, LocalDateTime createdAt, boolean isAwarded, User user) {
-        this.text = text;
+    public Post(String title, String content, LocalDateTime createdAt, boolean isAwarded, User user) {
+        this.title = title;
+        this.content = content;
         this.createdAt = createdAt;
         this.isAwarded = isAwarded;
         this.user = user;
@@ -70,7 +74,8 @@ public class Post {
             sb.append("✬");
         }
         sb.append("\n");
-        sb.append("Text: ").append(text).append("\n");
+        sb.append("Text: ").append(title).append("\n");
+        sb.append("Text: ").append(content).append("\n");
         sb.append("Created at: ").append(createdAt).append("\n");
         sb.append("Created by: ").append(user.getUsername()).append("\n");
         sb.append("────────────────────────────");
