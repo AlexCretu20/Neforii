@@ -1,9 +1,12 @@
 package ro.neforii.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "users")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -11,12 +14,24 @@ import java.time.LocalDateTime;
 //equals folosita in User Service sa stim daca modelul de user primit pentru update e la fel cu userul existent
 @EqualsAndHashCode
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
     private String phoneNumber;
     private String description;
+
+    @Column(name = "created_at",nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public User(String username, String email, String password, String phoneNumber, String description) {
@@ -39,5 +54,10 @@ public class User {
         sb.append(" Created At : ").append(createdAt).append("\n");
         sb.append("───────────────────────────────────");
         return sb.toString();
+    }
+
+    @PrePersist   //createdAt va fi setat la momentul salvarii
+    public void prePersist(){
+        this.createdAt = LocalDateTime.now();
     }
 }
