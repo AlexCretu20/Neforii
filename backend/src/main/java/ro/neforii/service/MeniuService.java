@@ -102,7 +102,10 @@ public class MeniuService {
                 case "2" -> postUI.displayPostsForUser(userService.getCurrentUser().getId()); //mai trebuie adaugate comentariile pentru o postare
                 case "3" -> postUI.updatePostUI(userService.getCurrentUser());  //e gata
                 case "4" -> postUI.deletePostUI(userService.getCurrentUser());  //e gata
-                case "5" -> userUI.deleteUser(userService.getCurrentUser());//e gata
+                case "5" -> {
+                    userUI.deleteUser(userService.getCurrentUser());
+                    displayLoginMeniu();
+                }//e gata
                 case "0" -> flag = false;
                 default -> menuUI.invalidOption();
             }

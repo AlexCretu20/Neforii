@@ -34,8 +34,8 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         UserValidator userValidator = new UserValidator();
         UserUI userUI = new UserUI(scanner, userService, userValidator);
-        PostUI postUI = new PostUI(scanner, postService);
         CommentUI commentUI = new CommentUI(scanner, commentService);
+        PostUI postUI = new PostUI(scanner, postService,commentUI);
         VoteUI voteUI = new VoteUI(scanner, voteService);
         MenuUI menuUI = new MenuUI(scanner);
 

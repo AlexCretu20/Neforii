@@ -1,3 +1,12 @@
 package ro.neforii.dto.comment.create;
 
-public record ReplyToCommentRequestDto(String text, int userId) {}
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
+public record ReplyToCommentRequestDto(
+        @NotBlank(message = "Comment text can not be blank")
+        String text,
+
+        @Positive(message = "User id must be positive")
+        int userId
+) {}

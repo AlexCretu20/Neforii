@@ -86,6 +86,7 @@ public class CommentService implements IVotable {
             Logger.log(LoggerType.INFO, "Comment id=" + id + " deleted successfully");
         } catch (Exception e) {
             Logger.log(LoggerType.FATAL, "Failed to delete comment id=" + id);
+            throw new RuntimeException("Failed to delete comment with id=" + id);
         }
     }
 

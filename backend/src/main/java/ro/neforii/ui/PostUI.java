@@ -11,10 +11,12 @@ import java.util.Scanner;
 public class PostUI {
     private final Scanner scanner;
     private final PostService postService;
+    private final CommentUI commentUI;
 
-    public PostUI(Scanner scanner, PostService postService) {
+    public PostUI(Scanner scanner, PostService postService, CommentUI commentUI) {
         this.scanner = scanner;
         this.postService = postService;
+        this.commentUI = commentUI;
     }
 
     public void createPostUI(User currentUser) {
@@ -143,6 +145,7 @@ public class PostUI {
         System.out.println("\n--- My Posts ---");
         for (Post post : posts) {
             displayPostDetails(post);
+            commentUI.showCommentsForPost(post.getId());
         }
     }
 
