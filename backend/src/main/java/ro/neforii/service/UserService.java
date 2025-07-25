@@ -2,9 +2,9 @@ package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
 import ro.neforii.dto.user.update.UserUpdateRequestDto;
-import ro.neforii.exception.EmailAlreadyInUseException;
-import ro.neforii.exception.UserNotFoundException;
-import ro.neforii.exception.UsernameAlreadyInUseException;
+import ro.neforii.exception.user.EmailAlreadyInUseException;
+import ro.neforii.exception.user.UserNotFoundException;
+import ro.neforii.exception.user.UsernameAlreadyInUseException;
 import ro.neforii.model.User;
 import ro.neforii.repository.UserRepository;
 import ro.neforii.service.crud.CrudService;

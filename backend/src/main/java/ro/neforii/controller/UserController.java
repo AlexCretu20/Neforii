@@ -3,21 +3,21 @@ package ro.neforii.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ro.neforii.dto.user.UserResponseDto;
+import ro.neforii.dto.user.login.UserLoginRequestDto;
 import ro.neforii.dto.user.register.UserRegisterRequestDto;
 import ro.neforii.dto.user.update.UserUpdateRequestDto;
 import ro.neforii.mapper.UserMapper;
-import ro.neforii.dto.user.UserResponseDto;
-import ro.neforii.dto.user.login.UserLoginRequestDto;
 import ro.neforii.model.User;
-import ro.neforii.service.IUserService;
+import ro.neforii.service.UserService;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final IUserService userService;
+    private final UserService userService;
     private final UserMapper userMapper;
 
-    public UserController(IUserService userService, UserMapper userMapper) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
     }
@@ -30,7 +30,8 @@ public class UserController {
                     .status(HttpStatus.UNAUTHORIZED) // 401 daca nu se logheaza bn
                     .build(); //null body
         }
-        return ResponseEntity.ok(userMapper.userToUserResponseDto(user));
+        return ResponseEntity
+                .ok(userMapper.userToUserResponseDto(user));
     }
 
     @PostMapping("/register")
@@ -67,13 +68,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable int id) {
-        User user = userService.findById(id);
-        if (user == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND) // 404 daca nu gaseste userul
-                    .build();
-        }
-        userService.deleteUser(user);
+        userService.deleteById(id);
         return ResponseEntity
                 .noContent()
                 .build(); // 204 adica e succes si No Content(ca a fost sters)
@@ -81,13 +76,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable int id, @RequestBody UserUpdateRequestDto request) {
-        User mappedUser = userMapper.userUpdateRequestDtoToUser(request);
-        User updatedUser = userService.updateUser(id, mappedUser);
-        if (updatedUser == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND) // 404 daca nu gaseste userul
-                    .build();
-        }
+        User updatedUser = userService.update(id, request);
         return ResponseEntity
                 .ok(userMapper.userToUserResponseDto(updatedUser));
     }

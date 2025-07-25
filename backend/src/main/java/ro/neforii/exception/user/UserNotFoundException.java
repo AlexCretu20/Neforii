@@ -1,4 +1,4 @@
-package ro.neforii.exception;
+package ro.neforii.exception.user;
 
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException(String message) {
