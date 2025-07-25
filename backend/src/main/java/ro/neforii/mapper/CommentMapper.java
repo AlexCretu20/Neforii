@@ -20,17 +20,21 @@ public class CommentMapper {
 
         int upVotes = commentService.displayUpvotes(comment.getId());
         int downVotes = commentService.displayDownvotes(comment.getId());
+        int score = upVotes - downVotes;
 
         return new CommentResponseDto(
                 comment.getId(),
-                comment.getText(),
+                comment.getPost() != null ? comment.getPost().getId() : null,
+                comment.getParentComment() != null ? comment.getParentComment().getId() : null,
+                comment.getContent(),
                 comment.getUser().getUsername(),
+                upVotes,
+                downVotes,
+                score,
+                null,
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
-                comment.getPostId(),
-                comment.getParentCommentId(),
-                upVotes,
-                downVotes
+                comment.getReplies().stream().map(this::toCommentDto).toList()
         );
     }
 }

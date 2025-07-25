@@ -1,7 +1,19 @@
 package ro.neforii.dto.comment;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record CommentResponseDto(int id, String text, String username, LocalDateTime createdAt, LocalDateTime updatedAt,
-                                 Integer postId, Integer parentCommentId, int upVotes, int downVotes) {
-}
+public record CommentResponseDto(
+        int id,
+        Integer postId,
+        Integer parentId,
+        String content,
+        String author,
+        int upVotes,
+        int downVotes,
+        int score,
+        String userVote,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
+        List<CommentResponseDto> replies
+){}

@@ -22,7 +22,7 @@ public class Comment {
     private int id;
 
     @Column(nullable = false, length = 255)
-    private String text;
+    private String content;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -71,7 +71,7 @@ public class Comment {
         StringBuilder sb = new StringBuilder();
         sb.append("───────────────────────────────────\n")
                 .append("Comment ID : ").append(id).append("\n")
-                .append("Text : ").append(text).append("\n")
+                .append("Text : ").append(content).append("\n")
                 .append("Created At : ").append(createdAt).append("\n")
                 .append("Updated At : ").append(updatedAt).append("\n")
                 .append("By User : ").append(user.getUsername()).append("\n");

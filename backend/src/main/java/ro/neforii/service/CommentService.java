@@ -42,14 +42,14 @@ public class CommentService implements IVotable {
         });
     }
 
-    public Comment createCommentOnPost(String text, User user, int postId) {
+    public Comment createCommentOnPost(String content, User user, int postId) {
         Post post = postRepo.findById(postId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to comment on nonexistent post id=" + postId);
             return new PostNotFoundException("Post with id=" + postId + " not found");
         });
 
         Comment comment = Comment.builder()
-                .text(text)
+                .content(content)
                 .user(user)
                 .post(post)
                 .createdAt(LocalDateTime.now())
@@ -60,14 +60,14 @@ public class CommentService implements IVotable {
         return comment;
     }
 
-    public Comment createReplyToComment(String text, User user, int parentCommentId) {
+    public Comment createReplyToComment(String content, User user, int parentCommentId) {
         Comment parent = commentRepo.findById(parentCommentId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to reply to nonexistent comment id=" + parentCommentId);
             return new CommentNotFoundException("Could not find comment with id=" + parentCommentId);
         });
 
         Comment reply = Comment.builder()
-                .text(text)
+                .content(content)
                 .user(user)
                 .parentComment(parent)
                 .createdAt(LocalDateTime.now())
@@ -79,10 +79,10 @@ public class CommentService implements IVotable {
         return reply;
     }
 
-    public Comment updateComment(int id, String newText, User user) {
+    public Comment updateComment(int id, String newContent, User user) {
         Comment existing = getComment(id);
 
-        existing.setText(newText);
+        existing.setContent(newContent);
         existing.setUpdatedAt(LocalDateTime.now());
 
         try {

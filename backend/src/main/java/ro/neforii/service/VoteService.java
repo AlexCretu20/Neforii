@@ -79,4 +79,20 @@ public class VoteService implements IVoteService {
 //                .findFirst()
 //                .orElse(0);
 //    }
+
+    public String getVoteTypeForUser(Comment comment, User user){
+        Optional<Vote> vote = voteRepository.findByCommentAndUser(comment, user);
+
+        if(vote.isEmpty()){
+            return "none";
+        }
+
+        return vote.get().isUpvote() ? "up" : "down";
+    }
+
+    public void deleteVoteForComment(Comment comment, User user) {
+        Optional<Vote> vote = voteRepository.findByCommentAndUser(comment, user);
+        vote.ifPresent(v -> voteRepository.deleteById(v.getId()));
+    }
+
 }
