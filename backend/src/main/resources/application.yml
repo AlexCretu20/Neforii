@@ -14,6 +14,8 @@ management:
       exposure:
         include: mappings
 
+server:
+  port: 8080
 spring:
   datasource:
     url: jdbc:postgresql://13.48.203.214:5432/neforiidb
