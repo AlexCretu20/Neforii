@@ -8,9 +8,22 @@ logging:
   level:
     org.springdoc: DEBUG
 
-
 management:
   endpoints:
     web:
       exposure:
         include: mappings
+
+spring:
+  datasource:
+    url: jdbc:postgresql://13.48.203.214:5432/neforiidb
+    username: postgres
+    password: parola
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update #momentan tinem pe update, dar pt productie ar trb sa fie none
+#      show-sql: true
+    properties:
+      hibernate.format_sql: true
