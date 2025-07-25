@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserService implements CrudService<User, Integer> {
+public class UserService implements CrudService<User, Integer, UserUpdateRequestDto> {
+
     private User currentUser;
     private final UserRepository userRepo;
 
@@ -45,14 +46,14 @@ public class UserService implements CrudService<User, Integer> {
         if (existingUserOpt.isEmpty()) {
             throw new UserNotFoundException("The user with id " + id + " does not exist.");
         }
-        if(isUsernameExisting(requestDto.username())){
+        User existingUser = existingUserOpt.get();
+        if (!(requestDto.username().equals(existingUser.getUsername())) && isUsernameExisting(requestDto.username())) {
             throw new UsernameAlreadyInUseException("The username " + requestDto.username() + " is already in use.");
         }
-        if(isEmailExisting(requestDto.email())){
+        if (!(requestDto.email().equals(existingUser.getEmail())) && isEmailExisting(requestDto.email())) {
             throw new EmailAlreadyInUseException("The email " + requestDto.email() + " is already in use.");
         }
 
-        User existingUser = existingUserOpt.get();
         existingUser.setUsername(requestDto.username());
         existingUser.setEmail(requestDto.email());
         existingUser.setPassword(requestDto.password());
@@ -86,14 +87,6 @@ public class UserService implements CrudService<User, Integer> {
 
     public User findByUsername(String username) {
         Optional<User> user = userRepo.findByUsername(username);
-        if (user.isPresent()) {
-            return user.get();
-        }
-        return null;
-    }
-
-    public User findById(int id) {
-        Optional<User> user = userRepo.findById(id);
         if (user.isPresent()) {
             return user.get();
         }
