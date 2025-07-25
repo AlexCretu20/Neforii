@@ -27,6 +27,9 @@ public class Post {
     @Column(nullable = false, length = 255)
     private String content;
 
+    @Column(nullable = false, length = 255)
+    private String author;
+
     @Column(name = "image_path", length = 2048)
     String imagePath;
 
@@ -56,6 +59,7 @@ public class Post {
             orphanRemoval = true
     )
     private List<Vote> votes = new ArrayList<>();
+
 
     public Post(String title, String content, LocalDateTime createdAt, boolean isAwarded, User user) {
         this.title = title;

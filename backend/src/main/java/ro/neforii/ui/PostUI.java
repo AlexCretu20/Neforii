@@ -79,7 +79,7 @@ public class PostUI {
             return;
         }
 
-        boolean success = postService.deletePost(postId);
+        boolean success = postService.delete(postId);
         System.out.println(success ? "Post deleted successfully." : "Failed to delete post.");
     }
 

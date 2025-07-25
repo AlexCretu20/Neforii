@@ -14,4 +14,5 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findAll();
     void deleteById(int id);
     List<Post> findAllByUserId(int id);
+    boolean existsByTitle(String title);
 }
