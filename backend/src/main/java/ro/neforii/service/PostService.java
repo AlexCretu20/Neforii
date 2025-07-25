@@ -1,12 +1,10 @@
 package ro.neforii.service;
 
-import org.springframework.boot.autoconfigure.web.embedded.TomcatVirtualThreadsWebServerFactoryCustomizer;
 import org.springframework.stereotype.Service;
 import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.exception.TitleAlreadyInUseException;
 import ro.neforii.model.Post;
-import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.VoteRepository;
 import ro.neforii.service.crud.CrudService;
@@ -19,15 +17,12 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
 
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
-    private final CommentRepository commentRepository;
-    private final TomcatVirtualThreadsWebServerFactoryCustomizer tomcatVirtualThreadsWebServerFactoryCustomizer;
 
 
-    public PostService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository, TomcatVirtualThreadsWebServerFactoryCustomizer tomcatVirtualThreadsWebServerFactoryCustomizer) {
+    public PostService(PostRepository postRepository, VoteRepository voteRepository) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
-        this.commentRepository = commentRepository;
-        this.tomcatVirtualThreadsWebServerFactoryCustomizer = tomcatVirtualThreadsWebServerFactoryCustomizer;
+
     }
 
 

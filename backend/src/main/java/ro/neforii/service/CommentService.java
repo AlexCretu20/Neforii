@@ -109,7 +109,7 @@ public class CommentService implements IVotable {
 
     public List<Comment> getRepliesForComment(int commentId) {
         getComment(commentId);
-        return commentRepo.findByCommentId(commentId);
+        return commentRepo.findByParentCommentId(commentId);
     }
 
     public Integer findPostIdForComment(int commentId) {

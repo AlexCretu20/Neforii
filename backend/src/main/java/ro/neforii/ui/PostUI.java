@@ -1,9 +1,12 @@
 package ro.neforii.ui;
 
+import ro.neforii.dto.post.PostRequestDto;
+import ro.neforii.mapper.PostMapper;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.service.PostService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -20,10 +23,21 @@ public class PostUI {
     }
 
     public void createPostUI(User currentUser) {
-        System.out.print("Enter the text of your post: ");
-        String text = scanner.nextLine();
+        System.out.print("Enter the title of your post: ");
+        String title = scanner.nextLine();
+        System.out.print("Enter the content of your post: ");
+        String content = scanner.nextLine();
+        System.out.print("Enter the path of the for your post: ");
+        String imagePath = scanner.nextLine();
+        Post post = new Post();
+        post.setTitle(title);
+        post.setContent(content);
+        post.setAuthor(currentUser.getUsername());
+        post.setImagePath(imagePath);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUser(currentUser);
 
-        Post post = postService.createPost(currentUser, text);
+        postService.create(post);
         System.out.println("Post created successfully with ID: " + post.getId());
     }
 
@@ -49,11 +63,20 @@ public class PostUI {
             return;
         }
 
-        System.out.print("Enter the new text: ");
-        String newText = scanner.nextLine();
+        System.out.print("Enter the new title: ");
+        String newTitle = scanner.nextLine();
 
-        boolean success = postService.updatePost(postId, newText);
-        System.out.println(success ? "Post updated successfully." : "Failed to update post.");
+        System.out.print("Enter the new content: ");
+        String newContent = scanner.nextLine();
+
+        Post post = optionalPost.get();
+
+        post.setTitle(newTitle);
+        post.setContent(newContent);
+
+        PostRequestDto postDto = PostMapper.postToPostRequestDto(post);
+        postService.update(postId,postDto);
+        System.out.println("Post updated successfully.");
     }
 
 
@@ -79,8 +102,8 @@ public class PostUI {
             return;
         }
 
-        boolean success = postService.delete(postId);
-        System.out.println(success ? "Post deleted successfully." : "Failed to delete post.");
+        postService.deleteById(postId);
+        System.out.println("Post deleted successfully.");
     }
 
 

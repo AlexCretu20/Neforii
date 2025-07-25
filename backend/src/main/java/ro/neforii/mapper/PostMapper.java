@@ -1,6 +1,7 @@
 package ro.neforii.mapper;
 
 import org.springframework.stereotype.Component;
+import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.model.Post;
 
@@ -21,6 +22,20 @@ public class PostMapper {
                 post.getCreatedAt(),
                 post.isAwarded(),
                 post.getImagePath()
+        );
+    }
+
+    public static PostRequestDto postToPostRequestDto(Post post){
+        if (post == null) {
+            return null;
+        }
+
+        return new PostRequestDto(
+                post.getTitle(),
+                post.getContent(),
+                post.getImagePath(),
+                post.getAuthor(),
+                post.getId()
         );
     }
 
