@@ -1,13 +1,19 @@
 package ro.neforii.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ro.neforii.dto.comment.CommentResponseDto;
+import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.dto.post.PostResponseDto;
+import ro.neforii.mapper.CommentMapper;
 import ro.neforii.mapper.PostMapper;
+import ro.neforii.model.Comment;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
+import ro.neforii.service.CommentService;
 import ro.neforii.service.PostService;
 import ro.neforii.service.UserService;
 
@@ -21,12 +27,15 @@ public class PostController {
     private final PostService postService;
     private final PostMapper postMapper;
     private final UserService userService;
+    private final CommentService commentService;
+    private final CommentMapper commentMapper;
 
-    public PostController(PostService postService, PostMapper postMapper, UserService userService) {
+    public PostController(PostService postService, PostMapper postMapper, UserService userService, CommentService commentService,CommentMapper commentMapper) {
         this.postService = postService;
         this.postMapper = postMapper;
         this.userService = userService;
-
+        this.commentService=commentService;
+        this.commentMapper=commentMapper;
     }
 
     @PostMapping
@@ -100,6 +109,22 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(postMapper.postToPostResponseDto(post));
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable int id,@Valid @RequestBody CommentOnPostRequestDto request){
+        User user = userService.getCurrentUser();
+        if(user==null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Comment comment;
+        if(request.parentId()==null){
+            comment = commentService.createCommentOnPost(request.content(),user,id);
+        }else{
+            comment = commentService.createReplyToComment(request.content(),user, request.parentId());
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment));
     }
 
 }

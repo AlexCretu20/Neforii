@@ -4,8 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ro.neforii.dto.comment.*;
-import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
+import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.ReplyToCommentRequestDto;
 import ro.neforii.dto.comment.delete.SuccesMessageDto;
 import ro.neforii.dto.comment.update.CommentUpdateRequestDto;
@@ -33,18 +32,6 @@ public class CommentController {
         this.voteService = voteService;
     }
 
-    @PostMapping("/post/{postId}")
-    public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable int postId,@Valid @RequestBody CommentOnPostRequestDto request) {
-        User user = userService.getCurrentUser();
-        if(user==null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Comment comment = commentService.createCommentOnPost(request.text(), user, postId);
-        if(comment==null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); //postare inexistenta
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment));
-    }
 
     @PostMapping("/comment/{commentId}")
     public ResponseEntity<CommentResponseDto> createCommentOnComment(@PathVariable int commentId,@Valid @RequestBody ReplyToCommentRequestDto request) {
