@@ -9,7 +9,7 @@ namespace ImageProcessor
 {
     class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var baseDir = AppContext.BaseDirectory;
             var dlls = Directory.GetFiles(baseDir, "*.dll");
@@ -30,7 +30,9 @@ namespace ImageProcessor
                 Console.Error.WriteLine("No filters found in the output folder.");
                 return;
             }
-
+            Console.WriteLine(baseDir);
+            Console.WriteLine("aa");
+            Console.WriteLine("aa");
             var inputDir  = Path.Combine(baseDir, "Images", "Input");
             var outputDir = Path.Combine(baseDir, "Images", "Output");
             Directory.CreateDirectory(outputDir);
