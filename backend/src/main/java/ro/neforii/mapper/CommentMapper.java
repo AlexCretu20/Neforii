@@ -1,6 +1,8 @@
 package ro.neforii.mapper;
 
 import org.springframework.stereotype.Component;
+import ro.neforii.dto.comment.CommentResponseDto;
+import ro.neforii.model.Comment;
 import ro.neforii.service.CommentService;
 
 @Component

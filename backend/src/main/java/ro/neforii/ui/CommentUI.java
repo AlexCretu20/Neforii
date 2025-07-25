@@ -58,7 +58,7 @@ public class CommentUI {
         Comment comment = commentService.getComment(commentId);
 
         System.out.println("────────────────────────────");
-        System.out.println(comment.getId() + ". " + comment.getText() +
+        System.out.println(comment.getId() + ". " + comment.getContent() +
                 " --- by " + comment.getUser().getUsername() + " at " + comment.getCreatedAt());
         System.out.println("\nUpvotes: " + upVotes);
         System.out.println("Downvotes: " + downVotes);
@@ -80,7 +80,7 @@ public class CommentUI {
     // Recursive method to display comments and their replies
     private void displayCommentRecursive(List<Comment> all, Comment comment, int level) {
         String indent = "  ".repeat(level);
-        System.out.println(indent + comment.getId() + ". " + comment.getText() +
+        System.out.println(indent + comment.getId() + ". " + comment.getContent() +
                 " --- by " + comment.getUser().getUsername() + " at " + comment.getCreatedAt());
         System.out.println(indent + "Upvotes: " +
                 commentService.displayUpvotes(comment.getId()) + ", Downvotes: " +
@@ -118,7 +118,7 @@ public class CommentUI {
             return;
         }
 
-        System.out.println("Previous text: " + originalComment.getText());
+        System.out.println("Previous text: " + originalComment.getContent());
         System.out.println("Enter the new text (leave blank to cancel):");
         String text = scanner.nextLine().trim();
 
@@ -126,8 +126,6 @@ public class CommentUI {
             System.out.println("Update canceled.");
             return;
         }
-
-        Comment updatedComment = new Comment(commentId,text,originalComment.getCreatedAt(),null,originalComment.getUser(), originalComment.getPostId(), originalComment.getParentCommentId());
 
         commentService.updateComment(commentId,text,user);
         System.out.println("Comment with id "+commentId+" updated successfully!");

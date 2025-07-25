@@ -14,8 +14,8 @@ public class VoteMapper {
                 vote.getId(),
                 vote.isUpvote(),
                 vote.getCreatedAt(),
-                vote.getPostId(),
-                vote.getCommentId()
+                vote.getPost().getId(),
+                vote.getComment().getId()
         );
     }
 
