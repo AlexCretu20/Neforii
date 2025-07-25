@@ -86,11 +86,11 @@ public class CommentUI {
                 commentService.displayUpvotes(comment.getId()) + ", Downvotes: " +
                 commentService.displayDownvotes(comment.getId()));
 
-        for (Comment reply : all) {
-            if (reply.getParentCommentId() != null && reply.getParentCommentId().equals(comment.getId())) {
-                displayCommentRecursive(all, reply, level + 1);
-            }
-        }
+//        for (Comment reply : all) {
+//            if (reply.getParentCommentId() != null && reply.getParentCommentId().equals(comment.getId())) {
+//                displayCommentRecursive(all, reply, level + 1);
+//            }
+//        }
     }
 
     public int readValidCommentId(String prompt) {

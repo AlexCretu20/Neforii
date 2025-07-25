@@ -1,27 +1,82 @@
 package ro.neforii.service;
 
+import org.springframework.boot.autoconfigure.web.embedded.TomcatVirtualThreadsWebServerFactoryCustomizer;
 import org.springframework.stereotype.Service;
+import ro.neforii.dto.post.PostRequestDto;
+import ro.neforii.exception.PostNotFoundException;
+import ro.neforii.exception.TitleAlreadyInUseException;
 import ro.neforii.model.Post;
-import ro.neforii.model.User;
 import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.VoteRepository;
+import ro.neforii.service.crud.CrudService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class PostService implements IVotable, IPostService {
+public class PostService implements CrudService<Post, Integer, PostRequestDto> {
 
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
     private final CommentRepository commentRepository;
+    private final TomcatVirtualThreadsWebServerFactoryCustomizer tomcatVirtualThreadsWebServerFactoryCustomizer;
 
-    public PostService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository) {
+
+    public PostService(PostRepository postRepository, VoteRepository voteRepository, CommentRepository commentRepository, TomcatVirtualThreadsWebServerFactoryCustomizer tomcatVirtualThreadsWebServerFactoryCustomizer) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
         this.commentRepository = commentRepository;
+        this.tomcatVirtualThreadsWebServerFactoryCustomizer = tomcatVirtualThreadsWebServerFactoryCustomizer;
+    }
+
+
+    //CREATE methods
+    @Override
+    public Post create(Post post) {
+        return postRepository.save(post);
+    }
+
+
+    //READ methods
+    @Override
+    public Optional<Post> findById(Integer id){
+        return postRepository.findById(id);
+    }
+
+    @Override
+    public List<Post> findAll() {
+        return postRepository.findAll();
+    }
+
+    //UPDATE methods
+    @Override
+    public Post update (Integer id, PostRequestDto postRequestDto) {
+        Optional<Post> postOptional = findById(id);
+
+        if (postOptional.isEmpty()) {
+            throw new PostNotFoundException("The post with id " + id + " does not exist.");
+        }
+
+        Post post = postOptional.get();
+
+        if (!(postRequestDto.title().equals(post.getTitle())) && isTitleExsiting(post.getTitle()) ){
+            throw new TitleAlreadyInUseException("The title already exists.");
+        }
+
+        post.setTitle(postRequestDto.title());
+        post.setContent(postRequestDto.content());
+        post.setImagePath(postRequestDto.imagePath());
+
+        return postRepository.save(post);
+
+    }
+
+    //DELETE methods
+    @Override
+    public void deleteById(Integer id) {
+        postRepository.deleteById(id);
+
     }
 
     public Post getPostById(int id) {
@@ -31,43 +86,6 @@ public class PostService implements IVotable, IPostService {
 
     public List<Post> getAllPosts(){
         return postRepository.findAll();
-    }
-
-    public Post createPost(User user, String title, String content) {
-        if (user == null) {
-            return null; // sau throw UnauthorizedException
-        }
-
-        Post post = Post.builder()
-                .title(title)
-                .content(content)
-                .createdAt(LocalDateTime.now())
-                .isAwarded(false)
-                .user(user)
-                .build();
-
-        return postRepository.save(post);
-    }
-
-
-    public boolean updatePost(int id, String text) {
-        Optional<Post> postOptional = postRepository.findById(id);
-        if (postOptional.isPresent()) {
-            Post post = postOptional.get();
-            post.setContent(text);
-            postRepository.save(post);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean deletePost(int id) {
-        Optional<Post> postOptional = postRepository.findById(id);
-        if (postOptional.isPresent()) {
-            postRepository.deleteById(id);
-            return true;
-        }
-        return false;
     }
 
     public void updateAwardsForAllPosts() {
@@ -121,5 +139,9 @@ public class PostService implements IVotable, IPostService {
 
     public List<Post> findAllPostsByUser(int userId){
         return postRepository.findAllByUserId(userId);
+    }
+
+    public boolean isTitleExsiting(String title){
+        return postRepository.existsByTitle(title);
     }
 }

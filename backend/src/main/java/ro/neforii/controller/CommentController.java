@@ -1,16 +1,12 @@
 package ro.neforii.controller;
 
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ro.neforii.dto.comment.*;
-import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
-import ro.neforii.dto.comment.create.ReplyToCommentRequestDto;
-import ro.neforii.dto.comment.update.CommentUpdateRequestDto;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ro.neforii.mapper.CommentMapper;
 import ro.neforii.model.Comment;
-import ro.neforii.model.User;
 import ro.neforii.service.CommentService;
 import ro.neforii.service.UserService;
 

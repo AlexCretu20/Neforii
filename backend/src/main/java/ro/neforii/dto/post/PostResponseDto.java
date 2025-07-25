@@ -6,6 +6,7 @@ public record PostResponseDto(
         Integer id,
         String title,
         String content,
+        String author,
         Integer userId,
         LocalDateTime createdAt,
         Boolean isAwarded,
