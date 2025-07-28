@@ -25,6 +25,12 @@ public class UserService implements CrudService<User, Integer, UserUpdateRequest
     //CREATE methods
     @Override
     public User create(User user) {
+        if (isUsernameExisting(user.getUsername())) {
+            throw new UsernameAlreadyInUseException(user.getUsername());
+        }
+        if (isEmailExisting(user.getEmail())) {
+            throw new EmailAlreadyInUseException(user.getEmail());
+        }
         return userRepo.save(user);
     }
 
@@ -47,11 +53,11 @@ public class UserService implements CrudService<User, Integer, UserUpdateRequest
             throw new UserNotFoundException("The user with id " + id + " does not exist.");
         }
         User existingUser = existingUserOpt.get();
-        if (!(requestDto.username().equals(existingUser.getUsername())) && isUsernameExisting(requestDto.username())) {
-            throw new UsernameAlreadyInUseException("The username " + requestDto.username() + " is already in use.");
+        if (!requestDto.username().equals(existingUser.getUsername()) && isUsernameExisting(requestDto.username())) {
+            throw new UsernameAlreadyInUseException(requestDto.username());
         }
-        if (!(requestDto.email().equals(existingUser.getEmail())) && isEmailExisting(requestDto.email())) {
-            throw new EmailAlreadyInUseException("The email " + requestDto.email() + " is already in use.");
+        if (!requestDto.email().equals(existingUser.getEmail()) && isEmailExisting(requestDto.email())) {
+            throw new EmailAlreadyInUseException(requestDto.email());
         }
 
         existingUser.setUsername(requestDto.username());

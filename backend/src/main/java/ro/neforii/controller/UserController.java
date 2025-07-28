@@ -36,22 +36,11 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@RequestBody UserRegisterRequestDto request) {
-        if (userService.isUsernameExisting(request.username())) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST) // 400 daca username-ul e deja folosit
-                    .build(); //null body
-        }
-        if (userService.isEmailExisting(request.email())) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST) // 400 daca email-ul e deja folosit
-                    .build(); //null body
-        }
-
         User user = userMapper.userRegisterRequestDtoToUser(request);
-        userService.registerUser(user);
+        User created = userService.create(user);
         return ResponseEntity
                 .status(HttpStatus.CREATED) // 201 ca s-a creat
-                .body(userMapper.userToUserResponseDto(user));
+                .body(userMapper.userToUserResponseDto(created));
     }
 
     @GetMapping("/{username}")
