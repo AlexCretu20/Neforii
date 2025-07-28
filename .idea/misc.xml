@@ -12,12 +12,14 @@
         <option value="$PROJECT_DIR$/personal/pom.xml" />
         <option value="$PROJECT_DIR$/backend/pom.xml" />
         <option value="$PROJECT_DIR$/neforii-cli/pom.xml" />
+        <option value="$PROJECT_DIR$/cli-neforii/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
       <set>
         <option value="$PROJECT_DIR$/Backend/pom.xml" />
         <option value="$PROJECT_DIR$/Personal/pom.xml" />
+        <option value="$PROJECT_DIR$/neforii-cli/pom.xml" />
       </set>
     </option>
   </component>
