@@ -14,3 +14,8 @@ C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\obj\Debug\net9.0\Fil
 C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\obj\Debug\net9.0\refint\Filters.dll
 C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\obj\Debug\net9.0\Filters.pdb
 C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\obj\Debug\net9.0\ref\Filters.dll
+C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\FiltersDlls\net9.0\Filters.deps.json
+C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\FiltersDlls\net9.0\Filters.dll
+C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\FiltersDlls\net9.0\Filters.pdb
+C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\FiltersDlls\net9.0\AppCore.dll
+C:\Info\ZTH\Proiect 1 CLI\image-processing-pipeline\Filters\FiltersDlls\net9.0\AppCore.pdb

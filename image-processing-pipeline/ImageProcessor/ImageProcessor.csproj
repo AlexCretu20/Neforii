@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Folder Include="bin\Debug\net9.0\Images\" />
-    <Folder Include="Images\" />
+    <Folder Include="Images\Output\" />
   </ItemGroup>
 
   <ItemGroup>

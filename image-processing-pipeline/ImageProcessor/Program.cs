@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Drawing;
+using System.Security.AccessControl;
 using AppCore;
 
 namespace ImageProcessor
@@ -11,15 +12,16 @@ namespace ImageProcessor
     {
         private static void Main(string[] args)
         {
-            var baseDir = AppContext.BaseDirectory;
-            var dlls = Directory.GetFiles(baseDir, "*.dll");
+            var baseDir = AppContext.BaseDirectory; // bin/debug/net9,0
+            var rootDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..")); 
+            var filtersDir = Path.GetFullPath(Path.Combine(rootDir, "..", "Filters", "FiltersDlls", "net9.0")); 
 
-            
+            var dlls = Directory.GetFiles(filtersDir, "*.dll"); // all dlls
             
             var filters = dlls
-                .Select(Assembly.LoadFrom)
-                .SelectMany(asm => asm.GetTypes())
-                .Where(t => typeof(IFilter).IsAssignableFrom(t)
+                .Select(Assembly.LoadFrom)  
+                .SelectMany(asm => asm.GetTypes()) // ia tot din dll
+                .Where(t => typeof(IFilter).IsAssignableFrom(t) // implementeaza interfata dar nu sunt interfete sau clase abstracte
                             && !t.IsInterface
                             && !t.IsAbstract)
                 .Select(t => (IFilter)Activator.CreateInstance(t))
@@ -27,15 +29,12 @@ namespace ImageProcessor
 
             if (!filters.Any())
             {
-                Console.Error.WriteLine("No filters found in the output folder.");
+                Console.Error.WriteLine("No filters found.");
                 return;
             }
-            Console.WriteLine(baseDir);
-            Console.WriteLine("aa");
-            Console.WriteLine("aa");
-            var inputDir  = Path.Combine(baseDir, "Images", "Input");
-            var outputDir = Path.Combine(baseDir, "Images", "Output");
-            Directory.CreateDirectory(outputDir);
+            
+            var inputDir  = Path.Combine(rootDir, "Images", "Input");
+            var outputDir = Path.Combine(rootDir, "Images", "Output");
 
             var imageFiles = Directory.EnumerateFiles(inputDir)
                 .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
@@ -52,14 +51,17 @@ namespace ImageProcessor
             {
                 using var srcImg = (Bitmap)Image.FromFile(imgPath);
                 var fileName = Path.GetFileName(imgPath);
+                
 
                 foreach (var filter in filters)
                 {
-                    using var outImg = filter.Apply(srcImg);
+                    using var clonedImg = new Bitmap(srcImg); // e dubios fara clona, aparent SystemDrawing.Bitmap nu prea e recomandat
+                    using var outImg = filter.Apply(clonedImg);
+                    
                     var outName = $"{filter.GetType().Name}_{fileName}";
                     var outPath = Path.Combine(outputDir, outName);
                     outImg.Save(outPath);
-                    Console.WriteLine($" {fileName} → {outName}");
+                    Console.WriteLine($" {fileName} -> {outName}");
                 }
             }
 
