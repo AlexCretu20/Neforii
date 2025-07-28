@@ -30,34 +30,39 @@ public class VoteService implements IVoteService {
     }
 
     public String createVote(int userId, Integer postId, Integer commentId, boolean isUpvote) {
-        User user =  userRepository.findById(userId).orElseThrow();
-        Optional<Vote> existingVoteOpt;
+        User user = userRepository.findById(userId).orElseThrow();
 
-        if(postId != null && commentId==null){
+        if (postId != null && commentId == null) {
             Post post = postRepository.findById(postId).orElseThrow();
-            existingVoteOpt=voteRepository.findByPostAndUser(post,user);
+            Optional<Vote> existingVoteOpt = voteRepository.findByPostAndUser(post, user);
 
-            existingVoteOpt.ifPresent(v -> voteRepository.deleteById(v.getId()));
-
-            Vote vote = new Vote(isUpvote,post,null, user);
-            voteRepository.save(vote);
-        }
-        else if (commentId != null && postId == null) {
+            if (existingVoteOpt.isPresent()) {
+                Vote vote = existingVoteOpt.get();
+                vote.setUpvote(isUpvote);
+                voteRepository.save(vote);
+            } else {
+                Vote vote = new Vote(isUpvote, post, null, user);
+                voteRepository.save(vote);
+            }
+        } else if (commentId != null && postId == null) {
             Comment comment = commentRepository.findById(commentId).orElseThrow();
-            existingVoteOpt = voteRepository.findByCommentAndUser(comment, user);
+            Optional<Vote> existingVoteOpt = voteRepository.findByCommentAndUser(comment, user);
 
-            existingVoteOpt.ifPresent(v -> voteRepository.deleteById(v.getId()));
-
-            Vote vote = new Vote(isUpvote, null, comment, user);
-            voteRepository.save(vote);
-        }
-        else {
+            if (existingVoteOpt.isPresent()) {
+                Vote vote = existingVoteOpt.get();
+                vote.setUpvote(isUpvote); // update vot existent
+                voteRepository.save(vote);
+            } else {
+                Vote vote = new Vote(isUpvote, null, comment, user);
+                voteRepository.save(vote);
+            }
+        } else {
             throw new IllegalArgumentException("Vote must target either a post or a comment");
         }
 
         return "You have successfully voted!";
-
     }
+
 
     public void deleteVote(int voteId) {
         voteRepository.deleteById(voteId);

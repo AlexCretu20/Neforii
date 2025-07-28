@@ -43,9 +43,9 @@ public class CommentController {
 
         Comment comment = commentService.createReplyToComment(request.text(), user, commentId);
         if(comment==null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); //postare inexistenta
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment,user));
     }
 
 
@@ -59,7 +59,7 @@ public class CommentController {
         User user = comment.getUser();
 
         Comment updated = commentService.updateComment(id, request.content(), user);
-        CommentResponseDto response = commentMapper.toCommentDto(updated);
+        CommentResponseDto response = commentMapper.toCommentDto(updated,user);
         return ResponseEntity.ok(response);
     }
 
@@ -81,7 +81,9 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
 
-        CommentResponseDto response = commentMapper.toCommentDto(comment);
+        User user = userService.getCurrentUser();
+
+        CommentResponseDto response = commentMapper.toCommentDto(comment,user);
         return ResponseEntity.ok(response);
     }
 
@@ -93,7 +95,8 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
 
-        User user = userService.getCurrentUser();
+//        User user = userService.getCurrentUser();
+        User user = userService.findByUsername("andrei");
         if(user == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

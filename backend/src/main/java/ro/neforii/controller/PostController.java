@@ -19,6 +19,7 @@ import ro.neforii.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -113,7 +114,7 @@ public class PostController {
 
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable int id,@Valid @RequestBody CommentOnPostRequestDto request){
-        User user = userService.getCurrentUser();
+        User user = userService.findByUsername(request.author());
         if(user==null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -124,7 +125,29 @@ public class PostController {
         }else{
             comment = commentService.createReplyToComment(request.content(),user, request.parentId());
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment, user));
+
     }
+
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable int postId) {
+        User user = userService.getCurrentUser();
+        List<Comment> topLevelComments = commentService.getTopLevelComments(postId);
+
+        List<CommentResponseDto> dtos = topLevelComments.stream()
+                .map(c -> commentMapper.toCommentDto(c, user))
+                .toList();
+
+        int total = commentService.getComments().stream()
+                .filter(c -> c.getPost() != null && c.getPost().getId() == postId)
+                .toList().size();
+
+        return ResponseEntity.ok(Map.of(
+                "data", dtos,
+                "total", total
+        ));
+    }
+
+
 
 }
