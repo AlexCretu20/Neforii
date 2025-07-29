@@ -3,7 +3,9 @@ package client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
+import models.user.UserLoginRequestDto;
 import models.user.UserRegisterRequestDto;
+import models.user.UserUpdateRequestDto;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,7 +30,7 @@ public class UserClient {
     public ApiResult register(UserRegisterRequestDto registerRequestDto) {// dto ul o sa fie creat in meniu, de la datele utilizatorului
         try {
             String url = baseUrl + "/register";
-            String reqBody = objectMapper.writeValueAsString(registerRequestDto); //arunca eroare JsonProcessingException
+            String reqBody = objectMapper.writeValueAsString(registerRequestDto);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -36,7 +38,7 @@ public class UserClient {
                     .POST(HttpRequest.BodyPublishers.ofString(reqBody))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());//arunca IOException sau InterruptedException
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             int statusCode = response.statusCode();
 
             boolean isSuccess;
@@ -59,6 +61,142 @@ public class UserClient {
 
         } catch (JsonProcessingException e) {
             return new ApiResult(false, "Couldn't map the User request to JSON.", null);
+        } catch (IOException | InterruptedException e) {
+            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
+        }
+    }
+
+    //LOGIN -> baseUrl/login
+    public ApiResult login(UserLoginRequestDto userLoginRequestDto) {
+        try {
+            String url = baseUrl + "/login";
+            String reqBody = objectMapper.writeValueAsString(userLoginRequestDto);
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(reqBody))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+
+            boolean isSuccess;
+            String message;
+            if (statusCode >= 200 && statusCode < 300) {
+                isSuccess = true;
+                message = "You have successfully logged in!";
+            } else if (statusCode >= 400 && statusCode < 500) {
+                isSuccess = false;
+                if (response.body() != null && !response.body().isEmpty()) {
+                    message = response.body();
+                } else {
+                    message = "Invalid user data for login!";
+                }
+            } else {
+                isSuccess = false;
+                message = "Unexpected error has appeared! Please try again later.";
+            }
+            return new ApiResult(isSuccess, message, response.body());
+        } catch (JsonProcessingException e) {
+            return new ApiResult(false, "Couldn't map the User request to JSON.", null);
+        } catch (IOException | InterruptedException e) {
+            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
+        }
+    }
+
+    //get user by username -> baseUrl/{username}
+    public ApiResult getUserByUsername(String username) {
+        try {
+            String url = baseUrl + "/" + username;
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+
+            boolean isSuccess;
+            String message;
+            if (statusCode >= 200 && statusCode < 300) {
+                isSuccess = true;
+                message = "User found successfully!";
+            } else if (statusCode == 404) {
+                isSuccess = false;
+                message = "User not found!";
+            } else {
+                isSuccess = false;
+                message = "Unexpected error has appeared! Please try again later.";
+            }
+            return new ApiResult(isSuccess, message, response.body());
+        } catch (IOException | InterruptedException e) {
+            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
+        }
+    }
+
+    //delete user by id -> baseUrl/{id}
+    public ApiResult deleteUserById(int id) {
+        try {
+            String url = baseUrl + "/" + id;
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .DELETE()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+
+            boolean isSuccess;
+            String message;
+            if (statusCode == 204) {
+                isSuccess = true;
+                message = "User deleted successfully!";
+            } else if (statusCode == 404) {
+                isSuccess = false;
+                message = "User not found!";
+            } else {
+                isSuccess = false;
+                message = "Unexpected error has appeared! Please try again later.";
+            }
+            return new ApiResult(isSuccess, message, response.body());
+        } catch (IOException | InterruptedException e) {
+            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
+        }
+    }
+
+    //update user by id -> baseUrl/{id}
+    public ApiResult updateUser(int id, UserUpdateRequestDto userUpdateRequestDto) {
+        try {
+            String url = baseUrl + "/" + id;
+            String reqBody = objectMapper.writeValueAsString(userUpdateRequestDto);
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(reqBody))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+
+            boolean isSuccess;
+            String message;
+            if (statusCode >= 200 && statusCode < 300) {
+                isSuccess = true;
+                message = "User updated successfully!";
+            } else if (statusCode == 404) {
+                isSuccess = false;
+                message = "User not found!";
+            } else {
+                isSuccess = false;
+                message = "Unexpected error has appeared! Please try again later.";
+            }
+            return new ApiResult(isSuccess, message, response.body());
         } catch (IOException | InterruptedException e) {
             return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
         }

@@ -3,8 +3,9 @@ import models.ApiResult;
 import models.user.UserRegisterRequestDto;
 
 public class MainMenu {
-    private static final String BASE_URL= "http://13.53.190.111:8080/users";//url backend
+    private static final String BASE_URL = "http://13.53.190.111:8080/users";//url backend
     private static final UserClient userClient = new UserClient(BASE_URL);
+
     public static void main(String[] args) {
         //este doar de test treaba asta
         UserRegisterRequestDto request = new UserRegisterRequestDto(
