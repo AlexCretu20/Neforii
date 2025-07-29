@@ -3,14 +3,16 @@ package ro.neforii.dto.post;
 import java.time.LocalDateTime;
 
 public record PostResponseDto(
-        Integer id,
+        String id,
         String title,
         String content,
         String author,
-        Integer userId,
+        String subreddit,
+        int upvotes,
+        int downvotes,
+        int score,
+        int commentCount,
+        String userVote, // poate fi null
         LocalDateTime createdAt,
-        Boolean isAwarded,
-        String imagePath
-) {
-}
-
+        LocalDateTime updatedAt
+) {}

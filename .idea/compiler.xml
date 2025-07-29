@@ -7,8 +7,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="cli-neforii" />
         <module name="personal" />
+        <module name="cli-neforii" />
       </profile>
       <profile name="Annotation profile for backend" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -17,25 +17,13 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
-        <module name="backend (2)" />
-        <module name="backend (1)" />
+        <module name="backend" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="backend" target="17" />
-      <module name="neforii-cli" target="21" />
-    </bytecodeTargetLevel>
-  </component>
-  <component name="EclipseCompilerSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="backend" options="" />
-    </option>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="backend" options="-parameters" />
-      <module name="backend (1)" options="-parameters" />
-      <module name="backend (2)" options="-parameters" />
     </option>
   </component>
 </project>

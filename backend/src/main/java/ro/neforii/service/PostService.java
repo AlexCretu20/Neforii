@@ -2,6 +2,7 @@ package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
 import ro.neforii.dto.post.PostRequestDto;
+import ro.neforii.dto.post.PostUpdateRequestDto;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.exception.TitleAlreadyInUseException;
 import ro.neforii.model.Post;
@@ -61,11 +62,31 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
 
         post.setTitle(postRequestDto.title());
         post.setContent(postRequestDto.content());
-        post.setImagePath(postRequestDto.imagePath());
+        //post.setImagePath(postRequestDto.imagePath());
 
         return postRepository.save(post);
 
     }
+
+    public Post updatePartial(Integer id, PostUpdateRequestDto dto) {
+        Post post = findById(id).orElseThrow(() ->
+                new PostNotFoundException("Post with ID " + id + " not found."));
+
+        if (dto.title() != null && !dto.title().isBlank()) {
+            if (!dto.title().equals(post.getTitle()) && isTitleExsiting(dto.title())) {
+                throw new TitleAlreadyInUseException("The title already exists.");
+            }
+            post.setTitle(dto.title());
+        }
+
+        if (dto.content() != null) {
+            post.setContent(dto.content());
+        }
+
+        post.setUpdatedAt(java.time.LocalDateTime.now());
+        return postRepository.save(post);
+    }
+
 
     //DELETE methods
     @Override
