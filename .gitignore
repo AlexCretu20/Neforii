@@ -2,6 +2,7 @@
 /shelf/
 /.idea/workspace.xml
 .idea/workspace.xml
+**/.idea/
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files
@@ -15,3 +16,7 @@
 .idea/httpRequests/
 backend/production/
 
+# pentru .net
+**/bin/
+**/obj/
+Plugins/*
