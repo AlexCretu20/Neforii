@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public record PostResponseDto(
         UUID id,
         String title,

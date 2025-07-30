@@ -8,50 +8,54 @@ import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.exception.TitleAlreadyInUseException;
 import ro.neforii.mapper.PostMapper;
 import ro.neforii.model.Post;
+import ro.neforii.model.User;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.VoteRepository;
 import ro.neforii.service.crud.CrudService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class PostService implements CrudService<Post, UUID, PostRequestDto> {
+public class PostService {
 
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
+    private final UserService userService;
     private final PostMapper postMapper;
 
 
-    public PostService(PostRepository postRepository, VoteRepository voteRepository, PostMapper postMapper) {
+    public PostService(PostRepository postRepository, VoteRepository voteRepository, PostMapper postMapper, UserService userService) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
         this.postMapper = postMapper;
+        this.userService = userService;
     }
 
 
-    //CREATE methods
-    @Override
-    public Post create(Post post) {
-        return postRepository.save(post);
+    public PostResponseDto create(PostRequestDto postRequestDto) {
+        User user = userService.getUserByUsername(postRequestDto.author());
+        Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
+
+        Post savedPost = postRepository.save(post);
+
+        return postMapper.postToPostResponseDto(savedPost, user.getId());
     }
 
 
     //READ methods
-    @Override
-    public Optional<Post> findById(UUID id){
+    public Optional<Post> findById(UUID id) {
         return postRepository.findById(id);
     }
 
-    @Override
     public List<Post> findAll() {
         return postRepository.findAll();
     }
 
     //UPDATE methods
-    @Override
-    public Post update (UUID id, PostRequestDto postRequestDto) {
+    public Post update(UUID id, PostRequestDto postRequestDto) {
         Optional<Post> postOptional = findById(id);
 
         if (postOptional.isEmpty()) {
@@ -60,7 +64,7 @@ public class PostService implements CrudService<Post, UUID, PostRequestDto> {
 
         Post post = postOptional.get();
 
-        if (!(postRequestDto.title().equals(post.getTitle())) && isTitleExsiting(post.getTitle()) ){
+        if (!(postRequestDto.title().equals(post.getTitle())) && isTitleExsiting(post.getTitle())) {
             throw new TitleAlreadyInUseException("The title already exists.");
         }
 
@@ -92,8 +96,6 @@ public class PostService implements CrudService<Post, UUID, PostRequestDto> {
     }
 
 
-    //DELETE methods
-    @Override
     public void deleteById(UUID id) {
         postRepository.deleteById(id);
 
@@ -160,11 +162,13 @@ public class PostService implements CrudService<Post, UUID, PostRequestDto> {
         return false;
     }
 
-    public List<Post> findAllPostsByUser(UUID userId){
+    public List<Post> findAllPostsByUser(UUID userId) {
         return postRepository.findAllByUserId(userId);
     }
 
-    public boolean isTitleExsiting(String title){
+    public boolean isTitleExsiting(String title) {
         return postRepository.existsByTitle(title);
     }
+
+
 }

@@ -124,6 +124,10 @@ public class UserService implements CrudService<User, UUID, UserUpdateRequestDto
         userRepo.deleteById(user.getId());
         logoutUser();
     }
+
+    public User getUserByUsername(String username) {
+        return userRepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found."));
+    }
 }
 
 

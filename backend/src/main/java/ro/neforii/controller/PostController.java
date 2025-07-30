@@ -49,25 +49,10 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<PostResponseDto> newPost(@Valid @RequestBody PostRequestDto postRequestDto) {
-        User user = userService.findByUsername("andrei");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<SuccessResponse<PostResponseDto>> createPost(@Valid @RequestBody PostRequestDto postRequestDto) {
+        PostResponseDto postResponseDto = postService.create(postRequestDto);
 
-        Post post = new Post();
-        post.setTitle(postRequestDto.title());
-        post.setContent(postRequestDto.content());
-        post.setAuthor(postRequestDto.author());
-        post.setSubreddit(postRequestDto.subreddit());
-        post.setCreatedAt(LocalDateTime.now());
-        post.setAwarded(false);
-        post.setUser(user);
-
-        postService.create(post);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(postMapper.postToPostResponseDto(post, user.getId()));
+        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
     }
 
     @PutMapping("/{id}")
