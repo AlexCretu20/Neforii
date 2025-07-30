@@ -79,6 +79,19 @@ public class PostService {
         return postMapper.postToPostResponseDto(updatedPost, post.getUser().getId());
     }
 
+    public void deletePost(UUID id, UUID currentUserId) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
+
+        // TODO cand avem autentificare putem verifica daca userul curent este cel care a creat postarea
+//        if (!post.getUser().getId().equals(currentUserId)) {
+//            throw new PostNotFoundException("You are not authorized to delete this post.");
+//        }
+
+        postRepository.delete(post);
+
+    }
+
 //    public Post update(UUID id, PostRequestDto postRequestDto) {
 //        Optional<Post> postOptional = findById(id);
 //

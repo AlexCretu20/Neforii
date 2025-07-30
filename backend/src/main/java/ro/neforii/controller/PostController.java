@@ -80,6 +80,14 @@ public class PostController {
         return ResponseEntity.ok(new SuccessResponse<>(updatedPost));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<SuccessResponse<String>> deletePost(@PathVariable UUID id) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        postService.deletePost(id, currentUserId);
+
+        return ResponseEntity.ok(new SuccessResponse<>("Postarea a fost ștearsă cu succes")); // mesajul asta il vrea api-ul
+    }
+
 //    @PutMapping("/{id}")
 //    public ResponseEntity<PostResponseDto> update(@PathVariable UUID id, @RequestBody PostUpdateRequestDto dto) {
 //        Post updated = postService.updatePartial(id, dto);
