@@ -18,11 +18,11 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="backend (2)" />
+        <module name="backend" />
         <module name="backend (1)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="backend" target="17" />
       <module name="neforii-cli" target="21" />
     </bytecodeTargetLevel>
   </component>
