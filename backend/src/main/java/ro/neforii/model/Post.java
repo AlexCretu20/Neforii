@@ -42,7 +42,7 @@ public class Post {
     private LocalDateTime updatedAt;
 
     @Column(name = "is_awarded")
-    private boolean isAwarded; // defualt false
+    private boolean isAwarded; // default false
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id") // id utlizator care a lasat postarea

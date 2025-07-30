@@ -24,20 +24,20 @@ public class PostMapper {
                 .map(v -> v.isUpvote() ? "up" : "down")
                 .orElse(null);
 
-        return new PostResponseDto(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getAuthor(),
-                post.getSubreddit(), // e un String acum
-                upvotes,
-                downvotes,
-                score,
-                post.getComments().size(),
-                userVote,
-                post.getCreatedAt(),
-                post.getUpdatedAt()
-        );
+        return PostResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .author(post.getAuthor())
+                .subreddit(post.getSubreddit()) // presupun ca subreddit e un obiect cu nume
+                .upvotes(upvotes)
+                .downvotes(downvotes)
+                .score(score)
+                .commentCount(post.getComments().size())
+                .userVote(userVote)
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .build();
     }
 
     public Post postRequestDtoToPost(PostRequestDto dto) {

@@ -2,9 +2,11 @@ package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
 import ro.neforii.dto.post.PostRequestDto;
+import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.dto.post.PostUpdateRequestDto;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.exception.TitleAlreadyInUseException;
+import ro.neforii.mapper.PostMapper;
 import ro.neforii.model.Post;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.VoteRepository;
@@ -19,12 +21,13 @@ public class PostService implements CrudService<Post, UUID, PostRequestDto> {
 
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
+    private final PostMapper postMapper;
 
 
-    public PostService(PostRepository postRepository, VoteRepository voteRepository) {
+    public PostService(PostRepository postRepository, VoteRepository voteRepository, PostMapper postMapper) {
         this.postRepository = postRepository;
         this.voteRepository = voteRepository;
-
+        this.postMapper = postMapper;
     }
 
 
@@ -101,8 +104,11 @@ public class PostService implements CrudService<Post, UUID, PostRequestDto> {
         return postOptional.orElse(null);
     }
 
-    public List<Post> getAllPosts(){
-        return postRepository.findAll();
+    public List<PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
+        List<Post> posts = postRepository.findAll();
+        return posts.stream()
+                .map(post -> postMapper.postToPostResponseDto(post, currentUserId))
+                .toList();
     }
 
     public void updateAwardsForAllPosts() {
