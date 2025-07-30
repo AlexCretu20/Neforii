@@ -30,7 +30,7 @@ public class PostClient {
 
     public ApiResult newPost(PostRequestDto postRequestDto) {
         try {
-            String url = baseUrl + "/posts";
+            String url = baseUrl;
             String requestBody = objectMapper.writeValueAsString(postRequestDto);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -68,7 +68,7 @@ public class PostClient {
 
     public ApiResult updatePost(UUID id, PostRequestDto postRequestDto) {
         try {
-            String url = baseUrl + "/posts/" + id;
+            String url = baseUrl + '/' + id;
             String requestBody = objectMapper.writeValueAsString(postRequestDto);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -106,7 +106,7 @@ public class PostClient {
 
     public ApiResult deletePost(UUID id) {
         try {
-            String url = baseUrl + "/posts/" + id;
+            String url = baseUrl + '/' + id;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -139,7 +139,7 @@ public class PostClient {
 
     public ApiResult getAllPosts() {
         try {
-            String url = baseUrl + "/posts";
+            String url = baseUrl;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -180,7 +180,7 @@ public class PostClient {
 
     public ApiResult getPostById(UUID id) {
         try {
-            String url = baseUrl + "/posts/" + id;
+            String url = baseUrl + '/' + id;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))

@@ -1,4 +1,4 @@
-﻿package ro.neforii.dto.common;
+package ro.neforii.dto.common;
 
 import java.util.List;
 

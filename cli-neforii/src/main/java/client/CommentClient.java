@@ -1,18 +1,15 @@
 package client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
 import models.comment.CommentRequestDto;
-import models.comment.CommentResponseDto;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
 import java.util.UUID;
 
 public class CommentClient {
@@ -32,7 +29,7 @@ public class CommentClient {
 
     public ApiResult newComment(CommentRequestDto commentRequestDto) {
         try {
-            String url = baseUrl + "/comments";
+            String url = baseUrl;
             String requestBody = objectMapper.writeValueAsString(commentRequestDto);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -59,9 +56,9 @@ public class CommentClient {
         }
     }
 
-    public ApiResult updateComment(Integer id, CommentRequestDto commentRequestDto) {
+    public ApiResult updateComment(UUID id, CommentRequestDto commentRequestDto) {
         try {
-            String url = baseUrl + "/comments/" + id;
+            String url = baseUrl + '/' + id;
             String requestBody = objectMapper.writeValueAsString(commentRequestDto);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -88,9 +85,9 @@ public class CommentClient {
         }
     }
 
-    public ApiResult deleteComment(Integer id) {
+    public ApiResult deleteComment(UUID id) {
         try {
-            String url = baseUrl + "/comments/" + id;
+            String url = baseUrl + '/' + id;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -116,7 +113,7 @@ public class CommentClient {
 
     public ApiResult getAllComments() {
         try {
-            String url = baseUrl + "/comments";
+            String url = baseUrl;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -143,7 +140,7 @@ public class CommentClient {
 
     public ApiResult getCommentById(UUID id) {
         try {
-            String url = baseUrl + "/comments/" + id;
+            String url = baseUrl+ "/" + id;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -196,7 +193,7 @@ public class CommentClient {
     }
     public ApiResult addComment(CommentRequestDto commentRequestDto) {
         try {
-            String url = baseUrl + "/comments";
+            String url = baseUrl;
             String requestBody = objectMapper.writeValueAsString(commentRequestDto);
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
