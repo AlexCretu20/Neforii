@@ -1,7 +1,9 @@
 package models.comment;
 
+import java.util.UUID;
+
 public record CommentRequestDto(
         String content,
         String author,
-        Integer parentId
+        UUID parentId
 ) {}

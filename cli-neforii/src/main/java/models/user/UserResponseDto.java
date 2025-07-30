@@ -1,9 +1,10 @@
 package models.user;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record UserResponseDto(
-        int id,
+        UUID id,
         String username,
         String email,
         String phoneNumber,

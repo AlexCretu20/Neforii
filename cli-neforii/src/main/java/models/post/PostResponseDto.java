@@ -1,9 +1,10 @@
 package models.post;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record PostResponseDto(
-        Integer id,
+        UUID id,
         String title,
         String content,
         String author,
