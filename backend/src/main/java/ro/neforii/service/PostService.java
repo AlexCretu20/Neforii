@@ -12,9 +12,10 @@ import ro.neforii.service.crud.CrudService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
-public class PostService implements CrudService<Post, Integer, PostRequestDto> {
+public class PostService implements CrudService<Post, UUID, PostRequestDto> {
 
     private final PostRepository postRepository;
     private final VoteRepository voteRepository;
@@ -36,7 +37,7 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
 
     //READ methods
     @Override
-    public Optional<Post> findById(Integer id){
+    public Optional<Post> findById(UUID id){
         return postRepository.findById(id);
     }
 
@@ -47,7 +48,7 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
 
     //UPDATE methods
     @Override
-    public Post update (Integer id, PostRequestDto postRequestDto) {
+    public Post update (UUID id, PostRequestDto postRequestDto) {
         Optional<Post> postOptional = findById(id);
 
         if (postOptional.isEmpty()) {
@@ -68,7 +69,7 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
 
     }
 
-    public Post updatePartial(Integer id, PostUpdateRequestDto dto) {
+    public Post updatePartial(UUID id, PostUpdateRequestDto dto) {
         Post post = findById(id).orElseThrow(() ->
                 new PostNotFoundException("Post with ID " + id + " not found."));
 
@@ -90,12 +91,12 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
 
     //DELETE methods
     @Override
-    public void deleteById(Integer id) {
+    public void deleteById(UUID id) {
         postRepository.deleteById(id);
 
     }
 
-    public Post getPostById(int id) {
+    public Post getPostById(UUID id) {
         Optional<Post> postOptional = postRepository.findById(id);
         return postOptional.orElse(null);
     }
@@ -115,7 +116,7 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
         }
     }
 
-    public void updateAwardsForOnePost(int id) {
+    public void updateAwardsForOnePost(UUID id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
@@ -126,13 +127,13 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
         }
     }
 
-    public int displayUpvotes(int id) {
+    public int displayUpvotes(UUID id) {
         Post post = postRepository.findById(id).orElseThrow();
         return voteRepository.countByPostAndIsUpvote(post, true);
     }
 
 
-    public int displayDownvotes(int id) {
+    public int displayDownvotes(UUID id) {
         Post post = postRepository.findById(id).orElseThrow();
         return voteRepository.countByPostAndIsUpvote(post, false);
     }
@@ -153,7 +154,7 @@ public class PostService implements CrudService<Post, Integer, PostRequestDto> {
         return false;
     }
 
-    public List<Post> findAllPostsByUser(int userId){
+    public List<Post> findAllPostsByUser(UUID userId){
         return postRepository.findAllByUserId(userId);
     }
 

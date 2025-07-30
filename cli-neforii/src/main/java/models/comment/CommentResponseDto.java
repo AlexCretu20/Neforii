@@ -1,13 +1,12 @@
-package ro.neforii.dto.comment;
+package models.comment;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 public record CommentResponseDto(
-        UUID id,
-        UUID postId,
-        UUID parentId,
+        int id,
+        Integer postId,
+        Integer parentId,
         String content,
         String author,
         int upVotes,
@@ -17,4 +16,4 @@ public record CommentResponseDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         List<CommentResponseDto> replies
-){}
+) {}

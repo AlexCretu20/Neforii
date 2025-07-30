@@ -11,6 +11,8 @@ import ro.neforii.mapper.UserMapper;
 import ro.neforii.model.User;
 import ro.neforii.service.UserService;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -56,7 +58,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable int id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteById(id);
         return ResponseEntity
                 .noContent()
@@ -64,7 +66,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable int id, @RequestBody UserUpdateRequestDto request) {
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable UUID id, @RequestBody UserUpdateRequestDto request) {
         User updatedUser = userService.update(id, request);
         return ResponseEntity
                 .ok(userMapper.userToUserResponseDto(updatedUser));

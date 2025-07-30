@@ -2,6 +2,8 @@ package ro.neforii.service;
 
 import ro.neforii.model.User;
 
+import java.util.UUID;
+
 public interface IUserService {
     void registerUser(User user);
 
@@ -21,7 +23,7 @@ public interface IUserService {
 
     User findByUsername(String username);
 
-    User findById(int id);
+    User findById(UUID id);
 
-    User updateUser(int id, User user);
+    User updateUser(UUID id, User user);
 }

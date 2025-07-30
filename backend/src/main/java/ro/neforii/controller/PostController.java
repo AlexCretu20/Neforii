@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/posts")
@@ -64,7 +65,7 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PostResponseDto> update(@PathVariable Integer id, @RequestBody PostUpdateRequestDto dto) {
+    public ResponseEntity<PostResponseDto> update(@PathVariable UUID id, @RequestBody PostUpdateRequestDto dto) {
         Post updated = postService.updatePartial(id, dto);
         User user = userService.findByUsername("andrei");
 
@@ -72,7 +73,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccesDeleteMessageDto> delete(@PathVariable Integer id) {
+    public ResponseEntity<SuccesDeleteMessageDto> delete(@PathVariable UUID id) {
         Optional<Post> optionalPost = postService.findById(id);
         if (optionalPost.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -87,7 +88,7 @@ public class PostController {
         List<Post> posts = postService.getAllPosts();
 
         User user = userService.findByUsername("andrei");
-        Integer currentUserId = user != null ? user.getId() : null;
+        UUID currentUserId = user != null ? user.getId() : null;
 
         List<PostResponseDto> postResponseDtos = posts.stream()
                 .map(post -> postMapper.postToPostResponseDto(post, currentUserId))
@@ -97,7 +98,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDto> displayById(@PathVariable Integer id) {
+    public ResponseEntity<PostResponseDto> displayById(@PathVariable UUID id) {
         Optional<Post> optionalPost = postService.findById(id);
         if (optionalPost.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -105,13 +106,13 @@ public class PostController {
 
         Post post = optionalPost.get();
         User user = userService.findByUsername("andrei");
-        Integer currentUserId = user != null ? user.getId() : null;
+        UUID currentUserId = user != null ? user.getId() : null;
 
         return ResponseEntity.ok(postMapper.postToPostResponseDto(post, currentUserId));
     }
 
     @PostMapping("/{id}/comments")
-    public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable int id,@Valid @RequestBody CommentOnPostRequestDto request){
+    public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable UUID id,@Valid @RequestBody CommentOnPostRequestDto request){
         User user = userService.findByUsername(request.author());
         if(user==null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -128,7 +129,7 @@ public class PostController {
     }
 
     @GetMapping("/{postId}/comments")
-    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable int postId) {
+    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable UUID postId) {
         User user = userService.getCurrentUser();
         List<Comment> topLevelComments = commentService.getTopLevelComments(postId);
 

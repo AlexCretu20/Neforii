@@ -1,7 +1,9 @@
 package ro.neforii.service;
 
-public interface IVotable {
-    int displayUpvotes(int id);
+import java.util.UUID;
 
-    int displayDownvotes(int id);
+public interface IVotable {
+    int displayUpvotes(UUID id);
+
+    int displayDownvotes(UUID id);
 }

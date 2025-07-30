@@ -14,6 +14,7 @@ import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class VoteService implements IVoteService {
@@ -29,7 +30,7 @@ public class VoteService implements IVoteService {
         this.userRepository = userRepository;
     }
 
-    public String createVote(int userId, Integer postId, Integer commentId, boolean isUpvote) {
+    public String createVote(UUID userId, UUID postId, UUID commentId, boolean isUpvote) {
         User user = userRepository.findById(userId).orElseThrow();
 
         if (postId != null && commentId == null) {
@@ -64,12 +65,12 @@ public class VoteService implements IVoteService {
     }
 
 
-    public void deleteVote(int voteId) {
+    public void deleteVote(UUID voteId) {
         voteRepository.deleteById(voteId);
         Logger.log(LoggerType.INFO, "Vote with ID " + voteId + " deleted successfully.");
     }
 
-    public Vote getVoteById(int voteId) {
+    public Vote getVoteById(UUID voteId) {
         return voteRepository.findById(voteId).orElseThrow(() -> {
             Logger.log(LoggerType.DEBUG, "Vote with ID " + voteId + " not found.");
             return new VoteNotFoundException(voteId);

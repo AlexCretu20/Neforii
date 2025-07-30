@@ -1,17 +1,21 @@
+import client.CommentClient;
 import client.PostClient;
 import client.UserClient;
 import models.ApiResult;
+import models.comment.CommentRequestDto;
 import models.post.PostRequestDto;
 import models.user.UserLoginRequestDto;
+import views.CommentView;
 import views.PostView;
 import views.UserView;
 
 public class MainMenu {
     private static final String BASE_URL = "http://13.53.190.111:8080/users";//url backend
     private static final String POST_BASE_URL = "http://13.53.190.111:8080";
-
+    private static final String COMMENT_BASE_URL = "http://13.53.190.111:8080/posts/1";
     private static final UserClient userClient = new UserClient(BASE_URL);
     private static final PostClient postClient = new PostClient(POST_BASE_URL);
+    private static final CommentClient commentClient = new CommentClient(COMMENT_BASE_URL);
 
 
     public static void main(String[] args) {
@@ -84,6 +88,35 @@ public class MainMenu {
 //        System.out.println("Success: " + postResult3.getSuccess());
 //        System.out.println("Message: " + postResult3.getMessage());
 //        System.out.println("Body: " + postResult3.getResponseBody());
+        //Comments test
+//        int testCommentId = 1;
+//        ApiResult commentResult = commentClient.getCommentById(testCommentId);
+//        System.out.println("\nComment get by id:");
+//        CommentView.displayCommentResult(commentResult);
+//
+//        int testPostId = 1; // schimbă cu id-ul unui post real
+//        ApiResult allCommentsResult = commentClient.getCommentsByPostId(testPostId);
+//        System.out.println("\nComments for post id " + testPostId + ":");
+//        CommentView.displayCommentResult(allCommentsResult);
+//        int postId = 1;
+//        String author = "andrei";
+//
+//        CommentRequestDto commentRequest = new CommentRequestDto(
+//                "Salut! Acesta este un comentariu de test.",
+//                author,
+//                null
+//        );
+//
+//        ApiResult addCommentResult = commentClient.addComment(commentRequest);
+//        System.out.println("\nAdd Comment:");
+//        CommentView.displayCommentResult(addCommentResult);
+//
+//        ApiResult commentsResult = commentClient.getCommentsByPostId(postId);
+//        System.out.println("\nComments for Post ID: " + postId);
+//        CommentView.displayCommentsResult(commentsResult);
+//
+//// end comments test
+
 
         ApiResult postResult4 = postClient.getAllPosts();
         System.out.println("\nPost get all:");

@@ -6,10 +6,12 @@ import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.model.Post;
 import ro.neforii.model.Vote;
 
+import java.util.UUID;
+
 @Component
 public class PostMapper {
 
-    public PostResponseDto postToPostResponseDto(Post post, Integer currentUserId) {
+    public PostResponseDto postToPostResponseDto(Post post, UUID currentUserId) {
         if (post == null) return null;
 
         int upvotes = (int) post.getVotes().stream().filter(Vote::isUpvote).count();
@@ -17,13 +19,13 @@ public class PostMapper {
         int score = upvotes - downvotes;
 
         String userVote = post.getVotes().stream()
-                .filter(v -> v.getUser().getId()==currentUserId)
+                .filter(v -> v.getUser().getId().equals(currentUserId))
                 .findFirst()
                 .map(v -> v.isUpvote() ? "up" : "down")
                 .orElse(null);
 
         return new PostResponseDto(
-                String.valueOf(post.getId()),
+                post.getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getAuthor(),

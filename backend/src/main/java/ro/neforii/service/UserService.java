@@ -11,9 +11,10 @@ import ro.neforii.service.crud.CrudService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
-public class UserService implements CrudService<User, Integer, UserUpdateRequestDto> {
+public class UserService implements CrudService<User, UUID, UserUpdateRequestDto> {
 
     private User currentUser;
     private final UserRepository userRepo;
@@ -36,7 +37,7 @@ public class UserService implements CrudService<User, Integer, UserUpdateRequest
 
     //READ methods
     @Override
-    public Optional<User> findById(Integer id) {
+    public Optional<User> findById(UUID id) {
         return userRepo.findById(id);
     }
 
@@ -47,7 +48,7 @@ public class UserService implements CrudService<User, Integer, UserUpdateRequest
 
     //UPDATE methods
     @Override
-    public User update(Integer id, UserUpdateRequestDto requestDto) {
+    public User update(UUID id, UserUpdateRequestDto requestDto) {
         Optional<User> existingUserOpt = findById(id);
         if (existingUserOpt.isEmpty()) {
             throw new UserNotFoundException("The user with id " + id + " does not exist.");
@@ -71,7 +72,7 @@ public class UserService implements CrudService<User, Integer, UserUpdateRequest
 
     //DELETE methods
     @Override
-    public void deleteById(Integer id) {
+    public void deleteById(UUID id) {
         userRepo.deleteById(id);
         //stergem current User
         if (currentUser != null && currentUser.getId() == id) {
