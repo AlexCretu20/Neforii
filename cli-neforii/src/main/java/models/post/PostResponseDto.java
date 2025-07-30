@@ -7,9 +7,13 @@ public record PostResponseDto(
         String title,
         String content,
         String author,
-        Integer userId,
+        String subreddit,
+        Integer upvotes,
+        Integer downvotes,
+        Integer score,
+        Integer commentCount,
+        String userVote,
         LocalDateTime createdAt,
-        Boolean isAwarded,
-        String imagePath
+        LocalDateTime updatedAt
 ) {
 }

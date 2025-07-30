@@ -28,7 +28,7 @@ public class PostClient {
 
 
     public ApiResult newPost(PostRequestDto postRequestDto) {
-        try{
+        try {
             String url = baseUrl + "/posts";
             String requestBody = objectMapper.writeValueAsString(postRequestDto);
 
@@ -40,19 +40,18 @@ public class PostClient {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             int statusCode = response.statusCode();
-            
+
             boolean isSuccess;
             String message = "";
-            if(statusCode >= 200 && statusCode < 300){
+            if (statusCode >= 200 && statusCode < 300) {
                 isSuccess = true;
                 message = "The post was made. ";
-            } else if (statusCode >=400 && statusCode < 500) {
+            } else if (statusCode >= 400 && statusCode < 500) {
                 isSuccess = false;
                 if (response.body() != null && !response.body().isEmpty()) {
                     message = response.body();
                 }
-            }
-            else {
+            } else {
                 isSuccess = false;
                 message = "Unexpected error has appeared! Please try again later.";
             }
@@ -66,8 +65,8 @@ public class PostClient {
         }
     }
 
-    public ApiResult updatePost(Integer id, PostRequestDto postRequestDto){
-        try{
+    public ApiResult updatePost(Integer id, PostRequestDto postRequestDto) {
+        try {
             String url = baseUrl + "/posts/" + id;
             String requestBody = objectMapper.writeValueAsString(postRequestDto);
 
@@ -82,31 +81,30 @@ public class PostClient {
 
             boolean isSuccess;
             String message = "";
-            if(statusCode >= 200 && statusCode < 300){
+            if (statusCode >= 200 && statusCode < 300) {
                 isSuccess = true;
                 message = "The post was updated.";
-            } else if (statusCode >=400 && statusCode < 500) {
+            } else if (statusCode >= 400 && statusCode < 500) {
                 isSuccess = false;
                 if (response.body() != null && !response.body().isEmpty()) {
                     message = response.body();
                 }
-            }
-            else {
+            } else {
                 isSuccess = false;
                 message = "Unexpected error has appeared! Please try again later.";
             }
 
             return new ApiResult(isSuccess, message, response.body());
 
-        }catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             return new ApiResult(false, "Couldn't map the Post request to JSON.", null);
         } catch (IOException | InterruptedException e) {
             return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
         }
     }
 
-    public ApiResult deletePost(Integer id){
-        try{
+    public ApiResult deletePost(Integer id) {
+        try {
             String url = baseUrl + "/posts/" + id;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -118,7 +116,7 @@ public class PostClient {
 
             boolean isSuccess;
             String message = "";
-            if(statusCode == 204){
+            if (statusCode == 204) {
                 isSuccess = true;
                 message = "The post was deleted.";
             } else if (statusCode >= 400 && statusCode < 500) {
@@ -126,8 +124,7 @@ public class PostClient {
                 message = (response.body() != null && !response.body().isEmpty())
                         ? response.body()
                         : "Client-side error occurred while deleting the post.";
-            }
-            else {
+            } else {
                 isSuccess = false;
                 message = "Unexpected error has appeared! Please try again later.";
             }
@@ -139,8 +136,8 @@ public class PostClient {
         }
     }
 
-    public ApiResult getAllPosts(){
-        try{
+    public ApiResult getAllPosts() {
+        try {
             String url = baseUrl + "/posts";
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -154,11 +151,10 @@ public class PostClient {
             boolean isSuccess;
             String message = "";
 
-            if(statusCode == 200) {
+            if (statusCode == 200) {
                 isSuccess = true;
                 message = "The posts were found. ";
-            }
-            else if (statusCode == 404){
+            } else if (statusCode == 404) {
                 isSuccess = false;
                 message = "No post found.";
 
@@ -167,8 +163,7 @@ public class PostClient {
                 message = (response.body() != null && !response.body().isEmpty())
                         ? response.body()
                         : "Client-side error occurred.";
-            }
-            else {
+            } else {
                 isSuccess = false;
                 message = "Unexpected error has appeared! Please try again later.";
             }
@@ -182,8 +177,8 @@ public class PostClient {
         }
     }
 
-    public ApiResult getPostById(Integer id){
-        try{
+    public ApiResult getPostById(Integer id) {
+        try {
             String url = baseUrl + "/posts/" + id;
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -195,11 +190,10 @@ public class PostClient {
 
             boolean isSuccess;
             String message = "";
-            if(statusCode == 200){
+            if (statusCode == 200) {
                 isSuccess = true;
                 message = "The post was found.";
-            }
-            else if (statusCode == 404){
+            } else if (statusCode == 404) {
                 isSuccess = false;
                 message = "Post not found.";
 
@@ -208,8 +202,7 @@ public class PostClient {
                 message = (response.body() != null && !response.body().isEmpty())
                         ? response.body()
                         : "Client-side error occurred.";
-            }
-            else {
+            } else {
                 isSuccess = false;
                 message = "Unexpected error has appeared! Please try again later.";
             }

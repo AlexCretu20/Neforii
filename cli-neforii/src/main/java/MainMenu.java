@@ -1,15 +1,18 @@
 import client.PostClient;
 import client.UserClient;
 import models.ApiResult;
+import models.post.PostRequestDto;
 import models.user.UserLoginRequestDto;
+import views.PostView;
 import views.UserView;
 
 public class MainMenu {
-    private static final String BASE_URL= "http://13.53.190.111:8080/users";//url backend
+    private static final String BASE_URL = "http://13.53.190.111:8080/users";//url backend
     private static final String POST_BASE_URL = "http://13.53.190.111:8080";
 
     private static final UserClient userClient = new UserClient(BASE_URL);
     private static final PostClient postClient = new PostClient(POST_BASE_URL);
+
 
     public static void main(String[] args) {
         //este doar de test treaba asta
@@ -46,19 +49,21 @@ public class MainMenu {
         UserView.displayUserResult(resultLoginSuccess);
         //chestiile astea o sa fie afisate frumos cu ajutorul a ce facem in views
 
-//        PostRequestDto postRequest = new PostRequestDto(
-//                "Titlu test",
-//                "Continutul acestui post este doar un test.",
-//                "",
-//                "user1",
-//                1
-//        );
-//
-//        ApiResult postResult = postClient.newPost(postRequest);
-//        System.out.println("\nPost creation:");
-//        System.out.println("Success: " + postResult.getSuccess());
-//        System.out.println("Message: " + postResult.getMessage());
-//        System.out.println("Body: " + postResult.getResponseBody());
+        PostRequestDto postRequest = new PostRequestDto(
+                "Titlu test kufoue fgyuiuhgbh vghu8iuhhjiokj vgyu7uhghuiijnh ghu8iuhhjioijnb ",
+                "Continutul acestui post este doar un test.gggggggggggg gggggggggggggggggggggg ggggggggggggggg ggggggggggggggggggggggggggggg ggggggggggggggggggg gggggggggggggggggg gggggggggggggggggggggg",
+                "",
+                "user1",
+                1
+        );
+
+        ApiResult postResult = postClient.newPost(postRequest);
+        System.out.println("\nPost creation:");
+        System.out.println("Success: " + postResult.getSuccess());
+        System.out.println("Message: " + postResult.getMessage());
+        System.out.println("Body: " + postResult.getResponseBody());
+
+        PostView.displayPostResult(postResult);
 
 //        PostRequestDto postRequest2 = new PostRequestDto(
 //                "Titlu test",
@@ -72,6 +77,7 @@ public class MainMenu {
 //        System.out.println("Success: " + postResult2.getSuccess());
 //        System.out.println("Message: " + postResult2.getMessage());
 //        System.out.println("Body: " + postResult2.getResponseBody());
+//        PostView.displayPostResult(postResult2);
 
 //        ApiResult postResult3 = postClient.getPostById(7);
 //        System.out.println("\nPost get post by id:");
@@ -85,10 +91,15 @@ public class MainMenu {
         System.out.println("Message: " + postResult4.getMessage());
         System.out.println("Body: " + postResult4.getResponseBody());
 
-        ApiResult postResult5 = postClient.deletePost(7);
-        System.out.println("\nPost delete:");
-        System.out.println("Success: " + postResult5.getSuccess());
-        System.out.println("Message: " + postResult5.getMessage());
-        System.out.println("Body: " + postResult5.getResponseBody());
+        PostView.displayPostListResult(postResult4);
+
+//
+//        ApiResult postResult5 = postClient.deletePost(7);
+//        System.out.println("\nPost delete:");
+//        System.out.println("Success: " + postResult5.getSuccess());
+//        System.out.println("Message: " + postResult5.getMessage());
+//        System.out.println("Body: " + postResult5.getResponseBody());
     }
+
+
 }
