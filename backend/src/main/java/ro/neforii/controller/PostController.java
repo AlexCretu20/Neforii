@@ -37,7 +37,7 @@ public class PostController {
     private final UserService userService;
     private final CommentService commentService;
     private final CommentMapper commentMapper;
-    private final FakeUserAuthService fakeAuthService ; // momentan sa simuleze userul curent
+    private final FakeUserAuthService fakeAuthService; // momentan sa simuleze userul curent
 
     public PostController(PostService postService, PostMapper postMapper, UserService userService, CommentService commentService, CommentMapper commentMapper, FakeUserAuthService fakeAuthService) {
         this.postService = postService;
@@ -46,32 +46,6 @@ public class PostController {
         this.commentService = commentService;
         this.commentMapper = commentMapper;
         this.fakeAuthService = fakeAuthService;
-    }
-
-    @PostMapping
-    public ResponseEntity<SuccessResponse<PostResponseDto>> createPost(@Valid @RequestBody PostRequestDto postRequestDto) {
-        PostResponseDto postResponseDto = postService.create(postRequestDto);
-
-        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<PostResponseDto> update(@PathVariable UUID id, @RequestBody PostUpdateRequestDto dto) {
-        Post updated = postService.updatePartial(id, dto);
-        User user = userService.findByUsername("andrei");
-
-        return ResponseEntity.ok(postMapper.postToPostResponseDto(updated, user.getId()));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<SuccesDeleteMessageDto> delete(@PathVariable UUID id) {
-        Optional<Post> optionalPost = postService.findById(id);
-        if (optionalPost.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        postService.deleteById(id);
-        return ResponseEntity.ok(new SuccesDeleteMessageDto("Postarea a fost stearsa cu succes"));
     }
 
     @GetMapping
@@ -83,18 +57,48 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDto> displayById(@PathVariable UUID id) {
-        Optional<Post> optionalPost = postService.findById(id);
-        if (optionalPost.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+    public ResponseEntity<SuccessResponse<PostResponseDto>> getPostById(@PathVariable UUID id) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        PostResponseDto postResponseDto = postService.getPostByIdAsUser(id, currentUserId);
 
-        Post post = optionalPost.get();
-        User user = userService.findByUsername("andrei");
-        UUID currentUserId = user != null ? user.getId() : null;
-
-        return ResponseEntity.ok(postMapper.postToPostResponseDto(post, currentUserId));
+        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
     }
+
+    @PostMapping
+    public ResponseEntity<SuccessResponse<PostResponseDto>> createPost(@Valid @RequestBody PostRequestDto postRequestDto) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        PostResponseDto postResponseDto = postService.createPost(postRequestDto);
+
+        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SuccessResponse<PostResponseDto>> updatePost(@PathVariable UUID id, @Valid @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        PostResponseDto updatedPost = postService.updatePost(id, postUpdateRequestDto, currentUserId);
+
+        return ResponseEntity.ok(new SuccessResponse<>(updatedPost));
+    }
+
+//    @PutMapping("/{id}")
+//    public ResponseEntity<PostResponseDto> update(@PathVariable UUID id, @RequestBody PostUpdateRequestDto dto) {
+//        Post updated = postService.updatePartial(id, dto);
+//        User user = userService.findByUsername("andrei");
+//
+//        return ResponseEntity.ok(postMapper.postToPostResponseDto(updated, user.getId()));
+//    }
+
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<SuccesDeleteMessageDto> delete(@PathVariable UUID id) {
+//        Optional<Post> optionalPost = postService.findById(id);
+//        if (optionalPost.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+//        }
+//
+//        postService.deleteById(id);
+//        return ResponseEntity.ok(new SuccesDeleteMessageDto("Postarea a fost stearsa cu succes"));
+//    }
+
 
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {

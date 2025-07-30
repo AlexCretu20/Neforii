@@ -35,7 +35,7 @@ public class PostService {
     }
 
 
-    public PostResponseDto create(PostRequestDto postRequestDto) {
+    public PostResponseDto createPost(PostRequestDto postRequestDto) {
         User user = userService.getUserByUsername(postRequestDto.author());
         Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
 
@@ -44,56 +44,80 @@ public class PostService {
         return postMapper.postToPostResponseDto(savedPost, user.getId());
     }
 
+    public List<PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
+        List<Post> posts = postRepository.findAll();
+        return posts.stream()
+                .map(post -> postMapper.postToPostResponseDto(post, currentUserId))
+                .toList();
+    }
 
-    //READ methods
-    public Optional<Post> findById(UUID id) {
-        return postRepository.findById(id);
+    public PostResponseDto getPostByIdAsUser(UUID id, UUID currentUserId) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
+        return postMapper.postToPostResponseDto(post, currentUserId);
     }
 
     public List<Post> findAll() {
         return postRepository.findAll();
     }
 
-    //UPDATE methods
-    public Post update(UUID id, PostRequestDto postRequestDto) {
-        Optional<Post> postOptional = findById(id);
+    public PostResponseDto updatePost(UUID id, PostUpdateRequestDto postUpdateRequestDto, UUID currentUserId) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
 
-        if (postOptional.isEmpty()) {
-            throw new PostNotFoundException("The post with id " + id + " does not exist.");
+        // TODO cand avem autentificare putem verifica daca userul curent este cel care a creat postarea
+
+        if(postUpdateRequestDto.title() != null) {
+            post.setTitle(postUpdateRequestDto.title());
         }
-
-        Post post = postOptional.get();
-
-        if (!(postRequestDto.title().equals(post.getTitle())) && isTitleExsiting(post.getTitle())) {
-            throw new TitleAlreadyInUseException("The title already exists.");
+        if(postUpdateRequestDto.content()!=null) {
+            post.setContent(postUpdateRequestDto.content());
         }
+        post.setUpdatedAt(LocalDateTime.now());
 
-        post.setTitle(postRequestDto.title());
-        post.setContent(postRequestDto.content());
-        //post.setImagePath(postRequestDto.imagePath());
-
-        return postRepository.save(post);
-
+        Post updatedPost = postRepository.save(post);
+        return postMapper.postToPostResponseDto(updatedPost, post.getUser().getId());
     }
 
-    public Post updatePartial(UUID id, PostUpdateRequestDto dto) {
-        Post post = findById(id).orElseThrow(() ->
-                new PostNotFoundException("Post with ID " + id + " not found."));
+//    public Post update(UUID id, PostRequestDto postRequestDto) {
+//        Optional<Post> postOptional = findById(id);
+//
+//        if (postOptional.isEmpty()) {
+//            throw new PostNotFoundException("The post with id " + id + " does not exist.");
+//        }
+//
+//        Post post = postOptional.get();
+//
+//        if (!(postRequestDto.title().equals(post.getTitle())) && isTitleExsiting(post.getTitle())) {
+//            throw new TitleAlreadyInUseException("The title already exists.");
+//        }
+//
+//        post.setTitle(postRequestDto.title());
+//        post.setContent(postRequestDto.content());
+//        //post.setImagePath(postRequestDto.imagePath());
+//
+//        return postRepository.save(post);
+//
+//    }
 
-        if (dto.title() != null && !dto.title().isBlank()) {
-            if (!dto.title().equals(post.getTitle()) && isTitleExsiting(dto.title())) {
-                throw new TitleAlreadyInUseException("The title already exists.");
-            }
-            post.setTitle(dto.title());
-        }
-
-        if (dto.content() != null) {
-            post.setContent(dto.content());
-        }
-
-        post.setUpdatedAt(java.time.LocalDateTime.now());
-        return postRepository.save(post);
-    }
+//    public Post updatePartial(UUID id, PostUpdateRequestDto dto) {
+//        Post post = findById(id).orElseThrow(() ->
+//                new PostNotFoundException("Post with ID " + id + " not found."));
+//
+//        if (dto.title() != null && !dto.title().isBlank()) {
+//            if (!dto.title().equals(post.getTitle()) && isTitleExsiting(dto.title())) {
+//                throw new TitleAlreadyInUseException("The title already exists.");
+//            }
+//            post.setTitle(dto.title());
+//        }
+//
+//        if (dto.content() != null) {
+//            post.setContent(dto.content());
+//        }
+//
+//        post.setUpdatedAt(java.time.LocalDateTime.now());
+//        return postRepository.save(post);
+//    }
 
 
     public void deleteById(UUID id) {
@@ -104,13 +128,6 @@ public class PostService {
     public Post getPostById(UUID id) {
         Optional<Post> postOptional = postRepository.findById(id);
         return postOptional.orElse(null);
-    }
-
-    public List<PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
-        List<Post> posts = postRepository.findAll();
-        return posts.stream()
-                .map(post -> postMapper.postToPostResponseDto(post, currentUserId))
-                .toList();
     }
 
     public void updateAwardsForAllPosts() {
