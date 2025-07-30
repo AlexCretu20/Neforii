@@ -1,18 +1,19 @@
-package ro.neforii.dto.post;
+package models.post;
 
 import java.time.LocalDateTime;
 
 public record PostResponseDto(
-        String id,
+        Integer id,
         String title,
         String content,
         String author,
         String subreddit,
-        int upvotes,
-        int downvotes,
-        int score,
-        int commentCount,
-        String userVote, // poate fi null
+        Integer upvotes,
+        Integer downvotes,
+        Integer score,
+        Integer commentCount,
+        String userVote,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-) {}
+) {
+}

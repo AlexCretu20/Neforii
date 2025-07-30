@@ -46,6 +46,9 @@ public class Post {
     @JoinColumn(name = "user_id") // id utlizator care a lasat postarea
     private User user;
 
+    @Column(nullable = true, length = 255)
+    private String subreddit;
+
     @OneToMany(
             mappedBy = "post",
             cascade = CascadeType.ALL,

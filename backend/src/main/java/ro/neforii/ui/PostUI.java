@@ -1,7 +1,6 @@
 package ro.neforii.ui;
 
 import ro.neforii.dto.post.PostRequestDto;
-import ro.neforii.mapper.PostMapper;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.service.PostService;
@@ -74,7 +73,12 @@ public class PostUI {
         post.setTitle(newTitle);
         post.setContent(newContent);
 
-        PostRequestDto postDto = PostMapper.postToPostRequestDto(post);
+        PostRequestDto postDto = new PostRequestDto(
+                newTitle,
+                newContent,
+                post.getAuthor(),
+                post.getSubreddit()
+        );
         postService.update(postId,postDto);
         System.out.println("Post updated successfully.");
     }
