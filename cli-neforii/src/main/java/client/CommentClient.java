@@ -27,34 +27,6 @@ public class CommentClient {
         this(baseUrl, HttpClient.newHttpClient(), new ObjectMapper());
     }
 
-    public ApiResult newComment(CommentRequestDto commentRequestDto) {
-        try {
-            String url = baseUrl;
-            String requestBody = objectMapper.writeValueAsString(commentRequestDto);
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            int statusCode = response.statusCode();
-
-            if (statusCode >= 200 && statusCode < 300) {
-                return new ApiResult(true, "The comment was added.", response.body());
-            } else if (statusCode >= 400 && statusCode < 500) {
-                return new ApiResult(false, response.body(), response.body());
-            } else {
-                return new ApiResult(false, "Unexpected error occurred. Please try again later.", response.body());
-            }
-
-        } catch (JsonProcessingException e) {
-            return new ApiResult(false, "Couldn't map the Comment request to JSON.", null);
-        } catch (IOException | InterruptedException e) {
-            return new ApiResult(false, "Couldn't maintain the connection: " + e.getMessage(), null);
-        }
-    }
 
     public ApiResult updateComment(UUID id, CommentRequestDto commentRequestDto) {
         try {

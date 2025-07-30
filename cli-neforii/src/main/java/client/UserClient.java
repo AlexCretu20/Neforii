@@ -1,6 +1,7 @@
 package client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
 import models.user.UserLoginRequestDto;
@@ -201,5 +202,21 @@ public class UserClient {
         } catch (IOException | InterruptedException e) {
             return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
         }
+    }
+    public UUID extractUserId(ApiResult apiResult) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.findAndRegisterModules(); // pentru UUID, date etc.
+
+            JsonNode root = mapper.readTree(apiResult.getResponseBody());
+            if (root.has("id")) {
+                return UUID.fromString(root.get("id").asText());
+            } else {
+                System.out.println("[ERROR]: Response does not contain user ID.");
+            }
+        } catch (Exception e) {
+            System.out.println("[ERROR]: Failed to parse user ID: " + e.getMessage());
+        }
+        return null;
     }
 }
