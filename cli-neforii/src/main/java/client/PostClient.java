@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.UUID;
 
 public class PostClient {
     private final String baseUrl;
@@ -65,7 +66,7 @@ public class PostClient {
         }
     }
 
-    public ApiResult updatePost(Integer id, PostRequestDto postRequestDto) {
+    public ApiResult updatePost(UUID id, PostRequestDto postRequestDto) {
         try {
             String url = baseUrl + "/posts/" + id;
             String requestBody = objectMapper.writeValueAsString(postRequestDto);
@@ -103,7 +104,7 @@ public class PostClient {
         }
     }
 
-    public ApiResult deletePost(Integer id) {
+    public ApiResult deletePost(UUID id) {
         try {
             String url = baseUrl + "/posts/" + id;
 
@@ -177,7 +178,7 @@ public class PostClient {
         }
     }
 
-    public ApiResult getPostById(Integer id) {
+    public ApiResult getPostById(UUID id) {
         try {
             String url = baseUrl + "/posts/" + id;
 

@@ -13,6 +13,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.UUID;
 
 public class CommentClient {
     private final String baseUrl;
@@ -140,7 +141,7 @@ public class CommentClient {
         }
     }
 
-    public ApiResult getCommentById(Integer id) {
+    public ApiResult getCommentById(UUID id) {
         try {
             String url = baseUrl + "/comments/" + id;
 
@@ -167,7 +168,7 @@ public class CommentClient {
         }
     }
 
-    public ApiResult getCommentsByPostId(Integer postId) {
+    public ApiResult getCommentsByPostId(UUID postId) {
         try {
             String url = baseUrl + "/posts/" + postId + "/comments";
 

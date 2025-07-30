@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.UUID;
 
 public class UserClient {
     //adresa url a backendului
@@ -138,7 +139,7 @@ public class UserClient {
     }
 
     //delete user by id -> baseUrl/{id}
-    public ApiResult deleteUserById(int id) {
+    public ApiResult deleteUserById(UUID id) {
         try {
             String url = baseUrl + "/" + id;
 
@@ -170,7 +171,7 @@ public class UserClient {
     }
 
     //update user by id -> baseUrl/{id}
-    public ApiResult updateUser(int id, UserUpdateRequestDto userUpdateRequestDto) {
+    public ApiResult updateUser(UUID id, UserUpdateRequestDto userUpdateRequestDto) {
         try {
             String url = baseUrl + "/" + id;
             String reqBody = objectMapper.writeValueAsString(userUpdateRequestDto);
