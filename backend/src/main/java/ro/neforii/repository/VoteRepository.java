@@ -19,4 +19,7 @@ public interface VoteRepository extends JpaRepository<Vote, UUID> {
     int countByPostAndIsUpvote(Post post, boolean isUpvote);
 
     int countByCommentAndIsUpvote(Comment comment, boolean isUpvote);
+
+
+    void deleteByUserAndPost(User user, Post post);
 }

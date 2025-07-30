@@ -1,11 +1,8 @@
 package ro.neforii.dto.vote;
 
-import java.util.UUID;
+import ro.neforii.model.VoteType;
 
-public record VoteRequestDto (
-        boolean isUpvote,
-        UUID userId,
-        UUID postId,
-        UUID commentId
-)
-{}
+public record VoteRequestDto(
+        String voteType // mai bine las string decat votetype si mapez in service
+) {
+}

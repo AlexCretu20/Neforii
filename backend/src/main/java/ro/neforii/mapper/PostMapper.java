@@ -3,6 +3,7 @@ package ro.neforii.mapper;
 import org.springframework.stereotype.Component;
 import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.dto.post.PostResponseDto;
+import ro.neforii.dto.post.PostVoteResponseDto;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.model.Vote;
@@ -58,6 +59,28 @@ public class PostMapper {
                 .user(user)
                 .subreddit(postRequestDto.subreddit())
                 .createdAt(LocalDateTime.now())
+                .build();
+    }
+    public PostVoteResponseDto postToPostVoteResponseDto(Post post, UUID currentUserId) {
+        if (post == null) return null;
+
+        List<Vote> votes = post.getVotes() != null ? post.getVotes() : new ArrayList<>();
+
+        int upvotes = (int) votes.stream().filter(Vote::isUpvote).count();
+        int downvotes = votes.size() - upvotes;
+        int score = upvotes - downvotes;
+
+        String userVote = votes.stream()
+                .filter(v -> v.getUser().getId().equals(currentUserId))
+                .findFirst()
+                .map(v -> v.isUpvote() ? "up" : "down")
+                .orElse(null);
+
+        return PostVoteResponseDto.builder()
+                .upvotes(upvotes)
+                .downvotes(downvotes)
+                .score(score)
+                .userVote(userVote)
                 .build();
     }
 }

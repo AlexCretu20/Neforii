@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.common.SuccessResponse;
-import ro.neforii.dto.post.PostRequestDto;
-import ro.neforii.dto.post.PostResponseDto;
-import ro.neforii.dto.post.PostUpdateRequestDto;
-import ro.neforii.dto.post.SuccesDeleteMessageDto;
+import ro.neforii.dto.post.*;
+import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.mapper.CommentMapper;
 import ro.neforii.mapper.PostMapper;
 import ro.neforii.model.Comment;
@@ -88,24 +86,13 @@ public class PostController {
         return ResponseEntity.ok(new SuccessResponse<>("Postarea a fost ștearsă cu succes")); // mesajul asta il vrea api-ul
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<PostResponseDto> update(@PathVariable UUID id, @RequestBody PostUpdateRequestDto dto) {
-//        Post updated = postService.updatePartial(id, dto);
-//        User user = userService.findByUsername("andrei");
-//
-//        return ResponseEntity.ok(postMapper.postToPostResponseDto(updated, user.getId()));
-//    }
+    @PutMapping("/{id}/vote")
+    public ResponseEntity<SuccessResponse<PostVoteResponseDto>> votePost(@PathVariable UUID id, @RequestBody VoteRequestDto voteRequestDto) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        PostVoteResponseDto postResponseDto = postService.votePost(id, currentUserId, voteRequestDto);
 
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<SuccesDeleteMessageDto> delete(@PathVariable UUID id) {
-//        Optional<Post> optionalPost = postService.findById(id);
-//        if (optionalPost.isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//        }
-//
-//        postService.deleteById(id);
-//        return ResponseEntity.ok(new SuccesDeleteMessageDto("Postarea a fost stearsa cu succes"));
-//    }
+        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
+    }
 
 
     @PostMapping("/{id}/comments")
@@ -122,7 +109,6 @@ public class PostController {
             comment = commentService.createReplyToComment(request.content(), user, request.parentId());
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment, user));
-
     }
 
     @GetMapping("/{postId}/comments")
@@ -143,6 +129,4 @@ public class PostController {
                 "total", total
         ));
     }
-
-
 }
