@@ -1,9 +1,11 @@
 package ro.neforii.dto.vote;
 
+import java.util.UUID;
+
 public record VoteRequestDto (
         boolean isUpvote,
-        Integer userId,
-        Integer postId,
-        Integer commentId
+        UUID userId,
+        UUID postId,
+        UUID commentId
 )
 {}

@@ -1,9 +1,10 @@
 package ro.neforii.dto.post;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record PostResponseDto(
-        String id,
+        UUID id,
         String title,
         String content,
         String author,

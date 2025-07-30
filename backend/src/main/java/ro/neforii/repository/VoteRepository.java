@@ -8,13 +8,15 @@ import ro.neforii.model.User;
 import ro.neforii.model.Vote;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface VoteRepository extends JpaRepository<Vote, Integer> {
+public interface VoteRepository extends JpaRepository<Vote, UUID> {
     Optional<Vote> findByPostAndUser(Post post, User user);
+
     Optional<Vote> findByCommentAndUser(Comment comment, User user);
+
     int countByPostAndIsUpvote(Post post, boolean isUpvote);
+
     int countByCommentAndIsUpvote(Comment comment, boolean isUpvote);
-
-
 }

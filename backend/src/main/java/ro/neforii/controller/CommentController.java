@@ -17,6 +17,8 @@ import ro.neforii.service.CommentService;
 import ro.neforii.service.UserService;
 import ro.neforii.service.VoteService;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/comments")
 public class CommentController {
@@ -34,7 +36,7 @@ public class CommentController {
 
 
     @PostMapping("/comment/{commentId}")
-    public ResponseEntity<CommentResponseDto> createCommentOnComment(@PathVariable int commentId,@Valid @RequestBody ReplyToCommentRequestDto request) {
+    public ResponseEntity<CommentResponseDto> createCommentOnComment(@PathVariable UUID commentId, @Valid @RequestBody ReplyToCommentRequestDto request) {
 
         User user = userService.getCurrentUser();
         if(user==null){
@@ -50,7 +52,7 @@ public class CommentController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable int id,@Valid @RequestBody CommentUpdateRequestDto request) {
+    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable UUID id,@Valid @RequestBody CommentUpdateRequestDto request) {
         Comment comment = commentService.getComment(id);
         if (comment == null) {
             return ResponseEntity.notFound().build();
@@ -64,7 +66,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccesMessageDto> deleteComment(@PathVariable int id){
+    public ResponseEntity<SuccesMessageDto> deleteComment(@PathVariable UUID id){
         Comment comment = commentService.getComment(id);
         if (comment == null) {
             return ResponseEntity.notFound().build();
@@ -75,7 +77,7 @@ public class CommentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> getCommentWithReplies(@PathVariable int id){
+    public ResponseEntity<CommentResponseDto> getCommentWithReplies(@PathVariable UUID id){
         Comment comment = commentService.getComment(id);
         if(comment == null){
             return ResponseEntity.notFound().build();
@@ -89,7 +91,7 @@ public class CommentController {
 
 
     @PutMapping("/{id}/vote")
-    public ResponseEntity<CommentVoteResponseDto> voteComment(@PathVariable int id, @Valid @RequestBody VoteRequestDto request){
+    public ResponseEntity<CommentVoteResponseDto> voteComment(@PathVariable UUID id, @Valid @RequestBody VoteRequestDto request){
         Comment comment = commentService.getComment(id);
         if (comment == null) {
             return ResponseEntity.notFound().build();

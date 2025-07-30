@@ -2,11 +2,12 @@ package ro.neforii.dto.comment;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public record CommentResponseDto(
-        int id,
-        Integer postId,
-        Integer parentId,
+        UUID id,
+        UUID postId,
+        UUID parentId,
         String content,
         String author,
         int upVotes,

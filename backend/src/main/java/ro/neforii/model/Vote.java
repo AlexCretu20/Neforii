@@ -5,6 +5,7 @@ import lombok.*;
 import ro.neforii.exception.VoteNotOneTargetOnly;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "votes")
@@ -16,8 +17,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Vote {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "is_up_vote")
     private boolean isUpvote;

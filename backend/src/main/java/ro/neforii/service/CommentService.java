@@ -16,6 +16,7 @@ import ro.neforii.utils.logger.LoggerType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CommentService implements IVotable {
@@ -35,14 +36,14 @@ public class CommentService implements IVotable {
         return commentRepo.findAll();
     }
 
-    public Comment getComment(int id) {
+    public Comment getComment(UUID id) {
         return commentRepo.findById(id).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Comment with id=" + id + " not found in getComment()");
             return new CommentNotFoundException("Comment with id " + id + " does not exist");
         });
     }
 
-    public Comment createCommentOnPost(String content, User user, int postId) {
+    public Comment createCommentOnPost(String content, User user, UUID postId) {
         Post post = postRepo.findById(postId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to comment on nonexistent post id=" + postId);
             return new PostNotFoundException("Post with id=" + postId + " not found");
@@ -60,7 +61,7 @@ public class CommentService implements IVotable {
         return comment;
     }
 
-    public Comment createReplyToComment(String content, User user, int parentCommentId) {
+    public Comment createReplyToComment(String content, User user, UUID parentCommentId) {
         Comment parent = commentRepo.findById(parentCommentId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to reply to nonexistent comment id=" + parentCommentId);
             return new CommentNotFoundException("Could not find comment with id=" + parentCommentId);
@@ -79,7 +80,7 @@ public class CommentService implements IVotable {
         return reply;
     }
 
-    public Comment updateComment(int id, String newContent, User user) {
+    public Comment updateComment(UUID id, String newContent, User user) {
         Comment existing = getComment(id);
 
         existing.setContent(newContent);
@@ -95,7 +96,7 @@ public class CommentService implements IVotable {
         }
     }
 
-    public void deleteComment(int id) {
+    public void deleteComment(UUID id) {
         getComment(id);
         try {
             commentRepo.deleteById(id);
@@ -107,12 +108,12 @@ public class CommentService implements IVotable {
     }
 
 
-    public List<Comment> getRepliesForComment(int commentId) {
+    public List<Comment> getRepliesForComment(UUID commentId) {
         getComment(commentId);
         return commentRepo.findByParentCommentId(commentId);
     }
 
-    public Integer findPostIdForComment(int commentId) {
+    public UUID findPostIdForComment(UUID commentId) {
         Optional<Comment> currentOptional = commentRepo.findById(commentId);
 
         while (currentOptional.isPresent()) {
@@ -130,18 +131,18 @@ public class CommentService implements IVotable {
 
 
 
-    public List<Comment> getTopLevelComments(int postId) {
+    public List<Comment> getTopLevelComments(UUID postId) {
         return commentRepo.findByPostId(postId).stream()
                 .filter(c -> c.getParentComment() == null)
                 .toList();
     }
 
-    public int displayUpvotes(int id) {
+    public int displayUpvotes(UUID id) {
         Comment comment = commentRepo.findById(id).orElseThrow();
         return voteRepo.countByCommentAndIsUpvote(comment, true);
     }
 
-    public int displayDownvotes(int id) {
+    public int displayDownvotes(UUID id) {
         Comment comment = commentRepo.findById(id).orElseThrow();
         return voteRepo.countByCommentAndIsUpvote(comment, false);
     }

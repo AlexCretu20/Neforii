@@ -1,12 +1,13 @@
 package ro.neforii.dto.vote;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record VoteResponseDto(
-        Integer id,
+        UUID id,
         boolean isUpvote,
         LocalDateTime createdAt,
-        Integer postId,
-        Integer commentId
+        UUID postId,
+        UUID commentId
 ) {
 }
