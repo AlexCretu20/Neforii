@@ -3,7 +3,7 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.53">
     <root id="1">
       <DateStyle>mdy</DateStyle>
-      <IntrospectionStateNumber>1153</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1166</IntrospectionStateNumber>
       <ServerVersion>16.9</ServerVersion>
       <StartupTime>1752646573</StartupTime>
       <TimeZones>true ACDT
@@ -800,7 +800,7 @@ true posixrules
 13258||10|C|G
 13258||-9223372036854775808|U|G
 13258||10|U|G</Grants>
-      <IntrospectionStateNumber>1153</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1166</IntrospectionStateNumber>
       <ObjectId>16388</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4223,8 +4223,8 @@ true posixrules
     </schema>
     <schema id="264" parent="2" name="public">
       <Current>1</Current>
-      <IntrospectionStateNumber>1153</IntrospectionStateNumber>
-      <LastIntrospectionLocalTimestamp>2025-07-29.14:24:44</LastIntrospectionLocalTimestamp>
+      <IntrospectionStateNumber>1166</IntrospectionStateNumber>
+      <LastIntrospectionLocalTimestamp>2025-07-29.15:18:09</LastIntrospectionLocalTimestamp>
       <ObjectId>16450</ObjectId>
       <StateNumber>749</StateNumber>
       <OwnerName>postgres</OwnerName>
@@ -4269,7 +4269,7 @@ true posixrules
     </table>
     <table id="270" parent="264" name="posts">
       <ObjectId>16626</ObjectId>
-      <StateNumber>1110</StateNumber>
+      <StateNumber>1154</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>postgres</OwnerName>
     </table>
@@ -4432,14 +4432,20 @@ true posixrules
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <foreign-key id="294" parent="270" name="fk5lidm6cqbc7u4xhqpxm898qme">
+    <column id="294" parent="270" name="subreddit">
+      <Position>10</Position>
+      <StateNumber>1154</StateNumber>
+      <StoredType>varchar(255)|0s</StoredType>
+      <TypeId>1043</TypeId>
+    </column>
+    <foreign-key id="295" parent="270" name="fk5lidm6cqbc7u4xhqpxm898qme">
       <ColNames>user_id</ColNames>
       <ObjectId>16666</ObjectId>
       <StateNumber>1112</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>16634</RefTableId>
     </foreign-key>
-    <index id="295" parent="270" name="posts_pkey">
+    <index id="296" parent="270" name="posts_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16631</ObjectId>
@@ -4448,14 +4454,14 @@ true posixrules
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="296" parent="270" name="posts_pkey">
+    <key id="297" parent="270" name="posts_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16632</ObjectId>
       <Primary>1</Primary>
       <StateNumber>1102</StateNumber>
       <UnderlyingIndexId>16631</UnderlyingIndexId>
     </key>
-    <column id="297" parent="271" name="id">
+    <column id="298" parent="271" name="id">
       <IdentityKind>by-default</IdentityKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -4464,48 +4470,48 @@ true posixrules
       <SequenceId>16633</SequenceId>
       <TypeId>23</TypeId>
     </column>
-    <column id="298" parent="271" name="created_at">
+    <column id="299" parent="271" name="created_at">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StateNumber>1103</StateNumber>
       <StoredType>timestamp(6)|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="299" parent="271" name="description">
+    <column id="300" parent="271" name="description">
       <Position>3</Position>
       <StateNumber>1103</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="300" parent="271" name="email">
+    <column id="301" parent="271" name="email">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StateNumber>1103</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="301" parent="271" name="password">
+    <column id="302" parent="271" name="password">
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StateNumber>1103</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="302" parent="271" name="phone_number">
+    <column id="303" parent="271" name="phone_number">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StateNumber>1103</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="303" parent="271" name="username">
+    <column id="304" parent="271" name="username">
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StateNumber>1103</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <index id="304" parent="271" name="users_pkey">
+    <index id="305" parent="271" name="users_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16639</ObjectId>
@@ -4514,7 +4520,7 @@ true posixrules
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="305" parent="271" name="uk6dotkott2kjsp8vw4d0m25fb7">
+    <index id="306" parent="271" name="uk6dotkott2kjsp8vw4d0m25fb7">
       <ColNames>email</ColNames>
       <ObjectId>16647</ObjectId>
       <StateNumber>1106</StateNumber>
@@ -4524,7 +4530,7 @@ true posixrules
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <index id="306" parent="271" name="ukr43af9ap4edm43mmtq01oddj6">
+    <index id="307" parent="271" name="ukr43af9ap4edm43mmtq01oddj6">
       <ColNames>username</ColNames>
       <ObjectId>16649</ObjectId>
       <StateNumber>1108</StateNumber>
@@ -4534,24 +4540,24 @@ true posixrules
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <key id="307" parent="271" name="users_pkey">
+    <key id="308" parent="271" name="users_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16640</ObjectId>
       <Primary>1</Primary>
       <StateNumber>1103</StateNumber>
       <UnderlyingIndexId>16639</UnderlyingIndexId>
     </key>
-    <key id="308" parent="271" name="uk6dotkott2kjsp8vw4d0m25fb7">
+    <key id="309" parent="271" name="uk6dotkott2kjsp8vw4d0m25fb7">
       <ObjectId>16648</ObjectId>
       <StateNumber>1106</StateNumber>
       <UnderlyingIndexId>16647</UnderlyingIndexId>
     </key>
-    <key id="309" parent="271" name="ukr43af9ap4edm43mmtq01oddj6">
+    <key id="310" parent="271" name="ukr43af9ap4edm43mmtq01oddj6">
       <ObjectId>16650</ObjectId>
       <StateNumber>1108</StateNumber>
       <UnderlyingIndexId>16649</UnderlyingIndexId>
     </key>
-    <column id="310" parent="272" name="id">
+    <column id="311" parent="272" name="id">
       <IdentityKind>by-default</IdentityKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -4560,60 +4566,60 @@ true posixrules
       <SequenceId>16641</SequenceId>
       <TypeId>23</TypeId>
     </column>
-    <column id="311" parent="272" name="created_at">
+    <column id="312" parent="272" name="created_at">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StateNumber>1104</StateNumber>
       <StoredType>timestamp(6)|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="312" parent="272" name="is_up_vote">
+    <column id="313" parent="272" name="is_up_vote">
       <Position>3</Position>
       <StateNumber>1104</StateNumber>
       <StoredType>boolean|0s</StoredType>
       <TypeId>16</TypeId>
     </column>
-    <column id="313" parent="272" name="comment_id">
+    <column id="314" parent="272" name="comment_id">
       <Position>4</Position>
       <StateNumber>1104</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <column id="314" parent="272" name="post_id">
+    <column id="315" parent="272" name="post_id">
       <Position>5</Position>
       <StateNumber>1104</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <column id="315" parent="272" name="user_id">
+    <column id="316" parent="272" name="user_id">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StateNumber>1104</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <foreign-key id="316" parent="272" name="fkiavg4g6hf3lpw9lyf1uco7h7v">
+    <foreign-key id="317" parent="272" name="fkiavg4g6hf3lpw9lyf1uco7h7v">
       <ColNames>comment_id</ColNames>
       <ObjectId>16671</ObjectId>
       <StateNumber>1113</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>16620</RefTableId>
     </foreign-key>
-    <foreign-key id="317" parent="272" name="fk1m2jqtro85c13ya5kv0kvkc97">
+    <foreign-key id="318" parent="272" name="fk1m2jqtro85c13ya5kv0kvkc97">
       <ColNames>post_id</ColNames>
       <ObjectId>16676</ObjectId>
       <StateNumber>1114</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>16626</RefTableId>
     </foreign-key>
-    <foreign-key id="318" parent="272" name="fkli4uj3ic2vypf5pialchj925e">
+    <foreign-key id="319" parent="272" name="fkli4uj3ic2vypf5pialchj925e">
       <ColNames>user_id</ColNames>
       <ObjectId>16681</ObjectId>
       <StateNumber>1115</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>16634</RefTableId>
     </foreign-key>
-    <index id="319" parent="272" name="votes_pkey">
+    <index id="320" parent="272" name="votes_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16645</ObjectId>
@@ -4622,7 +4628,7 @@ true posixrules
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="320" parent="272" name="votes_pkey">
+    <key id="321" parent="272" name="votes_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16646</ObjectId>
       <Primary>1</Primary>
