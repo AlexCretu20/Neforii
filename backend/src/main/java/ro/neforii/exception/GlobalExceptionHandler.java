@@ -6,6 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ro.neforii.exception.user.EmailAlreadyInUseException;
+import ro.neforii.exception.user.InvalidUserLoginException;
 import ro.neforii.exception.user.UserNotFoundException;
 import ro.neforii.exception.user.UsernameAlreadyInUseException;
 
@@ -42,6 +43,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handlePostNotFound(PostNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidUserLoginException.class)
+    public ResponseEntity<String> handleUserLogin(InvalidUserLoginException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(ex.getMessage());
     }
 }

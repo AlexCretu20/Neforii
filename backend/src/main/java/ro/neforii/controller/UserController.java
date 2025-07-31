@@ -26,14 +26,9 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserResponseDto> login(@RequestBody UserLoginRequestDto request) {
-        User user = userService.loginUser(request.email(), request.password());
-        if (user == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED) // 401 daca nu se logheaza bn
-                    .build(); //null body
-        }
+        UserResponseDto user = userService.loginUser(request); //UNAUTHROIZED daca nu e ok log info
         return ResponseEntity
-                .ok(userMapper.userToUserResponseDto(user));
+                .ok(user);
     }
 
     @PostMapping("/register")
@@ -47,14 +42,9 @@ public class UserController {
 
     @GetMapping("/{username}")
     public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable String username) {
-        User user = userService.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND) // 404 daca nu gaseste userul
-                    .build();
-        }
+        UserResponseDto user = userService.findByUsername(username);//NOT_FOUND daca nu exista userul
         return ResponseEntity
-                .ok(userMapper.userToUserResponseDto(user));
+                .ok(user);
     }
 
     @DeleteMapping("/{id}")

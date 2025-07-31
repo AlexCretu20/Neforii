@@ -1,10 +1,14 @@
 package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
+import ro.neforii.dto.user.UserResponseDto;
+import ro.neforii.dto.user.login.UserLoginRequestDto;
 import ro.neforii.dto.user.update.UserUpdateRequestDto;
 import ro.neforii.exception.user.EmailAlreadyInUseException;
+import ro.neforii.exception.user.InvalidUserLoginException;
 import ro.neforii.exception.user.UserNotFoundException;
 import ro.neforii.exception.user.UsernameAlreadyInUseException;
+import ro.neforii.mapper.UserMapper;
 import ro.neforii.model.User;
 import ro.neforii.repository.UserRepository;
 import ro.neforii.service.crud.CrudService;
@@ -16,11 +20,13 @@ import java.util.UUID;
 @Service
 public class UserService implements CrudService<User, UUID, UserUpdateRequestDto> {
 
+    private final UserMapper userMapper;
     private User currentUser;
     private final UserRepository userRepo;
 
-    public UserService(UserRepository userRepo) {
+    public UserService(UserRepository userRepo, UserMapper userMapper) {
         this.userRepo = userRepo;
+        this.userMapper = userMapper;
     }
 
     //CREATE methods
@@ -92,20 +98,20 @@ public class UserService implements CrudService<User, UUID, UserUpdateRequestDto
         return userRepo.findByEmail(email).isPresent();
     }
 
-    public User findByUsername(String username) {
+    public UserResponseDto findByUsername(String username) {
         Optional<User> user = userRepo.findByUsername(username);
-        if (user.isPresent()) {
-            return user.get();
+        if(user.isEmpty()){
+            throw new UserNotFoundException("Couldn't find user with username: " + username);
         }
-        return null;
+        return userMapper.userToUserResponseDto(user.get());
     }
 
-    public User loginUser(String email, String password) {
-        Optional<User> user = userRepo.findByEmailAndPassword(email, password);
-        if (user.isPresent()) {
-            return user.get();
+    public UserResponseDto loginUser(UserLoginRequestDto userLoginRequestDto) {
+        Optional<User> user = userRepo.findByEmailAndPassword(userLoginRequestDto.email(), userLoginRequestDto.password());
+        if(user.isEmpty()){
+            throw new InvalidUserLoginException("Invalid email or password.");
         }
-        return null;
+        return userMapper.userToUserResponseDto(user.get());
     }
 
     public void logoutUser() {
