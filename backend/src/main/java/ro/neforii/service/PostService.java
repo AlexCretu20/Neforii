@@ -7,18 +7,15 @@ import ro.neforii.dto.post.PostUpdateRequestDto;
 import ro.neforii.dto.post.PostVoteResponseDto;
 import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.exception.PostNotFoundException;
-import ro.neforii.exception.TitleAlreadyInUseException;
 import ro.neforii.mapper.PostMapper;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.model.VoteType;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.VoteRepository;
-import ro.neforii.service.crud.CrudService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

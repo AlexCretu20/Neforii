@@ -1,5 +1,5 @@
 package ro.neforii.service.crud;
 
-public interface CreateService<T> {
-    T create(T entity);
+public interface CreateService<CreateDto, ResponseDto> {
+    ResponseDto create(CreateDto dto);
 }

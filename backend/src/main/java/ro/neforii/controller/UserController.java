@@ -7,8 +7,6 @@ import ro.neforii.dto.user.UserResponseDto;
 import ro.neforii.dto.user.login.UserLoginRequestDto;
 import ro.neforii.dto.user.register.UserRegisterRequestDto;
 import ro.neforii.dto.user.update.UserUpdateRequestDto;
-import ro.neforii.mapper.UserMapper;
-import ro.neforii.model.User;
 import ro.neforii.service.UserService;
 
 import java.util.UUID;
@@ -17,11 +15,9 @@ import java.util.UUID;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final UserMapper userMapper;
 
-    public UserController(UserService userService, UserMapper userMapper) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userMapper = userMapper;
     }
 
     @PostMapping("/login")
@@ -33,11 +29,10 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@RequestBody UserRegisterRequestDto request) {
-        User user = userMapper.userRegisterRequestDtoToUser(request);
-        User created = userService.create(user);
+        UserResponseDto created = userService.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED) // 201 ca s-a creat
-                .body(userMapper.userToUserResponseDto(created));
+                .body(created);
     }
 
     @GetMapping("/{username}")
@@ -57,8 +52,8 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable UUID id, @RequestBody UserUpdateRequestDto request) {
-        User updatedUser = userService.update(id, request);
+        UserResponseDto updatedUser = userService.update(id, request);
         return ResponseEntity
-                .ok(userMapper.userToUserResponseDto(updatedUser));
+                .ok(updatedUser);
     }
 }

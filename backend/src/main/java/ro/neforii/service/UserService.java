@@ -3,6 +3,7 @@ package ro.neforii.service;
 import org.springframework.stereotype.Service;
 import ro.neforii.dto.user.UserResponseDto;
 import ro.neforii.dto.user.login.UserLoginRequestDto;
+import ro.neforii.dto.user.register.UserRegisterRequestDto;
 import ro.neforii.dto.user.update.UserUpdateRequestDto;
 import ro.neforii.exception.user.EmailAlreadyInUseException;
 import ro.neforii.exception.user.InvalidUserLoginException;
@@ -18,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class UserService implements CrudService<User, UUID, UserUpdateRequestDto> {
+public class UserService implements CrudService<UserResponseDto, UUID, UserRegisterRequestDto, UserUpdateRequestDto> {
 
     private final UserMapper userMapper;
     private User currentUser;
@@ -31,31 +32,39 @@ public class UserService implements CrudService<User, UUID, UserUpdateRequestDto
 
     //CREATE methods
     @Override
-    public User create(User user) {
-        if (isUsernameExisting(user.getUsername())) {
-            throw new UsernameAlreadyInUseException(user.getUsername());
+    public UserResponseDto create(UserRegisterRequestDto dto) {
+        if (userRepo.existsByUsername(dto.username())) {
+            throw new UsernameAlreadyInUseException(dto.username());
         }
-        if (isEmailExisting(user.getEmail())) {
-            throw new EmailAlreadyInUseException(user.getEmail());
+        if (userRepo.findByEmail(dto.email()).isPresent()) {
+            throw new EmailAlreadyInUseException(dto.email());
         }
-        return userRepo.save(user);
+        User user = userMapper.userRegisterRequestDtoToUser(dto);
+        return userMapper.userToUserResponseDto(userRepo.save(user));
     }
 
     //READ methods
     @Override
-    public Optional<User> findById(UUID id) {
-        return userRepo.findById(id);
+    public UserResponseDto findById(UUID id) {
+        Optional<User> userOpt = userRepo.findById(id);
+        if (userOpt.isEmpty()) {
+            throw new UserNotFoundException("User with id " + id + " not found.");
+        }
+        return userMapper.userToUserResponseDto(userOpt.get());
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepo.findAll();
+    public List<UserResponseDto> findAll() {
+        return userRepo.findAll()
+                .stream()
+                .map(userMapper::userToUserResponseDto)
+                .toList();
     }
 
     //UPDATE methods
     @Override
-    public User update(UUID id, UserUpdateRequestDto requestDto) {
-        Optional<User> existingUserOpt = findById(id);
+    public UserResponseDto update(UUID id, UserUpdateRequestDto requestDto) {
+        Optional<User> existingUserOpt = userRepo.findById(id);
         if (existingUserOpt.isEmpty()) {
             throw new UserNotFoundException("The user with id " + id + " does not exist.");
         }
@@ -73,7 +82,7 @@ public class UserService implements CrudService<User, UUID, UserUpdateRequestDto
         existingUser.setPhoneNumber(requestDto.phoneNumber());
         existingUser.setDescription(requestDto.description());
 
-        return userRepo.save(existingUser);
+        return userMapper.userToUserResponseDto(userRepo.save(existingUser));
     }
 
     //DELETE methods

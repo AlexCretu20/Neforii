@@ -1,8 +1,8 @@
 package ro.neforii.service.crud;
 
-public interface CrudService<E, ID, UpdateDto> extends
-        ReadService<E, ID>,
-        CreateService<E>,
-        UpdateService<ID, UpdateDto, E>,
+public interface CrudService<ResponseDto, ID, CreateDto, UpdateDto> extends
+        ReadService<ResponseDto, ID>,
+        CreateService<CreateDto, ResponseDto>,
+        UpdateService<ID, UpdateDto, ResponseDto>,
         DeleteService<ID> {
 }
