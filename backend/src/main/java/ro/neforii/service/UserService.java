@@ -98,12 +98,21 @@ public class UserService implements CrudService<User, UUID, UserUpdateRequestDto
         return userRepo.findByEmail(email).isPresent();
     }
 
+    //metoda pentru comunicare cu controller, pentru mai putina logica in controller, returneaza responseDto
     public UserResponseDto findByUsername(String username) {
         Optional<User> user = userRepo.findByUsername(username);
         if(user.isEmpty()){
             throw new UserNotFoundException("Couldn't find user with username: " + username);
         }
         return userMapper.userToUserResponseDto(user.get());
+    }
+    //METODA pentru a gasi un User dupa username, returneaza User entity, metoda e folosita intern de alte servicii, nu controllere
+    public User findUserEntityByUsername(String username) {
+        Optional<User> user = userRepo.findByUsername(username);
+        if(user.isEmpty()){
+            throw new UserNotFoundException("Couldn't find user with username: " + username);
+        }
+        return user.get();
     }
 
     public UserResponseDto loginUser(UserLoginRequestDto userLoginRequestDto) {

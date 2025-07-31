@@ -98,11 +98,7 @@ public class CommentController {
         }
 
 //        User user = userService.getCurrentUser();
-        User user = userService.findByUsername("andrei");
-        if(user == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+        User user = userService.findUserEntityByUsername("andrei");
         if(request.voteType().equals("none")){
             voteService.deleteVoteForComment(comment,user);
         }else{

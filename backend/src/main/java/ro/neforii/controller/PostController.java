@@ -1,30 +1,28 @@
 package ro.neforii.controller;
 
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.common.SuccessResponse;
-import ro.neforii.dto.post.*;
+import ro.neforii.dto.post.PostRequestDto;
+import ro.neforii.dto.post.PostResponseDto;
+import ro.neforii.dto.post.PostUpdateRequestDto;
+import ro.neforii.dto.post.PostVoteResponseDto;
 import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.mapper.CommentMapper;
 import ro.neforii.mapper.PostMapper;
 import ro.neforii.model.Comment;
-import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.service.CommentService;
 import ro.neforii.service.FakeUserAuthService;
 import ro.neforii.service.PostService;
 import ro.neforii.service.UserService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -97,12 +95,9 @@ public class PostController {
 
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
-        User user = userService.findByUsername(request.author());
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+        User user = userService.findUserEntityByUsername(request.author());
         Comment comment;
+        //TO DO: de mutat logica in service
         if (request.parentId() == null) {
             comment = commentService.createCommentOnPost(request.content(), user, id);
         } else {
