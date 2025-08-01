@@ -47,4 +47,17 @@ public class UserMapper {
                 userUpdateRequestDto.description()
         );
     }
+
+    public User UserResponseToUser(UserResponseDto userDto){
+        if (userDto == null){
+            return null;
+        }
+        User user = new User();
+        user.setUsername(userDto.username());
+        user.setEmail(userDto.email());
+        user.setPhoneNumber(userDto.phoneNumber());
+        user.setDescription(userDto.description());
+        user.setCreatedAt(userDto.createdAt());
+        return  user;
+    }
 }
