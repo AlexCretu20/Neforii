@@ -6,18 +6,23 @@ import jakarta.validation.constraints.Size;
 
 public record PostRequestDto(
 
-        @NotBlank(message = "Titlul este obligatoriu")
+        @NotBlank(message = "The title is required.")
         @Size(min = 3, max = 300)
         String title,
 
         @Size(max = 10000)
         String content,
 
-        @NotBlank(message = "Autorul este obligatoriu")
+        @NotBlank(message = "The author is required.")
         String author,
 
-        String subreddit
+        String subreddit,
 
-) {}
+        String imagePath
+
+
+
+) {
+}
 
 

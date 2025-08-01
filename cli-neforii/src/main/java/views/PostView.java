@@ -1,23 +1,22 @@
 package views;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
 import models.post.PostResponseDto;
 
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PostView {
     private static final String RED = "\u001B[31m";
     private static final String GREEN = "\u001B[32m";
     private static final String NORMAL = "\u001B[0m";
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
     private static String[] wrapText(String text, int maxLineLength) {
         String[] words = text.split(" ");
         StringBuilder line = new StringBuilder();
-        java.util.List<String> lines = new java.util.ArrayList<>();
+        List<String> lines = new ArrayList<>();
 
         for (String word : words) {
             if (line.length() + word.length() + 1 > maxLineLength) {
@@ -37,8 +36,19 @@ public class PostView {
         return lines.toArray(new String[0]);
     }
 
-    private static void displayPost(PostResponseDto post) {
-        String createdAtFormatted = post.createdAt().format(formatter);
+    private static String formatTimestamp(String rawTimestamp) {
+        if (rawTimestamp == null || rawTimestamp.isEmpty()) return "N/A";
+        try {
+            return rawTimestamp
+                    .replace('T', ' ')
+                    .split("\\.")[0]; // taie nanosecundele
+        } catch (Exception e) {
+            return rawTimestamp;
+        }
+    }
+
+    public static void displayPost(PostResponseDto post) {
+        String createdAtFormatted = formatTimestamp(post.createdAt());
 
         int maxLineLength = 50;
 
@@ -48,7 +58,7 @@ public class PostView {
         String[] wrappedPostId = wrapText("Post ID:   " + post.id(), maxLineLength);
         String[] wrappedCreated = wrapText("Created:   " + createdAtFormatted, maxLineLength);
 
-        java.util.List<String> allLines = new java.util.ArrayList<>();
+        List<String> allLines = new ArrayList<>();
         for (String s : wrappedTitle) allLines.add(s);
         for (String s : wrappedAuthor) allLines.add(s);
         for (String s : wrappedContent) allLines.add(s);
@@ -76,9 +86,7 @@ public class PostView {
         };
 
         printLines.accept(wrappedTitle);
-
         System.out.println(separator);
-
         printLines.accept(wrappedAuthor);
         printLines.accept(wrappedContent);
         printLines.accept(wrappedPostId);
@@ -106,23 +114,33 @@ public class PostView {
         if (apiResult.getSuccess()) {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.findAndRegisterModules();
-                PostResponseDto post = objectMapper.readValue(apiResult.getResponseBody(), PostResponseDto.class);
-                displayPost(post);
-            } catch (JsonProcessingException e) {
+                JsonNode root = objectMapper.readTree(apiResult.getResponseBody());
+                JsonNode dataNode = root.get("data");
+
+                if (dataNode != null && dataNode.isObject()) {
+                    PostResponseDto post = objectMapper.treeToValue(dataNode, PostResponseDto.class);
+                    displayPost(post);
+                } else {
+                    System.out.println("[INFO]: No post found in response.");
+                }
+            } catch (Exception e) {
                 displayError("A problem has appeared while processing data. Please try again later.");
+                e.printStackTrace();
             }
         } else {
             displayError(apiResult.getMessage());
         }
     }
 
-    public static void displayPostListResult(ApiResult apiResult) {
-        if (apiResult.getSuccess()) {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.findAndRegisterModules();
-                PostResponseDto[] posts = objectMapper.readValue(apiResult.getResponseBody(), PostResponseDto[].class);
+public static void displayPostListResult(ApiResult apiResult) {
+    if (apiResult.getSuccess()) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode root = objectMapper.readTree(apiResult.getResponseBody());
+            JsonNode dataNode = root.get("data");
+
+            if (dataNode != null && dataNode.isArray()) {
+                PostResponseDto[] posts = objectMapper.treeToValue(dataNode, PostResponseDto[].class);
                 if (posts.length == 0) {
                     System.out.println(GREEN + "[INFO]: No posts available." + NORMAL);
                     return;
@@ -131,13 +149,15 @@ public class PostView {
                     displayPost(post);
                     System.out.println();
                 }
-            } catch (JsonProcessingException e) {
-                System.out.println(e.getMessage());
-                displayError("A problem has appeared while processing data. Please try again later.");
+            } else {
+                System.out.println(GREEN + "[INFO]: No posts found." + NORMAL);
             }
-        } else {
-            displayError(apiResult.getMessage());
+        } catch (Exception e) {
+            displayError("A problem has appeared while processing data. Please try again later.");
+            e.printStackTrace();
         }
+    } else {
+        displayError(apiResult.getMessage());
     }
-
+}
 }

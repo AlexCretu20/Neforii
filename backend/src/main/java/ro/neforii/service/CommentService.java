@@ -1,8 +1,14 @@
 package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.events.Event;
+import ro.neforii.dto.comment.CommentResponseDto;
+import ro.neforii.dto.comment.update.CommentUpdateRequestDto;
+import ro.neforii.dto.user.UserResponseDto;
 import ro.neforii.exception.CommentNotFoundException;
 import ro.neforii.exception.PostNotFoundException;
+import ro.neforii.mapper.CommentMapper;
+import ro.neforii.mapper.UserMapper;
 import ro.neforii.model.Comment;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
@@ -17,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService implements IVotable {
@@ -24,17 +31,28 @@ public class CommentService implements IVotable {
     private final UserRepository userRepo;
     private final PostRepository postRepo;
     private final VoteRepository voteRepo;
+    private final CommentMapper commentMapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final VoteService voteService;
 
-    public CommentService(CommentRepository commentRepo, UserRepository userRepo, PostRepository postRepo, VoteRepository voteRepo) {
+    public CommentService(CommentRepository commentRepo, UserRepository userRepo, PostRepository postRepo, VoteRepository voteRepo, CommentMapper commentMapper, UserService userService, UserMapper userMapper, VoteService voteService) {
         this.commentRepo = commentRepo;
         this.userRepo = userRepo;
         this.postRepo = postRepo;
         this.voteRepo = voteRepo;
+        this.commentMapper = commentMapper;
+        this.userService = userService;
+        this.userMapper = userMapper;
+        this.voteService = voteService;
     }
 
-    public List<Comment> getComments() {
-        return commentRepo.findAll();
+    public List<CommentResponseDto> getComments(User currentUser) {
+        return commentRepo.findAll().stream()
+                .map(comment -> buildComment(comment, currentUser))
+                .toList();
     }
+
 
     public Comment getComment(UUID id) {
         return commentRepo.findById(id).orElseThrow(() -> {
@@ -43,7 +61,7 @@ public class CommentService implements IVotable {
         });
     }
 
-    public Comment createCommentOnPost(String content, User user, UUID postId) {
+    public CommentResponseDto createCommentOnPost(String content, User user, UUID postId) {
         Post post = postRepo.findById(postId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to comment on nonexistent post id=" + postId);
             return new PostNotFoundException("Post with id=" + postId + " not found");
@@ -58,10 +76,12 @@ public class CommentService implements IVotable {
                 .build();
         commentRepo.save(comment);
         Logger.log(LoggerType.INFO, "Created comment id=" + comment.getId() + " on post id=" + postId);
-        return comment;
+
+        CommentResponseDto commentResponseDto = buildComment(comment, user);
+        return commentResponseDto;
     }
 
-    public Comment createReplyToComment(String content, User user, UUID parentCommentId) {
+    public CommentResponseDto createReplyToComment(String content, User user, UUID parentCommentId) {
         Comment parent = commentRepo.findById(parentCommentId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to reply to nonexistent comment id=" + parentCommentId);
             return new CommentNotFoundException("Could not find comment with id=" + parentCommentId);
@@ -77,26 +97,33 @@ public class CommentService implements IVotable {
 
         commentRepo.save(reply);
         Logger.log(LoggerType.INFO, "Created reply id=" + reply.getId() + " to comment id=" + parentCommentId);
-        return reply;
+        CommentResponseDto commentResponseDto = buildComment(reply,user);
+        return commentResponseDto;
     }
 
-    public Comment updateComment(UUID id, String newContent, User user) {
-        Comment existing = getComment(id);
+    public CommentResponseDto updateComment(UUID id, CommentUpdateRequestDto commentDto, UUID currentUserId) {
+        Comment comment = commentRepo.findById(id).orElseThrow(() -> new CommentNotFoundException("The cooment with ID" + id + " not found." ));
 
-        existing.setContent(newContent);
-        existing.setUpdatedAt(LocalDateTime.now());
+        comment.setContent(commentDto.content());
+        comment.setUpdatedAt(LocalDateTime.now());
+
+        // Nu e o solutie finala, dar e una temporala
+        UserResponseDto userDto = userService.findById(currentUserId);
+        User user = userMapper.UserResponseToUser(userDto);
 
         try {
-            commentRepo.save(existing);
+            Comment updatedComm = commentRepo.save(comment);
             Logger.log(LoggerType.INFO, "Comment updated successfully!");
-            return existing;
+            return buildComment(updatedComm, user);
+
         } catch (Exception e) {
             Logger.log(LoggerType.FATAL, "Failed to update comment id=" + id);
             throw new RuntimeException("Failed to update comment");
         }
     }
 
-    public void deleteComment(UUID id) {
+    public void deleteComment(UUID id, UUID currentUserId) {
+        // Verif: daca userul care incearca sa stearga postarea este cel care a facut postarea
         getComment(id);
         try {
             commentRepo.deleteById(id);
@@ -108,9 +135,17 @@ public class CommentService implements IVotable {
     }
 
 
-    public List<Comment> getRepliesForComment(UUID commentId) {
+    public List<CommentResponseDto> getRepliesForComment(UUID commentId, UUID currentUserId) {
         getComment(commentId);
-        return commentRepo.findByParentCommentId(commentId);
+
+        // Nu e o solutie finala, dar e una temporala
+        UserResponseDto userDto = userService.findById(currentUserId);
+        User user = userMapper.UserResponseToUser(userDto);
+
+        List <Comment> replies = commentRepo.findByParentCommentId(commentId);
+        return replies.stream()
+                .map(rply -> buildComment(rply,user))
+                .collect(Collectors.toList());
     }
 
     public UUID findPostIdForComment(UUID commentId) {
@@ -131,9 +166,13 @@ public class CommentService implements IVotable {
 
 
 
-    public List<Comment> getTopLevelComments(UUID postId) {
+    public List<CommentResponseDto> getTopLevelComments(UUID postId, UUID currentUserId ) {
+        UserResponseDto userDto = userService.findById(currentUserId);
+        User user = userMapper.UserResponseToUser(userDto);
+
         return commentRepo.findByPostId(postId).stream()
                 .filter(c -> c.getParentComment() == null)
+                .map(comment -> buildComment(comment, user))
                 .toList();
     }
 
@@ -145,6 +184,39 @@ public class CommentService implements IVotable {
     public int displayDownvotes(UUID id) {
         Comment comment = commentRepo.findById(id).orElseThrow();
         return voteRepo.countByCommentAndIsUpvote(comment, false);
+    }
+
+    public CommentResponseDto buildComment(Comment comment, User currentUser) {
+        if (comment == null) {
+            return null;
+        }
+
+        int upVotes = displayUpvotes(comment.getId());
+        int downVotes = displayDownvotes(comment.getId());
+        int score = upVotes - downVotes;
+        String userVote = voteService.getVoteTypeForUser(comment,currentUser);
+
+        List<CommentResponseDto> repliesDto = Optional.ofNullable(comment.getReplies())
+                .orElse(List.of()) // dacă e null -> listă goală
+                .stream()
+                .map(reply -> buildComment(reply, currentUser))
+                .toList();
+
+
+        return new CommentResponseDto(
+                comment.getId(),
+                comment.getPost() != null ? comment.getPost().getId() : null,
+                comment.getParentComment() != null ? comment.getParentComment().getId() : null,
+                comment.getContent(),
+                comment.getUser().getUsername(),
+                upVotes,
+                downVotes,
+                score,
+                userVote,
+                comment.getCreatedAt(),
+                comment.getUpdatedAt(),
+                repliesDto
+        );
     }
 
 }

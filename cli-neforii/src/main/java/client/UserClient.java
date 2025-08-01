@@ -3,6 +3,7 @@ package client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import config.HttpStatusCategory;
 import models.ApiResult;
 import models.user.UserLoginRequestDto;
 import models.user.UserRegisterRequestDto;
@@ -42,22 +43,32 @@ public class UserClient {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             int statusCode = response.statusCode();
+            //pentru switch case al status code-urilor, sa nu mai fie magic numbers
+            HttpStatusCategory codeCategory = HttpStatusCategory.from(statusCode);
 
             boolean isSuccess;
-            String message; //mesajul
-            if (statusCode >= 200 && statusCode < 300) {
-                isSuccess = true;
-                message = "The user has been successfully registered";
-            } else if (statusCode >= 400 && statusCode < 500) {
-                isSuccess = false;
-                if (response.body() != null && !response.body().isEmpty()) {
-                    message = response.body(); // mesajul aruncat de exceptie, daca e cazul -> GlobalERxceptionHandler & exceptiile definite in backend
-                } else { //mesaj default
-                    message = "Invalid user data for register!";
+            String message;
+
+            switch (codeCategory) {
+                case SUCCESS -> {
+                    isSuccess = true;
+                    message = "The user has been successfully registered!";
                 }
-            } else {
-                isSuccess = false;
-                message = "Unexpected error has appeared! Please try again later.";
+                case CLIENT_ERROR -> {
+                    isSuccess = false;
+                    if (response.body() != null && !response.body().isEmpty())
+                        message = response.body();
+                    else
+                        message = "Invalid user data for register!";
+                }
+                case SERVER_ERROR -> {
+                    isSuccess = false;
+                    message = "Server error occurred. Please try again later.";
+                }
+                default -> {
+                    isSuccess = false;
+                    message = "Unexpected error has appeared! Please try again later.";
+                }
             }
             return new ApiResult(isSuccess, message, response.body());
 
@@ -82,24 +93,34 @@ public class UserClient {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             int statusCode = response.statusCode();
+            HttpStatusCategory codeCategory = HttpStatusCategory.from(statusCode);
 
             boolean isSuccess;
             String message;
-            if (statusCode >= 200 && statusCode < 300) {
-                isSuccess = true;
-                message = "You have successfully logged in!";
-            } else if (statusCode >= 400 && statusCode < 500) {
-                isSuccess = false;
-                if (response.body() != null && !response.body().isEmpty()) {
-                    message = response.body();
-                } else {
-                    message = "Invalid user data for login!";
+
+            switch (codeCategory) {
+                case SUCCESS -> {
+                    isSuccess = true;
+                    message = "You have successfully logged in successfully!";
                 }
-            } else {
-                isSuccess = false;
-                message = "Unexpected error has appeared! Please try again later.";
+                case CLIENT_ERROR -> {
+                    isSuccess = false;
+                    if (response.body() != null && !response.body().isEmpty())
+                        message = response.body();
+                    else
+                        message = "Invalid user data for login!";
+                }
+                case SERVER_ERROR -> {
+                    isSuccess = false;
+                    message = "Server error occurred. Please try again later.";
+                }
+                default -> {
+                    isSuccess = false;
+                    message = "Unexpected error has appeared! Please try again later.";
+                }
             }
             return new ApiResult(isSuccess, message, response.body());
+
         } catch (JsonProcessingException e) {
             return new ApiResult(false, "Couldn't map the User request to JSON.", null);
         } catch (IOException | InterruptedException e) {
@@ -120,20 +141,34 @@ public class UserClient {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             int statusCode = response.statusCode();
+            HttpStatusCategory codeCategory = HttpStatusCategory.from(statusCode);
 
             boolean isSuccess;
             String message;
-            if (statusCode >= 200 && statusCode < 300) {
-                isSuccess = true;
-                message = "User found successfully!";
-            } else if (statusCode == 404) {
-                isSuccess = false;
-                message = "User not found!";
-            } else {
-                isSuccess = false;
-                message = "Unexpected error has appeared! Please try again later.";
+
+            switch (codeCategory) {
+                case SUCCESS -> {
+                    isSuccess = true;
+                    message = "The user has been found successfully!";
+                }
+                case CLIENT_ERROR -> {
+                    isSuccess = false;
+                    if (response.body() != null && !response.body().isEmpty())
+                        message = response.body();
+                    else
+                        message = "The user couldn't be found!";
+                }
+                case SERVER_ERROR -> {
+                    isSuccess = false;
+                    message = "Server error occurred. Please try again later.";
+                }
+                default -> {
+                    isSuccess = false;
+                    message = "Unexpected error has appeared! Please try again later.";
+                }
             }
             return new ApiResult(isSuccess, message, response.body());
+
         } catch (IOException | InterruptedException e) {
             return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
         }
@@ -152,20 +187,34 @@ public class UserClient {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             int statusCode = response.statusCode();
+            HttpStatusCategory codeCategory = HttpStatusCategory.from(statusCode);
 
             boolean isSuccess;
             String message;
-            if (statusCode == 204) {
-                isSuccess = true;
-                message = "User deleted successfully!";
-            } else if (statusCode == 404) {
-                isSuccess = false;
-                message = "User not found!";
-            } else {
-                isSuccess = false;
-                message = "Unexpected error has appeared! Please try again later.";
+
+            switch (codeCategory) {
+                case SUCCESS -> {
+                    isSuccess = true;
+                    message = "You have successfully deleted your account!";
+                }
+                case CLIENT_ERROR -> {
+                    isSuccess = false;
+                    if (response.body() != null && !response.body().isEmpty())
+                        message = response.body();
+                    else
+                        message = "Couldn't perform delete because the user doesn't exist.";
+                }
+                case SERVER_ERROR -> {
+                    isSuccess = false;
+                    message = "Server error occurred. Please try again later.";
+                }
+                default -> {
+                    isSuccess = false;
+                    message = "Unexpected error has appeared! Please try again later.";
+                }
             }
             return new ApiResult(isSuccess, message, response.body());
+
         } catch (IOException | InterruptedException e) {
             return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
         }
@@ -185,24 +234,39 @@ public class UserClient {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             int statusCode = response.statusCode();
+            HttpStatusCategory codeCategory = HttpStatusCategory.from(statusCode);
 
             boolean isSuccess;
             String message;
-            if (statusCode >= 200 && statusCode < 300) {
-                isSuccess = true;
-                message = "User updated successfully!";
-            } else if (statusCode == 404) {
-                isSuccess = false;
-                message = "User not found!";
-            } else {
-                isSuccess = false;
-                message = "Unexpected error has appeared! Please try again later.";
+
+            switch (codeCategory) {
+                case SUCCESS -> {
+                    isSuccess = true;
+                    message = "You have successfully updated your account!";
+                }
+                case CLIENT_ERROR -> {
+                    isSuccess = false;
+                    if (response.body() != null && !response.body().isEmpty())
+                        message = response.body();
+                    else
+                        message = "Invalid user data for update!";
+                }
+                case SERVER_ERROR -> {
+                    isSuccess = false;
+                    message = "Server error occurred. Please try again later.";
+                }
+                default -> {
+                    isSuccess = false;
+                    message = "Unexpected error has appeared! Please try again later.";
+                }
             }
             return new ApiResult(isSuccess, message, response.body());
+
         } catch (IOException | InterruptedException e) {
             return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
         }
     }
+
     public UUID extractUserId(ApiResult apiResult) {
         try {
             ObjectMapper mapper = new ObjectMapper();
