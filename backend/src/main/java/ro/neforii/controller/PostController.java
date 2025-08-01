@@ -55,7 +55,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<SuccessResponse<PostResponseDto>> createPost(@Valid @RequestBody PostRequestDto postRequestDto) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
-        PostResponseDto postResponseDto = postService.createPost(postRequestDto);
+        PostResponseDto postResponseDto = postService.createPost(postRequestDto, currentUserId);
 
         return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
     }

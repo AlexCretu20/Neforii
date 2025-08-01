@@ -39,20 +39,20 @@ public class CommentController {
     public ResponseEntity<CommentResponseDto> createCommentOnComment(@PathVariable UUID commentId, @Valid @RequestBody ReplyToCommentRequestDto request) {
 
         User user = userService.getCurrentUser();
-        if(user==null){
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         Comment comment = commentService.createReplyToComment(request.text(), user, commentId);
-        if(comment==null){
+        if (comment == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment,user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment, user));
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable UUID id,@Valid @RequestBody CommentUpdateRequestDto request) {
+    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable UUID id, @Valid @RequestBody CommentUpdateRequestDto request) {
         Comment comment = commentService.getComment(id);
         if (comment == null) {
             return ResponseEntity.notFound().build();
@@ -61,37 +61,37 @@ public class CommentController {
         User user = comment.getUser();
 
         Comment updated = commentService.updateComment(id, request.content(), user);
-        CommentResponseDto response = commentMapper.toCommentDto(updated,user);
+        CommentResponseDto response = commentMapper.toCommentDto(updated, user);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccesMessageDto> deleteComment(@PathVariable UUID id){
+    public ResponseEntity<SuccesMessageDto> deleteComment(@PathVariable UUID id) {
         Comment comment = commentService.getComment(id);
         if (comment == null) {
             return ResponseEntity.notFound().build();
         }
 
         commentService.deleteComment(id);
-        return ResponseEntity.ok(new SuccesMessageDto(true,"Comentariul a fost sters cu succes"));
+        return ResponseEntity.ok(new SuccesMessageDto(true, "Comentariul a fost sters cu succes"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> getCommentWithReplies(@PathVariable UUID id){
+    public ResponseEntity<CommentResponseDto> getCommentWithReplies(@PathVariable UUID id) {
         Comment comment = commentService.getComment(id);
-        if(comment == null){
+        if (comment == null) {
             return ResponseEntity.notFound().build();
         }
 
         User user = userService.getCurrentUser();
 
-        CommentResponseDto response = commentMapper.toCommentDto(comment,user);
+        CommentResponseDto response = commentMapper.toCommentDto(comment, user);
         return ResponseEntity.ok(response);
     }
 
 
     @PutMapping("/{id}/vote")
-    public ResponseEntity<CommentVoteResponseDto> voteComment(@PathVariable UUID id, @Valid @RequestBody VoteRequestDto request){
+    public ResponseEntity<CommentVoteResponseDto> voteComment(@PathVariable UUID id, @Valid @RequestBody VoteRequestDto request) {
         Comment comment = commentService.getComment(id);
         if (comment == null) {
             return ResponseEntity.notFound().build();
@@ -99,11 +99,11 @@ public class CommentController {
 
 //        User user = userService.getCurrentUser();
         User user = userService.findUserEntityByUsername("andrei");
-        if(request.voteType().equals("none")){
-            voteService.deleteVoteForComment(comment,user);
-        }else{
+        if (request.voteType().equals("none")) {
+            voteService.deleteVoteForComment(comment, user);
+        } else {
             boolean isUpVote = request.voteType().equals("up");
-            voteService.createVote(user.getId(),null,comment.getId(),isUpVote);
+            voteService.createVote(user.getId(), null, comment.getId(), isUpVote);
         }
         int upVotes = commentService.displayUpvotes(comment.getId());
         int downVotes = commentService.displayDownvotes(comment.getId());

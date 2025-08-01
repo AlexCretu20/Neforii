@@ -3,10 +3,8 @@ package ro.neforii.service;
 import org.springframework.stereotype.Service;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.exception.VoteNotFoundException;
-import ro.neforii.model.Comment;
-import ro.neforii.model.Post;
-import ro.neforii.model.User;
-import ro.neforii.model.Vote;
+import ro.neforii.exception.user.UserNotFoundException;
+import ro.neforii.model.*;
 import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.UserRepository;
@@ -56,6 +54,67 @@ public class VoteService implements IVoteService {
         return "You have successfully voted!";
     }
 
+//    public Vote createOrUpdateVoteForComment(UUID userId, UUID commentId, VoteType voteType) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+//        Comment comment = commentRepository.findById(commentId)
+//                .orElseThrow(() -> new CommentNotFoundException("Comment not found with ID: " + commentId));
+//
+//        Optional<Vote> existingVoteOpt = voteRepository.findByCommentAndUser(comment, user);
+//
+//        if (voteType == VoteType.NONE) {
+//            existingVoteOpt.ifPresent(voteRepository::delete);
+//            return null;
+//        }
+//
+//        Vote vote = existingVoteOpt.orElseGet(() ->
+//                new Vote(voteType == VoteType.UP, null, comment, user)
+//        );
+//        vote.setUpvote(voteType == VoteType.UP);
+//
+//        return voteRepository.save(vote);
+//    }
+
+    public Vote createOrUpdateVoteForPost(UUID userId, UUID postId, VoteType voteType) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found with ID: " + postId));
+
+        Optional<Vote> existingVoteOpt = voteRepository.findByPostAndUser(post, user);
+
+        if (voteType == VoteType.NONE) {
+            existingVoteOpt.ifPresent(voteRepository::delete);
+            return null;
+        }
+
+        Vote vote = existingVoteOpt.orElseGet(() ->
+                new Vote(voteType == VoteType.UP, post, null, user)
+        );
+        vote.setUpvote(voteType == VoteType.UP);
+
+        Vote savedVote = voteRepository.save(vote);
+        Post updatedPost = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found after voting: " + postId));
+
+        evaluatePostAward(updatedPost);
+
+        return savedVote;
+    }
+
+    public void evaluatePostAward(Post post) {
+        long upvoteCount = post.getVotes().stream()
+                .filter(Vote::isUpvote)
+                .count();
+
+        boolean shouldBeAwarded = upvoteCount >= 2;
+
+        if (shouldBeAwarded != post.isAwarded()) {
+            post.setAwarded(shouldBeAwarded);
+            postRepository.save(post);
+        }
+    }
+
 
     public void deleteVote(UUID voteId) {
         voteRepository.deleteById(voteId);
@@ -95,7 +154,7 @@ public class VoteService implements IVoteService {
 
     public void deleteByUserIdAndPostId(UUID userId, UUID postId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
