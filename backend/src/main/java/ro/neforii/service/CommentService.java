@@ -1,6 +1,7 @@
 package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.yaml.snakeyaml.events.Event;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
@@ -217,6 +218,8 @@ public class CommentService implements IVotable {
                 repliesDto
         );
     }
+
+    @Transactional(readOnly = true) // optimizeaza, pentru citiri dificile din baza de date
     public CommentListResponseDto getCommentsForPost(UUID postId, UUID currentUserId) {
         List<Comment> allComments = commentRepo.findByPostId(postId);
 
