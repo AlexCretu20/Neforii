@@ -19,7 +19,6 @@ public record PostResponseDto(
         int score,
         int commentCount,
         String userVote, // poate fi null
-        String createdAt,
-        String updatedAt,
-        String imagePath
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {}

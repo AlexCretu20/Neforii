@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.common.SuccessResponse;
@@ -83,6 +84,17 @@ public class PostController {
 
         return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
     }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<CommentListResponseDto> getCommentsForPost(@PathVariable UUID id) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+//        List<CommentResponseDto> comments = postService.getCommentsForPost(id, currentUserId);
+        CommentListResponseDto comments = postService.getCommentsForPost(id, currentUserId);
+
+        return ResponseEntity.ok(comments);
+    }
+
+
 
 
 //    @PostMapping("/{id}/comments")

@@ -2,6 +2,8 @@ package ro.neforii.service;
 
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.stereotype.Service;
+import ro.neforii.dto.CommentListResponseDto;
+import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.dto.post.PostUpdateRequestDto;
@@ -27,17 +29,19 @@ public class PostService {
     private final PostRepository postRepository;
     private final VoteService voteService;
     private final UserService userService;
+    private final CommentService commentService;
     private final PostMapper postMapper;
     private final OwnershipValidator ownershipValidator;
 
 
     public PostService(PostRepository postRepository, PostMapper postMapper, UserService userService, VoteService voteService,
-                       OwnershipValidator ownershipValidator) {
+                       OwnershipValidator ownershipValidator, CommentService commentService) {
         this.postRepository = postRepository;
         this.postMapper = postMapper;
         this.userService = userService;
         this.voteService = voteService;
         this.ownershipValidator = ownershipValidator;
+        this.commentService = commentService;
     }
 
 
@@ -109,5 +113,9 @@ public class PostService {
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + postId + " not found."));
 
         return postMapper.postToPostVoteResponseDto(updatedPost, currentUserId);
+    }
+
+    public CommentListResponseDto getCommentsForPost(UUID id, UUID currentUserId) {
+        return commentService.getCommentsForPost(id, currentUserId);
     }
 }

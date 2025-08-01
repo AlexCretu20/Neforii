@@ -16,11 +16,7 @@ public record PostRequestDto(
         @NotBlank(message = "The author is required.")
         String author,
 
-        String subreddit,
-
-        String imagePath
-
-
+        String subreddit
 
 ) {
 }

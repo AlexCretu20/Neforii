@@ -2,6 +2,7 @@ package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.events.Event;
+import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.update.CommentUpdateRequestDto;
 import ro.neforii.dto.user.UserResponseDto;
@@ -20,9 +21,7 @@ import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -217,6 +216,33 @@ public class CommentService implements IVotable {
                 comment.getUpdatedAt(),
                 repliesDto
         );
+    }
+    public CommentListResponseDto getCommentsForPost(UUID postId, UUID currentUserId) {
+        List<Comment> allComments = commentRepo.findByPostId(postId);
+
+        Map<UUID, CommentResponseDto> dtoById = allComments.stream()
+                .map(c -> commentMapper.commentToDto(c, currentUserId))
+                .collect(Collectors.toMap(CommentResponseDto::id, dto -> dto));
+
+        // build tree
+        List<CommentResponseDto> topLevel = new ArrayList<>();
+        for (Comment comment : allComments) {
+            CommentResponseDto dto = dtoById.get(comment.getId());
+            if (comment.getParentComment() != null) {
+                CommentResponseDto parentDto = dtoById.get(comment.getParentComment().getId());
+                if (parentDto != null) {
+                    ((List<CommentResponseDto>) parentDto.replies()).add(dto);
+                }
+            } else {
+                topLevel.add(dto);
+            }
+        }
+
+        return new CommentListResponseDto(topLevel, allComments.size());
+    }
+
+    public int countCommentsForPost(UUID postId) {
+        return commentRepo.countByPostId(postId);
     }
 
 }
