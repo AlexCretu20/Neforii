@@ -11,6 +11,7 @@ import models.user.UserResponseDto;
 import views.CommentView;
 import views.PostView;
 import views.UserView;
+
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -55,16 +56,11 @@ public class MainMenu {
         UserLoginRequestDto loginRequest = new UserLoginRequestDto(email, password);
         ApiResult result = userClient.login(loginRequest);
 
-        System.out.println(result.getMessage());
+        UserView.displayUserResult(result);
         if (result.getSuccess()) {
-            String username = extractUsernameFromLogin(result);
-            if (username != null) {
-                currentUsername = username;
-                ApiResult userResult = userClient.getUserByUsername(username);
-                UserView.displayUserResult(userResult);
-                currentUserId = userClient.extractUserId(userResult);
-                postLoginMenu(scanner);
-            }
+            currentUsername = extractUsernameFromLogin(result);
+            currentUserId = extractIdFromLogin(result);
+            postLoginMenu(scanner);
         }
     }
 
@@ -92,33 +88,33 @@ public class MainMenu {
         }
     }
 
-private static void handleOpenPost(Scanner scanner) {
-    System.out.print("Enter Post ID to view: ");
-    String postIdInput = scanner.nextLine();
-    try {
-        UUID postId = UUID.fromString(postIdInput);
-        ApiResult postResult = postClient.getPostById(postId);
+    private static void handleOpenPost(Scanner scanner) {
+        System.out.print("Enter Post ID to view: ");
+        String postIdInput = scanner.nextLine();
+        try {
+            UUID postId = UUID.fromString(postIdInput);
+            ApiResult postResult = postClient.getPostById(postId);
 
 
-        if (!postResult.getSuccess()) {
-            System.out.println("[ERROR]: Could not load post: " + postResult.getMessage());
-            return;
+            if (!postResult.getSuccess()) {
+                System.out.println("[ERROR]: Could not load post: " + postResult.getMessage());
+                return;
+            }
+            PostView.displayPostResult(postResult);
+
+            ApiResult commentsResult = commentClient.getCommentsByPostId(postId);
+            if (!commentsResult.getSuccess()) {
+                System.out.println("[ERROR]: Could not load comments: " + commentsResult.getMessage());
+                return;
+            }
+            CommentView.displayCommentList(commentsResult);
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("[ERROR]: Invalid UUID format.");
+        } catch (Exception e) {
+            System.out.println("[ERROR]: Could not load post or comments.");
         }
-        PostView.displayPostResult(postResult);
-
-        ApiResult commentsResult = commentClient.getCommentsByPostId(postId);
-        if (!commentsResult.getSuccess()) {
-            System.out.println("[ERROR]: Could not load comments: " + commentsResult.getMessage());
-            return;
-        }
-        CommentView.displayCommentList(commentsResult);
-
-    } catch (IllegalArgumentException e) {
-        System.out.println("[ERROR]: Invalid UUID format.");
-    } catch (Exception e) {
-        System.out.println("[ERROR]: Could not load post or comments.");
     }
-}
 
 
     private static void handleViewPosts() {
@@ -144,7 +140,7 @@ private static void handleOpenPost(Scanner scanner) {
         String imagePathInput = scanner.nextLine();
         String imagePath = imagePathInput.isBlank() ? null : imagePathInput;
         PostRequestDto postDto = new PostRequestDto(
-                 title,
+                title,
                 content,
                 currentUsername,
                 null,
@@ -197,6 +193,17 @@ private static void handleOpenPost(Scanner scanner) {
             System.out.println("Couldn't parse login response to extract username.");
             return null;
         }
+    }
 
-}
+    private static UUID extractIdFromLogin(ApiResult loginResult) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.findAndRegisterModules(); // pentru  datetime
+            UserResponseDto user = mapper.readValue(loginResult.getResponseBody(), UserResponseDto.class);
+            return user.id(); // getter pt id
+        } catch (Exception e) {
+            System.out.println("Couldn't parse login response to extract id.");
+            return null;
+        }
+    }
 }
