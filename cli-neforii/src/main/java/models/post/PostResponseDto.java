@@ -1,6 +1,7 @@
 package models.post;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record PostResponseDto(
@@ -14,7 +15,9 @@ public record PostResponseDto(
         Integer score,
         Integer commentCount,
         String userVote,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        String createdAt,
+        String updatedAt,
+        String imagePath
+
 ) {
 }
