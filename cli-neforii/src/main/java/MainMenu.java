@@ -2,6 +2,7 @@ import client.CommentClient;
 import client.PostClient;
 import client.UserClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import config.ConnectionConfig;
 import models.ApiResult;
 import models.post.PostRequestDto;
 import models.user.UserLoginRequestDto;
@@ -14,10 +15,9 @@ import java.util.Scanner;
 import java.util.UUID;
 
 public class MainMenu {
-    private static final String BASE_URL = "http://13.53.190.111:8080";
-    private static final UserClient userClient = new UserClient(BASE_URL + "/users");
-    private static final PostClient postClient = new PostClient(BASE_URL + "/posts");
-    private static final CommentClient commentClient = new CommentClient(BASE_URL + "/comments");
+    private static final UserClient userClient = new UserClient(ConnectionConfig.BASE_URL + "/users");
+    private static final PostClient postClient = new PostClient(ConnectionConfig.BASE_URL + "/posts");
+    private static final CommentClient commentClient = new CommentClient(ConnectionConfig.BASE_URL + "/comments");
     public static String currentUsername = null;
     public static UUID currentUserId = null;
 
