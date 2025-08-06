@@ -6,13 +6,13 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v9.0": {
-      "GrayscaleFilter/1.0.0": {
+      "SepiaFilter/1.0.0": {
         "dependencies": {
           "AppCore": "1.0.0",
           "System.Drawing.Common": "9.0.7"
         },
         "runtime": {
-          "GrayscaleFilter.dll": {}
+          "SepiaFilter.dll": {}
         }
       },
       "Microsoft.Win32.SystemEvents/9.0.7": {
@@ -60,7 +60,7 @@
     }
   },
   "libraries": {
-    "GrayscaleFilter/1.0.0": {
+    "SepiaFilter/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
