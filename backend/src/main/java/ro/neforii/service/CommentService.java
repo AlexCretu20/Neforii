@@ -1,5 +1,6 @@
 package ro.neforii.service;
 
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.neforii.dto.CommentListResponseDto;
@@ -7,6 +8,7 @@ import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.update.CommentUpdateRequestDto;
 import ro.neforii.dto.comment.vote.CommentVoteRequestDto;
 import ro.neforii.dto.comment.vote.CommentVoteResponseDto;
+import ro.neforii.dto.post.PostCommentResponseDto;
 import ro.neforii.dto.user.UserResponseDto;
 import ro.neforii.exception.BadRequestException;
 import ro.neforii.exception.CommentNotFoundException;
@@ -24,6 +26,7 @@ import ro.neforii.repository.VoteRepository;
 import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,26 +70,20 @@ public class CommentService implements IVotable {
     }
 
 
-    public CommentResponseDto createCommentOnPost(String content, User user, UUID postId) {
-        Post post = postRepo.findById(postId).orElseThrow(() -> {
-            Logger.log(LoggerType.FATAL, "Attempt to comment on nonexistent post id=" + postId);
-            return new PostNotFoundException("Post with id=" + postId + " not found");
-        });
-
+    public CommentResponseDto createCommentOnPost(String content, User user, Post post, Comment parent) {
         Comment comment = Comment.builder()
                 .content(content)
                 .user(user)
                 .post(post)
+                .parentComment(parent)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        commentRepo.save(comment);
-        Logger.log(LoggerType.INFO, "Created comment id=" + comment.getId() + " on post id=" + postId);
 
-        CommentResponseDto commentResponseDto = commentMapper.commentToDto(comment, user.getId());
-        return commentResponseDto;
+        Comment savedComment = commentRepo.save(comment);
+
+        return commentMapper.commentToDto(savedComment, user.getId());
     }
-
     public CommentResponseDto createReplyToComment(String content, User user, UUID parentCommentId) {
         Comment parent = commentRepo.findById(parentCommentId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to reply to nonexistent comment id=" + parentCommentId);
@@ -203,4 +200,7 @@ public class CommentService implements IVotable {
         return commentRepo.countByPostId(postId);
     }
 
+    public Optional<Comment> findById(UUID id) {
+        return commentRepo.findById(id);
+    }
 }

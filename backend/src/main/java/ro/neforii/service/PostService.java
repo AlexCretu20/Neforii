@@ -8,6 +8,7 @@ import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.post.*;
 import ro.neforii.dto.vote.VoteRequestDto;
+import ro.neforii.exception.CommentNotFoundException;
 import ro.neforii.exception.ForbiddenActionException;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.mapper.PostMapper;
@@ -119,8 +120,17 @@ public class PostService {
         return commentService.getCommentsForPost(id, currentUserId);
     }
 
-    public void createComment(UUID id, CommentOnPostRequestDto request, UUID currentUserId) {
+    public CommentResponseDto createComment(UUID postId, CommentOnPostRequestDto request, UUID currentUserId) {
         User user = userService.getUserByUsername(request.author());
-        CommentResponseDto comment = commentService.createCommentOnPost(request.content(), user, id);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found with ID: " + postId));
+
+        Comment parent = null;
+        if (request.parentId() != null) {
+            parent = commentService.findById(request.parentId())
+                    .orElseThrow(() -> new CommentNotFoundException("Parent comment not found with ID: " + request.parentId()));
+        }
+
+        return commentService.createCommentOnPost(request.content(), user, post, parent);
     }
 }

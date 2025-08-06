@@ -94,20 +94,13 @@ public class PostController {
 
 
 
-//    @PostMapping("/{id}/comments")
-//    public ResponseEntity<SuccessResponse<PostCommentResponseDto>> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
-//        UUID currentUserId = fakeAuthService.getCurrentUserId();
-////        PostCommentResponseDto commentResponseDto = postService.createComment(id, request, currentUserId);
-//        postService.createComment(id, request, currentUserId);
-//        return ResponseEntity.ok(new SuccessResponse<>(new PostCommentResponseDto()));
-//    }
     @PostMapping("/{id}/comments")
-    public ResponseEntity createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto commentOnPostRequestDto) {
+    public ResponseEntity<SuccessResponse<CommentResponseDto>> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
-        postService.createComment(id, commentOnPostRequestDto, currentUserId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        CommentResponseDto commentResponseDto = postService.createComment(id, request, currentUserId);
+        return ResponseEntity.ok(new SuccessResponse<>(commentResponseDto));
     }
-//
+
 //    @GetMapping("/{postId}/comments")
 //    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable UUID postId) {
 //        User user = userService.getCurrentUser();
