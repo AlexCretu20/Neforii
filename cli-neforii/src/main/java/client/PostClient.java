@@ -1,10 +1,8 @@
 package client;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
 import models.post.PostRequestDto;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -120,6 +118,9 @@ public class PostClient {
             if (statusCode == 204) {
                 isSuccess = true;
                 message = "The post was deleted.";
+            }else if (statusCode == 200 && response.body().contains("\"success\":true")) {
+                    isSuccess = true;
+                    message = "The post was deleted.";
             } else if (statusCode >= 400 && statusCode < 500) {
                 isSuccess = false;
                 message = (response.body() != null && !response.body().isEmpty())
@@ -216,6 +217,36 @@ public class PostClient {
             throw new RuntimeException(e);
         }
     }
+    public ApiResult getCommentsByPostId(UUID postId) {
+        try {
+            String url = baseUrl + "/" + postId + "/comments";
+
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+
+            int statusCode = response.statusCode();
+
+            if (statusCode == 200) {
+                return new ApiResult(true, "The comments for this post were found.", response.body());
+            } else if (statusCode == 404) {
+                return new ApiResult(false, "No comments found for this post.", null);
+            } else if (statusCode >= 400 && statusCode < 500) {
+                return new ApiResult(false, response.body(), response.body());
+            } else {
+                return new ApiResult(false, "Unexpected error occurred. Please try again later.", response.body());
+            }
+
+        } catch (IOException | InterruptedException e) {
+            return new ApiResult(false, "Couldn't maintain the connection: " + e.getMessage(), null);
+        }
+    }
+
 
 }
 

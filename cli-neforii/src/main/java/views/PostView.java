@@ -6,7 +6,9 @@ import models.ApiResult;
 import models.post.PostResponseDto;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PostView {
     private static final String RED = "\u001B[31m";
@@ -47,53 +49,59 @@ public class PostView {
         }
     }
 
-    public static void displayPost(PostResponseDto post) {
-        String createdAtFormatted = formatTimestamp(post.createdAt());
 
-        int maxLineLength = 50;
+public static void displayPost(PostResponseDto post) {
+    displayPost(post, null);
+}
 
-        String[] wrappedTitle = wrapText("Title:     " + post.title(), maxLineLength);
-        String[] wrappedAuthor = wrapText("Author:    @" + post.author(), maxLineLength);
-        String[] wrappedContent = wrapText("Content:   " + post.content(), maxLineLength);
-        String[] wrappedPostId = wrapText("Post ID:   " + post.id(), maxLineLength);
-        String[] wrappedCreated = wrapText("Created:   " + createdAtFormatted, maxLineLength);
 
-        List<String> allLines = new ArrayList<>();
-        for (String s : wrappedTitle) allLines.add(s);
-        for (String s : wrappedAuthor) allLines.add(s);
-        for (String s : wrappedContent) allLines.add(s);
-        for (String s : wrappedPostId) allLines.add(s);
-        for (String s : wrappedCreated) allLines.add(s);
+public static void displayPost(PostResponseDto post, String displayId) {
+    String createdAtFormatted = formatTimestamp(post.createdAt());
 
-        int maxLength = 32;
-        for (String line : allLines) {
-            if (line.length() > maxLength) {
-                maxLength = line.length();
-            }
+    int maxLineLength = 50;
+
+    String[] wrappedTitle = wrapText("Title:     " + post.title(), maxLineLength);
+    String[] wrappedAuthor = wrapText("Author:    @" + post.author(), maxLineLength);
+    String[] wrappedContent = wrapText("Content:   " + post.content(), maxLineLength);
+    String[] wrappedPostId = wrapText("Post ID:   " + displayId, maxLineLength);
+    String[] wrappedCreated = wrapText("Created:   " + createdAtFormatted, maxLineLength);
+
+    List<String> allLines = new ArrayList<>();
+    for (String s : wrappedTitle) allLines.add(s);
+    for (String s : wrappedAuthor) allLines.add(s);
+    for (String s : wrappedContent) allLines.add(s);
+    for (String s : wrappedPostId) allLines.add(s);
+    for (String s : wrappedCreated) allLines.add(s);
+
+    int maxLength = 32;
+    for (String line : allLines) {
+        if (line.length() > maxLength) {
+            maxLength = line.length();
         }
-        int widthPadding = maxLength + 2;
-
-        String topBorder = "┌" + "─".repeat(widthPadding) + "┐";
-        String separator = "├" + "─".repeat(widthPadding) + "┤";
-        String bottomBorder = "└" + "─".repeat(widthPadding) + "┘";
-
-        System.out.println(GREEN + topBorder);
-
-        java.util.function.Consumer<String[]> printLines = lines -> {
-            for (String line : lines) {
-                System.out.printf("│ %-" + (widthPadding - 1) + "s│%n", line);
-            }
-        };
-
-        printLines.accept(wrappedTitle);
-        System.out.println(separator);
-        printLines.accept(wrappedAuthor);
-        printLines.accept(wrappedContent);
-        printLines.accept(wrappedPostId);
-        printLines.accept(wrappedCreated);
-
-        System.out.println(bottomBorder + NORMAL);
     }
+    int widthPadding = maxLength + 2;
+
+    String topBorder = "┌" + "─".repeat(widthPadding) + "┐";
+    String separator = "├" + "─".repeat(widthPadding) + "┤";
+    String bottomBorder = "└" + "─".repeat(widthPadding) + "┘";
+
+    System.out.println(GREEN + topBorder);
+
+    java.util.function.Consumer<String[]> printLines = lines -> {
+        for (String line : lines) {
+            System.out.printf("│ %-" + (widthPadding - 1) + "s│%n", line);
+        }
+    };
+
+    printLines.accept(wrappedTitle);
+    System.out.println(separator);
+    printLines.accept(wrappedAuthor);
+    printLines.accept(wrappedContent);
+    printLines.accept(wrappedPostId);
+    printLines.accept(wrappedCreated);
+
+    System.out.println(bottomBorder + NORMAL);
+}
 
     private static void displayError(String message) {
         String prefix = "[ERROR]: ";
@@ -120,6 +128,28 @@ public class PostView {
                 if (dataNode != null && dataNode.isObject()) {
                     PostResponseDto post = objectMapper.treeToValue(dataNode, PostResponseDto.class);
                     displayPost(post);
+
+                } else {
+                    System.out.println("[INFO]: No post found in response.");
+                }
+            } catch (Exception e) {
+                displayError("A problem has appeared while processing data. Please try again later.");
+                e.printStackTrace();
+            }
+        } else {
+            displayError(apiResult.getMessage());
+        }
+    }
+    public static void displayPostResult(ApiResult apiResult, String displayId) {
+        if (apiResult.getSuccess()) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode root = objectMapper.readTree(apiResult.getResponseBody());
+                JsonNode dataNode = root.get("data");
+
+                if (dataNode != null && dataNode.isObject()) {
+                    PostResponseDto post = objectMapper.treeToValue(dataNode, PostResponseDto.class);
+                    displayPost(post, displayId);
                 } else {
                     System.out.println("[INFO]: No post found in response.");
                 }
@@ -132,7 +162,9 @@ public class PostView {
         }
     }
 
-public static void displayPostListResult(ApiResult apiResult) {
+public static Map<Integer, PostResponseDto> displayPostListResult(ApiResult apiResult) {
+    Map<Integer, PostResponseDto> postMap = new LinkedHashMap<>();
+
     if (apiResult.getSuccess()) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -143,11 +175,16 @@ public static void displayPostListResult(ApiResult apiResult) {
                 PostResponseDto[] posts = objectMapper.treeToValue(dataNode, PostResponseDto[].class);
                 if (posts.length == 0) {
                     System.out.println(GREEN + "[INFO]: No posts available." + NORMAL);
-                    return;
+                    return postMap;
                 }
+
+                int index = 1;
                 for (PostResponseDto post : posts) {
-                    displayPost(post);
+
+                    displayPost(post, String.valueOf(index));
                     System.out.println();
+                    postMap.put(index, post);
+                    index++;
                 }
             } else {
                 System.out.println(GREEN + "[INFO]: No posts found." + NORMAL);
@@ -159,5 +196,7 @@ public static void displayPostListResult(ApiResult apiResult) {
     } else {
         displayError(apiResult.getMessage());
     }
+
+    return postMap;
 }
 }

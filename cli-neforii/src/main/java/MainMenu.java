@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import config.ConnectionConfig;
 import models.ApiResult;
 import models.post.PostRequestDto;
+import models.post.PostResponseDto;
 import models.user.UserLoginRequestDto;
 import models.user.UserRegisterRequestDto;
 import models.user.UserResponseDto;
@@ -12,6 +13,8 @@ import views.CommentView;
 import views.PostView;
 import views.UserView;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -22,10 +25,12 @@ public class MainMenu {
     public static String currentUsername = null;
     public static UUID currentUserId = null;
 
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
+
             System.out.println("====== Welcome to Neforii CLI ======");
             System.out.println("1. Login");
             System.out.println("2. Register");
@@ -44,6 +49,37 @@ public class MainMenu {
             }
         }
     }
+
+    private static void postLoginMenu(Scanner scanner) {
+        while (true) {
+
+            System.out.println("\n==== Main Menu ====");
+            System.out.println("1. Create Post");
+            System.out.println("2. View Posts");
+            System.out.println("3. Open Post (view comments)");
+            System.out.println("4. Delete Post");
+            System.out.println("5. Logout ");
+            System.out.print("Choose option: ");
+            String option = scanner.nextLine();
+
+            switch (option) {
+                case "1" -> handleCreatePost(scanner);
+                case "2" -> handleViewPosts();
+                case "3" -> handleOpenPost(scanner);
+                case "5" -> {
+                    currentUsername = null;
+                    currentUserId = null;
+                    return;
+                }
+                case "4" -> handleDeletePost(scanner);
+                default -> System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+
+    // HANDEL URI  pentru meniu
+
 
     private static void handleLogin(Scanner scanner) {
         System.out.println("==== LOGIN ====");
@@ -64,63 +100,46 @@ public class MainMenu {
         }
     }
 
-    private static void postLoginMenu(Scanner scanner) {
-        while (true) {
-            System.out.println("\n==== Main Menu ====");
-            System.out.println("1. Create Post");
-            System.out.println("2. View Posts");
-            System.out.println("3. Open Post (view comments)");
-            System.out.println("4. Logout");
-            System.out.print("Choose option: ");
-            String option = scanner.nextLine();
-
-            switch (option) {
-                case "1" -> handleCreatePost(scanner);
-                case "2" -> handleViewPosts();
-                case "3" -> handleOpenPost(scanner);
-                case "4" -> {
-                    currentUsername = null;
-                    currentUserId = null;
-                    return;
-                }
-                default -> System.out.println("Invalid option. Please try again.");
-            }
-        }
-    }
-
     private static void handleOpenPost(Scanner scanner) {
-        System.out.print("Enter Post ID to view: ");
-        String postIdInput = scanner.nextLine();
+        if (postIndexMap.isEmpty()) {
+            System.out.println("[INFO]: Please view posts first using option 2.");
+            return;
+        }
+
+        System.out.print("Enter Post ID: ");
+        String input = scanner.nextLine();
+
         try {
-            UUID postId = UUID.fromString(postIdInput);
-            ApiResult postResult = postClient.getPostById(postId);
+            int postNumber = Integer.parseInt(input);
+            PostResponseDto selectedPost = postIndexMap.get(postNumber);
 
-
-            if (!postResult.getSuccess()) {
-                System.out.println("[ERROR]: Could not load post: " + postResult.getMessage());
+            if (selectedPost == null) {
+                System.out.println("[ERROR]: No post found with number: " + postNumber);
                 return;
             }
-            PostView.displayPostResult(postResult);
 
-            ApiResult commentsResult = commentClient.getCommentsByPostId(postId);
-            if (!commentsResult.getSuccess()) {
-                System.out.println("[ERROR]: Could not load comments: " + commentsResult.getMessage());
-                return;
-            }
+
+            ApiResult postResult = postClient.getPostById(selectedPost.id());
+            PostView.displayPostResult(postResult, String.valueOf(postNumber));
+
+
+            ApiResult commentsResult = postClient.getCommentsByPostId(selectedPost.id());
+
             CommentView.displayCommentList(commentsResult);
 
-        } catch (IllegalArgumentException e) {
-            System.out.println("[ERROR]: Invalid UUID format.");
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR]: Please enter a valid number.");
         } catch (Exception e) {
             System.out.println("[ERROR]: Could not load post or comments.");
         }
     }
 
+    private static Map<Integer, PostResponseDto> postIndexMap = new HashMap<>();
 
     private static void handleViewPosts() {
         System.out.println("==== All Posts ====");
         ApiResult result = postClient.getAllPosts();
-        PostView.displayPostListResult(result);
+        postIndexMap = PostView.displayPostListResult(result);
     }
 
     private static void handleCreatePost(Scanner scanner) {
@@ -183,6 +202,43 @@ public class MainMenu {
     }
 
 
+    private static void handleDeletePost(Scanner scanner) {
+        if (postIndexMap.isEmpty()) {
+            System.out.println("[INFO]: Please view posts first using option 2.");
+            return;
+        }
+
+        System.out.print("Enter Post ID to delete: ");
+        String input = scanner.nextLine();
+
+        try {
+            int postNumber = Integer.parseInt(input);
+            PostResponseDto selectedPost = postIndexMap.get(postNumber);
+
+            if (selectedPost == null) {
+                System.out.println("[ERROR]: No post found with number: " + postNumber);
+                return;
+            }
+
+            ApiResult result = postClient.deletePost(selectedPost.id());
+
+            if (result.getSuccess()) {
+                System.out.println("[SUCCESS]: Post deleted successfully.");
+                postIndexMap.remove(postNumber);
+            } else {
+                System.out.println("[ERROR]: " + result.getMessage());
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR]: Please enter a valid number.");
+        } catch (Exception e) {
+            System.out.println("[ERROR]: Could not delete the post. " + e.getMessage());
+        }
+    }
+
+    //extract pentru informatii
+
+
     private static String extractUsernameFromLogin(ApiResult loginResult) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -198,12 +254,14 @@ public class MainMenu {
     private static UUID extractIdFromLogin(ApiResult loginResult) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            mapper.findAndRegisterModules(); // pentru  datetime
+            mapper.findAndRegisterModules();
             UserResponseDto user = mapper.readValue(loginResult.getResponseBody(), UserResponseDto.class);
-            return user.id(); // getter pt id
+            return user.id();
         } catch (Exception e) {
             System.out.println("Couldn't parse login response to extract id.");
             return null;
         }
     }
+
+
 }
