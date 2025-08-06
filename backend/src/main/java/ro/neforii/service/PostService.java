@@ -1,9 +1,11 @@
 package ro.neforii.service;
 
+import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.stereotype.Service;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
+import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.post.PostRequestDto;
 import ro.neforii.dto.post.PostResponseDto;
 import ro.neforii.dto.post.PostUpdateRequestDto;
@@ -12,6 +14,7 @@ import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.exception.ForbiddenActionException;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.mapper.PostMapper;
+import ro.neforii.model.Comment;
 import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.model.VoteType;
@@ -117,5 +120,9 @@ public class PostService {
 
     public CommentListResponseDto getCommentsForPost(UUID id, UUID currentUserId) {
         return commentService.getCommentsForPost(id, currentUserId);
+    }
+
+    public Comment createComment(UUID id, CommentOnPostRequestDto request, UUID currentUserId) {
+
     }
 }

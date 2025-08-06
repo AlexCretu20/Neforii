@@ -97,18 +97,13 @@ public class PostController {
 
 
 
-//    @PostMapping("/{id}/comments")
-//    public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
-//        User user = userService.findUserEntityByUsername(request.author());
-//        Comment comment;
-//        //TO DO: de mutat logica in service
-//        if (request.parentId() == null) {
-//            comment = commentService.createCommentOnPost(request.content(), user, id);
-//        } else {
-//            comment = commentService.createReplyToComment(request.content(), user, request.parentId());
-//        }
-//        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment, user));
-//    }
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<SuccessResponse<CommentResponseDto>> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        Comment commentResponseDto = postService.createComment(id, request, currentUserId);
+
+        return ResponseEntity.ok(new SuccessResponse<>(commentResponseDto));
+    }
 //
 //    @GetMapping("/{postId}/comments")
 //    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable UUID postId) {
