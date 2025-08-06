@@ -35,7 +35,7 @@ public class CommentController {
         this.userService = userService;
     }
 
-    @PostMapping("/comment/{commentId}")
+    @PostMapping("{commentId}")
     public ResponseEntity<CommentResponseDto> createCommentOnComment(@PathVariable UUID commentId, @Valid @RequestBody ReplyToCommentRequestDto request) {
 
         User user = userService.getCurrentUser();
@@ -49,7 +49,6 @@ public class CommentController {
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(commentDto);
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<CommentResponseDto> updateComment(@PathVariable UUID id,@Valid @RequestBody CommentUpdateRequestDto request) {

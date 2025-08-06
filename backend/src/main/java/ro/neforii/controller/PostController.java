@@ -94,38 +94,4 @@ public class PostController {
         return ResponseEntity.ok(comments);
     }
 
-
-
-
-//    @PostMapping("/{id}/comments")
-//    public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
-//        User user = userService.findUserEntityByUsername(request.author());
-//        Comment comment;
-//        //TO DO: de mutat logica in service
-//        if (request.parentId() == null) {
-//            comment = commentService.createCommentOnPost(request.content(), user, id);
-//        } else {
-//            comment = commentService.createReplyToComment(request.content(), user, request.parentId());
-//        }
-//        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(comment, user));
-//    }
-//
-//    @GetMapping("/{postId}/comments")
-//    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable UUID postId) {
-//        User user = userService.getCurrentUser();
-//        List<Comment> topLevelComments = commentService.getTopLevelComments(postId);
-//
-//        List<CommentResponseDto> dtos = topLevelComments.stream()
-//                .map(c -> commentMapper.toCommentDto(c, user))
-//                .toList();
-//
-//        int total = commentService.getComments().stream()
-//                .filter(c -> c.getPost() != null && c.getPost().getId() == postId)
-//                .toList().size();
-//
-//        return ResponseEntity.ok(Map.of(
-//                "data", dtos,
-//                "total", total
-//        ));
-//    }
 }

@@ -61,6 +61,7 @@ public class CommentService implements IVotable {
         });
     }
 
+
     public CommentResponseDto createCommentOnPost(String content, User user, UUID postId) {
         Post post = postRepo.findById(postId).orElseThrow(() -> {
             Logger.log(LoggerType.FATAL, "Attempt to comment on nonexistent post id=" + postId);
