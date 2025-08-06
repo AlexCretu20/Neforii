@@ -10,7 +10,7 @@ public enum VoteType {
             case "up" -> UP;
             case "down" -> DOWN;
             case "none" -> NONE;
-            default -> throw new IllegalArgumentException("Invalid vote type: " + value);
+            default -> throw new IllegalArgumentException("Invalid vote type: " + value + "Allowed: 'up' or 'down' .");
         };
     }
 }

@@ -1,6 +1,7 @@
 package ro.neforii.service;
 
 import org.springframework.stereotype.Service;
+import ro.neforii.exception.CommentNotFoundException;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.exception.VoteNotFoundException;
 import ro.neforii.exception.user.UserNotFoundException;
@@ -54,26 +55,26 @@ public class VoteService implements IVoteService {
         return "You have successfully voted!";
     }
 
-//    public Vote createOrUpdateVoteForComment(UUID userId, UUID commentId, VoteType voteType) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
-//        Comment comment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new CommentNotFoundException("Comment not found with ID: " + commentId));
-//
-//        Optional<Vote> existingVoteOpt = voteRepository.findByCommentAndUser(comment, user);
-//
-//        if (voteType == VoteType.NONE) {
-//            existingVoteOpt.ifPresent(voteRepository::delete);
-//            return null;
-//        }
-//
-//        Vote vote = existingVoteOpt.orElseGet(() ->
-//                new Vote(voteType == VoteType.UP, null, comment, user)
-//        );
-//        vote.setUpvote(voteType == VoteType.UP);
-//
-//        return voteRepository.save(vote);
-//    }
+    public Vote createOrUpdateVoteForComment(UUID userId, UUID commentId, VoteType voteType) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException("Comment not found with ID: " + commentId));
+
+        Optional<Vote> existingVoteOpt = voteRepository.findByCommentAndUser(comment, user);
+
+        if (voteType == VoteType.NONE) {
+            existingVoteOpt.ifPresent(voteRepository::delete);
+            return null;
+        }
+
+        Vote vote = existingVoteOpt.orElseGet(() ->
+                new Vote(voteType == VoteType.UP, null, comment, user)
+        );
+        vote.setUpvote(voteType == VoteType.UP);
+
+        return voteRepository.save(vote);
+    }
 
     public Vote createOrUpdateVoteForPost(UUID userId, UUID postId, VoteType voteType) {
         User user = userRepository.findById(userId)
