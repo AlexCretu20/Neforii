@@ -31,6 +31,7 @@ public class GlobalExceptionHandler {
                 .status(404)
                 .body(ex.getMessage());
     }
+
     //returnam 409(conflict pe variabile unice) daca username-ul sau email-ul e deja folosit
     @ExceptionHandler({UsernameAlreadyInUseException.class, EmailAlreadyInUseException.class})
     public ResponseEntity<String> handleConflict(RuntimeException ex) {
@@ -58,6 +59,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<String> handleCommentNotFound(CommentNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<String> handleBadRequest(BadRequestException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 }
