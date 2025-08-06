@@ -1,4 +1,4 @@
-﻿package ro.neforii.dto.post;
+package ro.neforii.dto.post;
 
 import java.util.UUID;
 

@@ -1,4 +1,7 @@
-﻿package ro.neforii.dto.post;
+package ro.neforii.dto.post;
+
+import lombok.Builder;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -6,7 +9,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class CommentResponse {
+public class PostCommentResponseDto {
     private UUID id;
     private UUID postId;
     private UUID parentId;
@@ -18,5 +21,5 @@ public class CommentResponse {
     private String userVote;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<CommentResponse> replies;
+    private List<PostCommentResponseDto> replies;
 }

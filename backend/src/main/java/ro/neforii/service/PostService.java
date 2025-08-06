@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
-import ro.neforii.dto.post.PostRequestDto;
-import ro.neforii.dto.post.PostResponseDto;
-import ro.neforii.dto.post.PostUpdateRequestDto;
-import ro.neforii.dto.post.PostVoteResponseDto;
+import ro.neforii.dto.post.*;
 import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.exception.ForbiddenActionException;
 import ro.neforii.exception.PostNotFoundException;
@@ -122,7 +119,8 @@ public class PostService {
         return commentService.getCommentsForPost(id, currentUserId);
     }
 
-    public Comment createComment(UUID id, CommentOnPostRequestDto request, UUID currentUserId) {
-
+    public void createComment(UUID id, CommentOnPostRequestDto request, UUID currentUserId) {
+        User user = userService.getUserByUsername(request.author());
+        CommentResponseDto comment = commentService.createCommentOnPost(request.content(), user, id);
     }
 }

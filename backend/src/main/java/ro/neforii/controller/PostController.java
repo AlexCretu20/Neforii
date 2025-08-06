@@ -8,10 +8,7 @@ import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.common.SuccessResponse;
-import ro.neforii.dto.post.PostRequestDto;
-import ro.neforii.dto.post.PostResponseDto;
-import ro.neforii.dto.post.PostUpdateRequestDto;
-import ro.neforii.dto.post.PostVoteResponseDto;
+import ro.neforii.dto.post.*;
 import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.mapper.CommentMapper;
 import ro.neforii.mapper.PostMapper;
@@ -97,12 +94,18 @@ public class PostController {
 
 
 
+//    @PostMapping("/{id}/comments")
+//    public ResponseEntity<SuccessResponse<PostCommentResponseDto>> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
+//        UUID currentUserId = fakeAuthService.getCurrentUserId();
+////        PostCommentResponseDto commentResponseDto = postService.createComment(id, request, currentUserId);
+//        postService.createComment(id, request, currentUserId);
+//        return ResponseEntity.ok(new SuccessResponse<>(new PostCommentResponseDto()));
+//    }
     @PostMapping("/{id}/comments")
-    public ResponseEntity<SuccessResponse<CommentResponseDto>> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
+    public ResponseEntity createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto commentOnPostRequestDto) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
-        Comment commentResponseDto = postService.createComment(id, request, currentUserId);
-
-        return ResponseEntity.ok(new SuccessResponse<>(commentResponseDto));
+        postService.createComment(id, commentOnPostRequestDto, currentUserId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 //
 //    @GetMapping("/{postId}/comments")
