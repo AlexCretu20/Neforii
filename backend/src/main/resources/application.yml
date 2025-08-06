@@ -35,3 +35,11 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
+
+file-upload:
+  ssh:
+    key-path: C:\Users\Alexandra\Desktop\Neforii\ZTH-Database-key.pem
+    username: ubuntu
+    host: 13.48.203.214
+    remote-dir: /home/ubuntu/images_uploads
+
