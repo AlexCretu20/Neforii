@@ -3,26 +3,94 @@ package views;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CommentView {
+    private static final String RED = "\u001B[31m";
     private static final String GREEN = "\u001B[32m";
     private static final String NORMAL = "\u001B[0m";
-    private static final String RED = "\u001B[31m";
 
 
-private static void displayCommentWithReplies(JsonNode comment, int level) {
-    String indent = "  ".repeat(level);
-    String author = comment.get("author").asText();
-    String content = comment.get("content").asText();
-    System.out.println(indent + "- @" + author + ": " + content);
+    private static String[] wrapText(String text, int maxLineLength) {
+        if (text == null) return new String[]{""};
+        String[] words = text.split(" ");
+        StringBuilder line = new StringBuilder();
+        List<String> lines = new ArrayList<>();
 
-    JsonNode replies = comment.get("replies");
-    if (replies != null && replies.isArray()) {
-        for (JsonNode reply : replies) {
-            displayCommentWithReplies(reply, level + 1);
+        for (String word : words) {
+            if (line.length() + word.length() + 1 > maxLineLength) {
+                lines.add(line.toString());
+                line = new StringBuilder(word);
+            } else {
+                if (line.length() > 0) line.append(" ");
+                line.append(word);
+            }
+        }
+        if (line.length() > 0) {
+            lines.add(line.toString());
+        }
+        return lines.toArray(new String[0]);
+    }
+
+    private static String formatTimestamp(String rawTimestamp) {
+        if (rawTimestamp == null || rawTimestamp.isEmpty()) return "N/A";
+        try {
+            return rawTimestamp.replace('T', ' ').split("\\.")[0];
+        } catch (Exception e) {
+            return rawTimestamp;
         }
     }
-}
+
+
+    private static void displayCommentBox(JsonNode comment, int level) {
+        int maxLineLength = 45; // lungimea max a liniei textului în box
+        String indent = "  ".repeat(level);
+
+        String author = comment.has("author") ? comment.get("author").asText() : "unknown";
+        String content = comment.has("content") ? comment.get("content").asText() : "";
+        int upVotes = comment.has("upVotes") ? comment.get("upVotes").asInt() : 0;
+        int downVotes = comment.has("downVotes") ? comment.get("downVotes").asInt() : 0;
+        String createdAt = comment.has("createdAt") ? formatTimestamp(comment.get("createdAt").asText()) : "N/A";
+
+        String[] wrappedAuthor = wrapText("Author: @" + author, maxLineLength);
+        String[] wrappedContent = wrapText("Content: " + content, maxLineLength);
+        String votesLine = "Upvotes: " + upVotes + "   Downvotes: " + downVotes;
+        String[] wrappedVotes = wrapText(votesLine, maxLineLength);
+        String[] wrappedCreated = wrapText("Created: " + createdAt, maxLineLength);
+
+
+        List<String> allLines = new ArrayList<>();
+        for (String s : wrappedAuthor) allLines.add(s);
+        for (String s : wrappedContent) allLines.add(s);
+        for (String s : wrappedVotes) allLines.add(s);
+        for (String s : wrappedCreated) allLines.add(s);
+
+        int maxLength = 0;
+        for (String line : allLines) {
+            if (line.length() > maxLength) maxLength = line.length();
+        }
+        int widthPadding = maxLength + 2;
+
+        String topBorder = indent + "┌" + "─".repeat(widthPadding) + "┐";
+        String bottomBorder = indent + "└" + "─".repeat(widthPadding) + "┘";
+
+        System.out.println(GREEN + topBorder);
+        for (String line : allLines) {
+            System.out.printf(indent + "│ %-" + (widthPadding - 1) + "s│%n", line);
+        }
+        System.out.println(bottomBorder + NORMAL);
+    }
+
+    private static void displayCommentWithReplies(JsonNode comment, int level) {
+        displayCommentBox(comment, level);
+        JsonNode replies = comment.get("replies");
+        if (replies != null && replies.isArray()) {
+            for (JsonNode reply : replies) {
+                displayCommentWithReplies(reply, level + 1);
+            }
+        }
+    }
 
     public static void displayCommentList(ApiResult apiResult) {
         if (apiResult.getSuccess()) {
@@ -36,7 +104,7 @@ private static void displayCommentWithReplies(JsonNode comment, int level) {
                         displayCommentWithReplies(comment, 0);
                     }
                 } else {
-                    System.out.println("[INFO]: No comments found for this post.");
+                    System.out.println(GREEN + "[INFO]: No comments found for this post." + NORMAL);
                 }
             } catch (Exception e) {
                 System.out.println(RED + "[ERROR]: Failed to display comments." + NORMAL);
@@ -46,5 +114,4 @@ private static void displayCommentWithReplies(JsonNode comment, int level) {
             System.out.println(RED + "[ERROR]: " + apiResult.getMessage() + NORMAL);
         }
     }
-
 }
