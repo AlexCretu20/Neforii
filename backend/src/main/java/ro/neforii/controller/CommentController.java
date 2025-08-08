@@ -9,7 +9,7 @@ import ro.neforii.dto.comment.delete.SuccesMessageDto;
 import ro.neforii.dto.comment.update.CommentUpdateRequestDto;
 import ro.neforii.dto.comment.vote.CommentVoteResponseDto;
 import ro.neforii.dto.comment.vote.CommentVoteRequestDto;
-import ro.neforii.dto.common.SuccessResponse;
+import ro.neforii.dto.common.ExpectedResponse;
 import ro.neforii.service.*;
 
 import java.util.UUID;
@@ -31,10 +31,10 @@ public class CommentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SuccessResponse<CommentResponseDto>> updateComment(@PathVariable UUID id, @Valid @RequestBody CommentUpdateRequestDto request) {
+    public ResponseEntity<ExpectedResponse<CommentResponseDto>> updateComment(@PathVariable UUID id, @Valid @RequestBody CommentUpdateRequestDto request) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         CommentResponseDto updated = commentService.updateComment(id, request, currentUserId);
-        return ResponseEntity.ok(new SuccessResponse<>(updated));
+        return ResponseEntity.ok(new ExpectedResponse<>(updated));
     }
 
     @DeleteMapping("/{id}")
@@ -53,10 +53,10 @@ public class CommentController {
     }
 
     @PutMapping("/{id}/vote")
-    public ResponseEntity<SuccessResponse<CommentVoteResponseDto>> voteComment(@PathVariable UUID id, @RequestBody CommentVoteRequestDto commentVoteRequestDto) {
+    public ResponseEntity<ExpectedResponse<CommentVoteResponseDto>> voteComment(@PathVariable UUID id, @RequestBody CommentVoteRequestDto commentVoteRequestDto) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         CommentVoteResponseDto commentVoteResponseDto = commentService.voteComm(id, currentUserId, commentVoteRequestDto);
-        return ResponseEntity.ok(new SuccessResponse<>(commentVoteResponseDto));
+        return ResponseEntity.ok(new ExpectedResponse<>(commentVoteResponseDto));
     }
 
 }

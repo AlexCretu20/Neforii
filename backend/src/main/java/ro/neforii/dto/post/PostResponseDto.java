@@ -20,5 +20,6 @@ public record PostResponseDto(
         int commentCount,
         String userVote, // poate fi null
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        String imagePath
 ) {}

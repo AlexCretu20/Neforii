@@ -133,4 +133,16 @@ public class PostService {
 
         return commentService.createCommentOnPost(request.content(), user, post, parent);
     }
+
+    public PostResponseDto createImagePost(PostRequestDto postRequestDto,String imagePath){
+        User user = userService.getUserByUsername(postRequestDto.author());
+        Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
+
+        post.setImagePath(imagePath);
+
+        Post savedPost = postRepository.save(post);
+
+        return postMapper.postToPostResponseDto(savedPost, user.getId());
+    }
+
 }
