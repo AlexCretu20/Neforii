@@ -24,10 +24,12 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
     private final UserMapper userMapper;
     private User currentUser;
     private final UserRepository userRepo;
+    private final FakeUserAuthService fakeUserAuthService;
 
-    public UserService(UserRepository userRepo, UserMapper userMapper) {
+    public UserService(UserRepository userRepo, UserMapper userMapper, FakeUserAuthService fakeUserAuthService) {
         this.userRepo = userRepo;
         this.userMapper = userMapper;
+        this.fakeUserAuthService = fakeUserAuthService;
     }
 
     //CREATE methods
@@ -129,11 +131,13 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
         if(user.isEmpty()){
             throw new InvalidUserLoginException("Invalid email or password.");
         }
+        fakeUserAuthService.setClientUserId(user.get().getId());
+        System.out.println("a trecut prin logare service");
         return userMapper.userToUserResponseDto(user.get());
     }
 
     public void logoutUser() {
-        currentUser = null;
+        fakeUserAuthService.setClientUserId(null);
     }
 
     public User getCurrentUser() {

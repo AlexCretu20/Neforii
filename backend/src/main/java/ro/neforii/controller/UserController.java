@@ -23,6 +23,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<UserResponseDto> login(@RequestBody UserLoginRequestDto request) {
         UserResponseDto user = userService.loginUser(request); //UNAUTHROIZED daca nu e ok log info
+        System.out.println("a trecut prin logare");
         return ResponseEntity
                 .ok(user);
     }
