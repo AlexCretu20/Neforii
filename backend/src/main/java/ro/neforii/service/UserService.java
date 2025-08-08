@@ -42,7 +42,11 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
             throw new EmailAlreadyInUseException(dto.email());
         }
         User user = userMapper.userRegisterRequestDtoToUser(dto);
-        return userMapper.userToUserResponseDto(userRepo.save(user));
+        UserResponseDto userResponseDto =  userMapper.userToUserResponseDto(userRepo.save(user));
+
+        fakeUserAuthService.setClientUserId(user.getId());
+
+        return userResponseDto;
     }
 
     //READ methods
@@ -132,7 +136,6 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
             throw new InvalidUserLoginException("Invalid email or password.");
         }
         fakeUserAuthService.setClientUserId(user.get().getId());
-        System.out.println("a trecut prin logare service");
         return userMapper.userToUserResponseDto(user.get());
     }
 
