@@ -4,6 +4,7 @@ import client.UserClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import config.ConnectionConfig;
 import models.ApiResult;
+import models.comment.CommentRequestDto;
 import models.post.PostRequestDto;
 import models.post.PostResponseDto;
 import models.user.UserLoginRequestDto;
@@ -12,7 +13,6 @@ import models.user.UserResponseDto;
 import views.CommentView;
 import views.PostView;
 import views.UserView;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -21,10 +21,11 @@ import java.util.UUID;
 public class MainMenu {
     private static final UserClient userClient = new UserClient(ConnectionConfig.BASE_URL + "/users");
     private static final PostClient postClient = new PostClient(ConnectionConfig.BASE_URL + "/posts");
-    private static final CommentClient commentClient = new CommentClient(ConnectionConfig.BASE_URL + "/comments");
+//  private static final CommentClient commentClient = new CommentClient(ConnectionConfig.BASE_URL + "/comments");
+    private static final CommentClient commentClient = new CommentClient(ConnectionConfig.BASE_URL);
     public static String currentUsername = null;
     public static UUID currentUserId = null;
-
+    private static Map<Integer, UUID> commentIndexMap = new HashMap<>();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -78,8 +79,6 @@ public class MainMenu {
     }
 
 
-    // HANDEL URI  pentru meniu
-
 
     private static void handleLogin(Scanner scanner) {
         System.out.println("==== LOGIN ====");
@@ -101,39 +100,57 @@ public class MainMenu {
         }
     }
 
-    private static void handleOpenPost(Scanner scanner) {
-        if (postIndexMap.isEmpty()) {
-            System.out.println("[INFO]: Please view posts first using option 2.");
+
+private static void handleOpenPost(Scanner scanner) {
+    if (postIndexMap.isEmpty()) {
+        System.out.println("[INFO]: Please view posts first using option 2.");
+        return;
+    }
+
+    System.out.print("Enter Post Number: ");
+    String input = scanner.nextLine();
+
+    try {
+        int postNumber = Integer.parseInt(input);
+        PostResponseDto selectedPost = postIndexMap.get(postNumber);
+
+        if (selectedPost == null) {
+            System.out.println("[ERROR]: No post found with number: " + postNumber);
             return;
         }
 
-        System.out.print("Enter Post ID: ");
-        String input = scanner.nextLine();
 
-        try {
-            int postNumber = Integer.parseInt(input);
-            PostResponseDto selectedPost = postIndexMap.get(postNumber);
+        ApiResult postResult = postClient.getPostById(selectedPost.id());
+        PostView.displayPostResult(postResult, String.valueOf(postNumber));
 
-            if (selectedPost == null) {
-                System.out.println("[ERROR]: No post found with number: " + postNumber);
-                return;
+
+
+        ApiResult commentsResult = postClient.getCommentsByPostId(selectedPost.id());
+        commentIndexMap = CommentView.displayCommentList(commentsResult);
+
+
+        while (true) {
+            System.out.println("\n--- Comment Menu ---");
+            System.out.println("1. Add a new comment");
+            System.out.println("2. Reply to a comment");
+            System.out.println("3. Back to main menu");
+            System.out.print("Choose option: ");
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1" -> handleAddComment(scanner, selectedPost.id(), null);
+                case "2" -> handleReplyToComment(scanner, selectedPost.id());
+                case "3" -> { return; }
+                default -> System.out.println("[ERROR]: Invalid choice.");
             }
-
-
-            ApiResult postResult = postClient.getPostById(selectedPost.id());
-            PostView.displayPostResult(postResult, String.valueOf(postNumber));
-
-
-            ApiResult commentsResult = postClient.getCommentsByPostId(selectedPost.id());
-
-            CommentView.displayCommentList(commentsResult);
-
-        } catch (NumberFormatException e) {
-            System.out.println("[ERROR]: Please enter a valid number.");
-        } catch (Exception e) {
-            System.out.println("[ERROR]: Could not load post or comments.");
         }
+
+    } catch (NumberFormatException e) {
+        System.out.println("[ERROR]: Please enter a valid number.");
+    } catch (Exception e) {
+        System.out.println("[ERROR]: Could not load post or comments.");
     }
+}
 
     private static Map<Integer, PostResponseDto> postIndexMap = new HashMap<>();
 
@@ -169,7 +186,9 @@ public class MainMenu {
         );
 
         ApiResult result = postClient.newPost(postDto);
-        PostView.displayPostResult(result);
+       if(result.getSuccess()) {
+           System.out.println("[INFO]: Post successfully created.");
+       }
     }
 
     private static void handleRegister(Scanner scanner) {
@@ -237,7 +256,52 @@ public class MainMenu {
         }
     }
 
-    //extract pentru informatii
+    private static void handleAddComment(Scanner scanner, UUID postId, UUID parentId) {
+        if (currentUsername == null) {
+            System.out.println("[ERROR]: You must be logged in to add a comment.");
+            return;
+        }
+
+        System.out.print("Enter your comment: ");
+        String content = scanner.nextLine();
+
+        if (content.isBlank()) {
+            System.out.println("[ERROR]: Comment cannot be empty.");
+            return;
+        }
+
+        CommentRequestDto dto = new CommentRequestDto(
+                content,
+                currentUsername,
+                parentId
+        );
+
+        ApiResult result = commentClient.addComment(postId, dto);
+        if (result.getSuccess()) {
+            System.out.println("[SUCCESS]: Comment added successfully.");
+        } else {
+            System.out.println("[ERROR]: " + result.getMessage());
+        }
+    }
+
+
+private static void handleReplyToComment(Scanner scanner, UUID postId) {
+    System.out.print("Enter comment number to reply to: ");
+    String indexStr = scanner.nextLine();
+    try {
+        int commentNumber = Integer.parseInt(indexStr);
+        UUID parentId = commentIndexMap.get(commentNumber);
+
+        if (parentId == null) {
+            System.out.println("[ERROR]: No comment found with number: " + commentNumber);
+            return;
+        }
+
+        handleAddComment(scanner, postId, parentId);
+    } catch (NumberFormatException e) {
+        System.out.println("[ERROR]: Please enter a valid number.");
+    }
+}
 
 
     private static String extractUsernameFromLogin(ApiResult loginResult) {
