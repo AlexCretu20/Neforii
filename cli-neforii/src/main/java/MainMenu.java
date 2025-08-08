@@ -96,6 +96,7 @@ public class MainMenu {
         if (result.getSuccess()) {
             currentUsername = extractUsernameFromLogin(result);
             currentUserId = extractIdFromLogin(result);
+
             postLoginMenu(scanner);
         }
     }

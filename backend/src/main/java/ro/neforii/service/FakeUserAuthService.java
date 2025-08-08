@@ -15,7 +15,7 @@ public class FakeUserAuthService {
         return UUID.fromString("550e8400-e29b-41d4-a716-446655440098");
     }
 
-    public static void setClientUserId(UUID userId) {
+    public void setClientUserId(UUID userId) {
         cliUserId = userId;
     }
 }

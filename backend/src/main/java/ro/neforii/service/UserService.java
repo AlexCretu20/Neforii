@@ -152,6 +152,10 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
     public User getUserByUsername(String username) {
         return userRepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found."));
     }
+
+    public User getUserByEmail(String email) {
+        return userRepo.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found."));
+    }
 }
 
 
