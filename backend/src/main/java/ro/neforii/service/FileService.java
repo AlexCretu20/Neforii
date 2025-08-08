@@ -17,7 +17,7 @@ public class FileService {
         this.config = config;
     }
 
-    public void save(MultipartFile file) throws IOException, InterruptedException {
+    public String save(MultipartFile file) throws IOException, InterruptedException {
 
         // "java.io.tmpdir" = calea director temporal
         String tempDir = System.getProperty("java.io.tmpdir");
@@ -40,6 +40,8 @@ public class FileService {
         String command = String.format("scp -i %s -o StrictHostKeyChecking=no %s %s@%s:%s", pemFile.getAbsolutePath(), tempFile.getAbsolutePath(), config.getUsername(), config.getHost(), config.getRemoteDir());
         Process process = Runtime.getRuntime().exec(command);
         process.waitFor();
+
+        return config.getRemoteDir() + "/" + file.getOriginalFilename();
 
     }
 

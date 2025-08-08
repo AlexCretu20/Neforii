@@ -1,26 +1,23 @@
 package ro.neforii.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
-import ro.neforii.dto.common.SuccessResponse;
+import ro.neforii.dto.common.ExpectedResponse;
 import ro.neforii.dto.post.*;
 import ro.neforii.dto.vote.VoteRequestDto;
-import ro.neforii.mapper.CommentMapper;
-import ro.neforii.mapper.PostMapper;
-import ro.neforii.model.Comment;
-import ro.neforii.model.User;
-import ro.neforii.service.CommentService;
 import ro.neforii.service.FakeUserAuthService;
+import ro.neforii.service.FileService;
 import ro.neforii.service.PostService;
-import ro.neforii.service.UserService;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -28,58 +25,60 @@ import java.util.UUID;
 public class PostController {
     private final PostService postService;
     private final FakeUserAuthService fakeAuthService; // momentan sa simuleze userul curent
+    private final FileService fileService;
 
-    public PostController(PostService postService,FakeUserAuthService fakeAuthService) {
+    public PostController(PostService postService, FakeUserAuthService fakeAuthService, FileService fileService) {
         this.postService = postService;
         this.fakeAuthService = fakeAuthService;
+        this.fileService = fileService;
     }
 
     @GetMapping
-    public ResponseEntity<SuccessResponse<List<PostResponseDto>>> getPosts() {
+    public ResponseEntity<ExpectedResponse<List<PostResponseDto>>> getPosts() {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         List<PostResponseDto> posts = postService.getAllPostsAsUser(currentUserId);
 
-        return ResponseEntity.ok(new SuccessResponse<>(posts));
+        return ResponseEntity.ok(new ExpectedResponse<>(posts));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SuccessResponse<PostResponseDto>> getPostById(@PathVariable UUID id) {
+    public ResponseEntity<ExpectedResponse<PostResponseDto>> getPostById(@PathVariable UUID id) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         PostResponseDto postResponseDto = postService.getPostByIdAsUser(id, currentUserId);
 
-        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
+        return ResponseEntity.ok(new ExpectedResponse<>(postResponseDto));
     }
 
     @PostMapping
-    public ResponseEntity<SuccessResponse<PostResponseDto>> createPost(@Valid @RequestBody PostRequestDto postRequestDto) {
+    public ResponseEntity<ExpectedResponse<PostResponseDto>> createPost(@Valid @RequestBody PostRequestDto postRequestDto) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         PostResponseDto postResponseDto = postService.createPost(postRequestDto, currentUserId);
 
-        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
+        return ResponseEntity.ok(new ExpectedResponse<>(postResponseDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SuccessResponse<PostResponseDto>> updatePost(@PathVariable UUID id, @Valid @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
+    public ResponseEntity<ExpectedResponse<PostResponseDto>> updatePost(@PathVariable UUID id, @Valid @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         PostResponseDto updatedPost = postService.updatePost(id, postUpdateRequestDto, currentUserId);
 
-        return ResponseEntity.ok(new SuccessResponse<>(updatedPost));
+        return ResponseEntity.ok(new ExpectedResponse<>(updatedPost));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse<String>> deletePost(@PathVariable UUID id) {
+    public ResponseEntity<ExpectedResponse<String>> deletePost(@PathVariable UUID id) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         postService.deletePost(id, currentUserId);
 
-        return ResponseEntity.ok(new SuccessResponse<>("Postarea a fost ștearsă cu succes")); // mesajul asta il vrea api-ul
+        return ResponseEntity.ok(new ExpectedResponse<>("Postarea a fost ștearsă cu succes")); // mesajul asta il vrea api-ul
     }
 
     @PutMapping("/{id}/vote")
-    public ResponseEntity<SuccessResponse<PostVoteResponseDto>> votePost(@PathVariable UUID id, @RequestBody VoteRequestDto voteRequestDto) {
+    public ResponseEntity<ExpectedResponse<PostVoteResponseDto>> votePost(@PathVariable UUID id, @RequestBody VoteRequestDto voteRequestDto) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         PostVoteResponseDto postResponseDto = postService.votePost(id, currentUserId, voteRequestDto);
 
-        return ResponseEntity.ok(new SuccessResponse<>(postResponseDto));
+        return ResponseEntity.ok(new ExpectedResponse<>(postResponseDto));
     }
 
     @GetMapping("/{id}/comments")
@@ -91,15 +90,27 @@ public class PostController {
         return ResponseEntity.ok(comments);
     }
 
-
-
-
     @PostMapping("/{id}/comments")
-    public ResponseEntity<SuccessResponse<CommentResponseDto>> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
+    public ResponseEntity<ExpectedResponse<CommentResponseDto>> createCommentOnPost(@PathVariable UUID id, @Valid @RequestBody CommentOnPostRequestDto request) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         CommentResponseDto commentResponseDto = postService.createComment(id, request, currentUserId);
-        return ResponseEntity.ok(new SuccessResponse<>(commentResponseDto));
+        return ResponseEntity.ok(new ExpectedResponse<>(commentResponseDto));
     }
+
+    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ExpectedResponse<PostResponseDto>> createImagePost(
+            @RequestPart("post") @Valid PostRequestDto postDto,
+            @RequestPart("file") MultipartFile file
+    ) throws IOException, InterruptedException {
+
+        String imagePath = fileService.save(file);
+
+        PostResponseDto postResponseDto = postService.createImagePost(postDto, imagePath);
+
+        return ResponseEntity.ok(new ExpectedResponse<>(postResponseDto));
+
+    }
+
 
 //    @GetMapping("/{postId}/comments")
 //    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable UUID postId) {
