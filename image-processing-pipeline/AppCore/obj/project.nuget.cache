@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "SCVeLOcgjcM=",
+  "dgSpecHash": "5daCf/ioyzE=",
   "success": true,
-  "projectFilePath": "C:\\Info\\ZTH\\Proiect Neforii\\image-processing-pipeline\\AppCore\\AppCore.csproj",
+  "projectFilePath": "C:\\Users\\Bogdan\\Neforii\\image-processing-pipeline\\AppCore\\AppCore.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Alexandru\\.nuget\\packages\\microsoft.win32.systemevents\\9.0.7\\microsoft.win32.systemevents.9.0.7.nupkg.sha512",
-    "C:\\Users\\Alexandru\\.nuget\\packages\\system.drawing.common\\9.0.7\\system.drawing.common.9.0.7.nupkg.sha512"
+    "C:\\Users\\Bogdan\\.nuget\\packages\\microsoft.win32.systemevents\\9.0.7\\microsoft.win32.systemevents.9.0.7.nupkg.sha512",
+    "C:\\Users\\Bogdan\\.nuget\\packages\\system.drawing.common\\9.0.7\\system.drawing.common.9.0.7.nupkg.sha512"
   ],
   "logs": []
 }
