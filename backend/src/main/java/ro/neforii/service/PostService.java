@@ -2,6 +2,7 @@ package ro.neforii.service;
 
 import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
@@ -58,7 +59,8 @@ public class PostService {
     }
 
     public List<PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
-        List<Post> posts = postRepository.findAll();
+        var sort = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+        var posts = postRepository.findAll(sort);
 
         return posts.stream()
                 .map(post -> postMapper.postToPostResponseDto(post, currentUserId))
