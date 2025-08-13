@@ -41,6 +41,7 @@ public class CommentService implements IVotable {
     private final UserService userService;
     private final UserMapper userMapper;
     private final VoteService voteService;
+    private static final String LOG_PREFIX = "CommentService: ";
 
     public CommentService(CommentRepository commentRepo, UserRepository userRepo, PostRepository postRepo, VoteRepository voteRepo, CommentMapper commentMapper, UserService userService, UserMapper userMapper, VoteService voteService) {
         this.commentRepo = commentRepo;
@@ -61,94 +62,110 @@ public class CommentService implements IVotable {
 
 
     public CommentResponseDto getComment(UUID id, UUID currentUserId) {
-        Comment comment = commentRepo.findById(id).orElseThrow(() -> {
-            Logger.log(LoggerType.FATAL, "Comment with id=" + id + " not found in getComment()");
-            return new CommentNotFoundException("Comment with id " + id + " does not exist");
-        });
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving comment with ID " + id);
+        try {
+            Comment comment = commentRepo.findById(id).orElseThrow(() -> {
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Comment with id=" + id + " not found");
+                return new CommentNotFoundException("Comment with id " + id + " does not exist");
+            });
 
-        return commentMapper.commentToDto(comment, currentUserId);
+            return commentMapper.commentToDto(comment, currentUserId);
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Error retrieving comment: " + e.getMessage());
+            throw e;
+        }
     }
 
 
     public CommentResponseDto createCommentOnPost(String content, User user, Post post, Comment parent) {
-        Comment comment = Comment.builder()
-                .content(content)
-                .user(user)
-                .post(post)
-                .parentComment(parent)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new comment on post " + post.getId() + " by user " + user.getUsername());
+        try {
+            Comment comment = Comment.builder()
+                    .content(content)
+                    .user(user)
+                    .post(post)
+                    .parentComment(parent)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
 
-        Comment savedComment = commentRepo.save(comment);
+            Comment savedComment = commentRepo.save(comment);
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "Created comment with ID " + savedComment.getId());
 
-        return commentMapper.commentToDto(savedComment, user.getId());
-    }
-    public CommentResponseDto createReplyToComment(String content, User user, UUID parentCommentId) {
-        Comment parent = commentRepo.findById(parentCommentId).orElseThrow(() -> {
-            Logger.log(LoggerType.FATAL, "Attempt to reply to nonexistent comment id=" + parentCommentId);
-            return new CommentNotFoundException("Could not find comment with id=" + parentCommentId);
-        });
-
-        Comment reply = Comment.builder()
-                .content(content)
-                .user(user)
-                .parentComment(parent)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        commentRepo.save(reply);
-        Logger.log(LoggerType.INFO, "Created reply id=" + reply.getId() + " to comment id=" + parentCommentId);
-        CommentResponseDto commentResponseDto = commentMapper.commentToDto(reply, parentCommentId);
-        return commentResponseDto;
+            return commentMapper.commentToDto(savedComment, user.getId());
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to create comment: " + e.getMessage());
+            throw e;
+        }
     }
 
     public CommentResponseDto updateComment(UUID id, CommentUpdateRequestDto commentDto, UUID currentUserId) {
-        Comment comment = commentRepo.findById(id).orElseThrow(() -> new CommentNotFoundException("The cooment with ID" + id + " not found."));
-
-        comment.setContent(commentDto.content());
-        comment.setUpdatedAt(LocalDateTime.now());
-
-        Comment updatedComm;
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Updating comment with ID " + id);
         try {
-            updatedComm = commentRepo.save(comment);
-            Logger.log(LoggerType.INFO, "Comment updated successfully!");
+            Comment comment = commentRepo.findById(id).orElseThrow(() -> {
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Comment with id " + id + " not found");
+                return new CommentNotFoundException("The comment with ID " + id + " not found.");
+            });
 
+            comment.setContent(commentDto.content());
+            comment.setUpdatedAt(LocalDateTime.now());
+
+            Comment updatedComment = commentRepo.save(comment);
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "Comment " + id + " updated successfully");
+
+            return commentMapper.commentToDto(updatedComment, currentUserId);
         } catch (Exception e) {
-            Logger.log(LoggerType.FATAL, "Failed to update comment id=" + id);
-            throw new RuntimeException("Failed to update comment");
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to update comment " + id + ": " + e.getMessage());
+            throw e;
         }
-
-        return commentMapper.commentToDto(updatedComm, currentUserId);
     }
-
     public void deleteComment(UUID id, UUID currentUserId) {
-        // Verif: daca userul care incearca sa stearga postarea este cel care a facut postarea
-        getComment(id, currentUserId);
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Attempting to delete comment with ID " + id);
         try {
+            // Verif: daca userul care incearca sa stearga postarea este cel care a facut postarea
+            getComment(id, currentUserId);
             commentRepo.deleteById(id);
-            Logger.log(LoggerType.INFO, "Comment id=" + id + " deleted successfully");
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "Comment " + id + " deleted successfully");
         } catch (Exception e) {
-            Logger.log(LoggerType.FATAL, "Failed to delete comment id=" + id);
-            throw new RuntimeException("Failed to delete comment with id=" + id);
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to delete comment " + id + ": " + e.getMessage());
+            throw e;
         }
     }
 
     public CommentVoteResponseDto voteComm(UUID commentId, UUID currentUserId, CommentVoteRequestDto voteRequestDto) {
-        VoteType voteType;
+        String username = "unknown";
         try {
-            voteType = VoteType.fromString(voteRequestDto.voteType());
+            User user = userRepo.findById(currentUserId).orElse(null);
+            if (user != null) {
+                username = user.getUsername();
+            }
+
+            Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Processing vote request from user '" + username +
+                    "' for comment " + commentId + " with vote type: " + voteRequestDto.voteType());
+
+            VoteType voteType = VoteType.fromString(voteRequestDto.voteType());
             voteService.createOrUpdateVoteForComment(currentUserId, commentId, voteType);
+
+            Comment updatedComm = commentRepo.findById(commentId)
+                    .orElseThrow(() -> {
+                        Logger.log(LoggerType.WARNING, LOG_PREFIX + "Comment with id " + commentId + " not found after voting");
+                        return new CommentNotFoundException("Comment with id " + commentId + " not found.");
+                    });
+
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "User '" + username + "' successfully " +
+                    (voteType == VoteType.UP ? "upvoted" : (voteType == VoteType.DOWN ? "downvoted" : "removed vote from")) +
+                    " comment " + commentId);
+
+            return commentMapper.commentVoteResponseDto(updatedComm, currentUserId);
         } catch (IllegalArgumentException ex) {
+            Logger.log(LoggerType.WARNING, LOG_PREFIX + "Invalid vote type from user '" + username +
+                    "' for comment " + commentId + ": " + ex.getMessage());
             throw new BadRequestException(ex.getMessage());
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Error processing vote from user '" + username +
+                    "' for comment " + commentId + ": " + e.getMessage());
+            throw e;
         }
-
-        Comment updatedComm = commentRepo.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("Comment with id" + commentId + "not found."));
-
-        return commentMapper.commentVoteResponseDto(updatedComm, currentUserId);
-
     }
 
     public List<CommentResponseDto> getTopLevelComments(UUID postId, UUID currentUserId) {
@@ -162,45 +179,57 @@ public class CommentService implements IVotable {
     }
 
     public int displayUpvotes(UUID id) {
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Counting upvotes for comment with ID " + id);
         Comment comment = commentRepo.findById(id).orElseThrow();
         return voteRepo.countByCommentAndIsUpvote(comment, true);
     }
 
     public int displayDownvotes(UUID id) {
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Counting downvotes for comment with ID " + id);
         Comment comment = commentRepo.findById(id).orElseThrow();
         return voteRepo.countByCommentAndIsUpvote(comment, false);
     }
 
     @Transactional(readOnly = true) // optimizeaza, pentru citiri dificile din baza de date
     public CommentListResponseDto getCommentsForPost(UUID postId, UUID currentUserId) {
-        List<Comment> allComments = commentRepo.findByPostId(postId);
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving comments for post with ID " + postId + " for user " + currentUserId);
+        try {
+            List<Comment> allComments = commentRepo.findByPostId(postId);
 
-        Map<UUID, CommentResponseDto> dtoById = allComments.stream()
-                .map(c -> commentMapper.commentToDto(c, currentUserId))
-                .collect(Collectors.toMap(CommentResponseDto::id, dto -> dto));
+            Map<UUID, CommentResponseDto> dtoById = allComments.stream()
+                    .map(c -> commentMapper.commentToDto(c, currentUserId))
+                    .collect(Collectors.toMap(CommentResponseDto::id, dto -> dto));
 
-        // build tree
-        List<CommentResponseDto> topLevel = new ArrayList<>();
-        for (Comment comment : allComments) {
-            CommentResponseDto dto = dtoById.get(comment.getId());
-            if (comment.getParentComment() != null) {
-                CommentResponseDto parentDto = dtoById.get(comment.getParentComment().getId());
-                if (parentDto != null) {
-                    ((List<CommentResponseDto>) parentDto.replies()).add(dto);
+            // build tree
+            List<CommentResponseDto> topLevel = new ArrayList<>();
+            for (Comment comment : allComments) {
+                CommentResponseDto dto = dtoById.get(comment.getId());
+                if (comment.getParentComment() != null) {
+                    CommentResponseDto parentDto = dtoById.get(comment.getParentComment().getId());
+                    if (parentDto != null) {
+                        ((List<CommentResponseDto>) parentDto.replies()).add(dto);
+                    }
+                } else {
+                    topLevel.add(dto);
                 }
-            } else {
-                topLevel.add(dto);
             }
-        }
 
-        return new CommentListResponseDto(topLevel, allComments.size());
+            CommentListResponseDto result = new CommentListResponseDto(topLevel, allComments.size());
+            Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieved " + topLevel.size() + " top-level comments (total: " + allComments.size() + ") for post " + postId);
+            return result;
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to retrieve comments for post " + postId + ": " + e.getMessage());
+            throw e;
+        }
     }
 
     public int countCommentsForPost(UUID postId) {
+    Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Counting comments for post with ID " + postId);
         return commentRepo.countByPostId(postId);
     }
 
     public Optional<Comment> findById(UUID id) {
+    Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Finding comment by ID " + id);
         return commentRepo.findById(id);
     }
 }
