@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using AppCore;
-using System.Collections.Generic;
-using System.IO;
-using ImageProcessingEntrypoint;
-using Microsoft.AspNetCore.Hosting;
+using ImageProcessingEntrypoint.Services;
+
 
 
 namespace ImageProcessingPipeline.Controllers 
@@ -12,47 +9,22 @@ namespace ImageProcessingPipeline.Controllers
     [Route("api/filters")]
     public class HomeController : ControllerBase
     {
-        private readonly string _filtersDir;
-        public HomeController(IWebHostEnvironment env)
-        {
-            _filtersDir = Path.Combine(env.ContentRootPath,"..", "Filters");
-        }
         
         [HttpGet]
         public IActionResult GetFilters()
         {
-            Console.WriteLine($"\n\n\n\nFileeeeeeeee: {_filtersDir} ");
-            var filters = FilterLoader.LoadAll(_filtersDir);
-            int index = 0;
-
-            var filterList = new List<object>
-            {
-                new
+            var filterList = FilterService.GetFilters()
+                .Select(f => new
                 {
-                    id = index++,
-                    name = "none",
-                    label = "Fara filtru"
-                }
-            };
-
-            foreach (var filter in filters)
-            {
-                var filterType = filter.GetType();
-                var nameFilter = filterType.Name;
-                var labelFilter = nameFilter;
-
-                filterList.Add(new
-                {
-                    id = index++,
-                    name = nameFilter,
-                    label = labelFilter
+                    id = f.Id,
+                    name = f.Name,
+                    label = f.Label
 
                 });
-
-            }
-
+            
             return Ok(new { data = filterList });
         }
+        
     }
     
 }

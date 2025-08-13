@@ -35,4 +35,36 @@ public class ImageProcessingService
             }
         }
     }
+
+    
+    public static byte[] ApplyFilter(string imagePath, int filterId, List<IFilter> filters)
+    {
+        if (filterId < 0 || filterId >= filters.Count)
+        {
+            throw new ArgumentOutOfRangeException("The filter id is out of rage. ");
+        }
+        if (imagePath == null || imagePath.Length == 0)
+        {
+            throw new ArgumentException("ImagePath cannot be null or empty");
+        }
+
+        if (!File.Exists(imagePath))
+        {
+            throw new FileNotFoundException($"The file does not exits.");
+        }
+
+        using var srcImg = (Bitmap)Image.FromFile(imagePath);
+
+        using var clonedImg = new Bitmap(srcImg);
+
+        var appliedFilter = filters[filterId];
+
+        using var outImg = appliedFilter.Apply(clonedImg);
+
+        using var ms = new MemoryStream();
+        outImg.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+        return ms.ToArray();
+    
+    }   
 }
