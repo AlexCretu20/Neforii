@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\..\AppCore\AppCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.7" />
   </ItemGroup>
   
@@ -14,8 +15,25 @@
     <Nullable>enable</Nullable>
     
     <OutputPath>..\..\Plugins</OutputPath>
-    <!--    ca sa nu mai bage intr-un folder net 9.0 in plugins-->
-<!--    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>-->
   </PropertyGroup>
   
+</Project> -->
+
+
+
+
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Filters.GrayscaleFilter</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AppCore\AppCore.csproj" />
+    <PackageReference Include="SixLabors.ImageSharp">
+      <Version>3.1.6</Version>
+    </PackageReference>
+  </ItemGroup>
 </Project>
