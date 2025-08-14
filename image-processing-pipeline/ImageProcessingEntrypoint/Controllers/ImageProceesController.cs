@@ -1,36 +1,41 @@
-﻿using System.Reflection;
-using ImageProcessingEntrypoint;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ImageProcessingEntrypoint.Services;
+using AppCore;
 
-namespace ImageProcessingPipeline.Controllers;
-
-public class ImageProceesController : ControllerBase
+namespace ImageProcessingPipeline.Controllers
 {
-    
-    [HttpPost("applyFilter")]
-    // ne cere id-ul
-    public IActionResult ApplyFilter([FromForm] IFormFile image, [FromQuery] int filterId)
+    [ApiController]
+    [Route("api/image")]
+    public class ImageProceesController : ControllerBase
     {
-        if (image == null || image.Length == 0)
+        [HttpPost("applyFilter")]
+        public async Task<IActionResult> ApplyFilter([FromForm] IFormFile image, [FromQuery] int filterId)
         {
-            return BadRequest("No image uploaded.");
+            if (image is null || image.Length == 0)
+                return BadRequest("No image uploaded.");
+
+            var filters = FilterService.GetFilters()
+                                       .Select(f => f.Instance)
+                                       .ToList();
+
+            var tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            await using (var stream = System.IO.File.Create(tempPath))
+            {
+                await image.CopyToAsync(stream);
+            }
+
+            try
+            {
+                var resultBytes = await ImageProcessingEntrypoint.ImageProcessingService
+                    .ApplyFilterAsync(tempPath, filterId, filters);
+
+                return File(resultBytes, "image/png");
+            }
+            finally
+            {
+                try { System.IO.File.Delete(tempPath); } catch { /* ignore */ }
+            }
         }
-
-        var filters = FilterService.GetFilters()
-            .Select(f => f.Instance)
-            .ToList();
-        
-        
-        var tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        using (var stream = new FileStream(tempPath, FileMode.Create))
-        {
-            image.CopyTo(stream);
-
-        }
-
-        var resultBytes = ImageProcessingService.ApplyFilter(tempPath, filterId, filters);
-
-        return File(resultBytes, "image/png");
     }
 }
+
