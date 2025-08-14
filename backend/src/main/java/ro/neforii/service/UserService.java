@@ -13,6 +13,8 @@ import ro.neforii.mapper.UserMapper;
 import ro.neforii.model.User;
 import ro.neforii.repository.UserRepository;
 import ro.neforii.service.crud.CrudService;
+import ro.neforii.utils.logger.Logger;
+import ro.neforii.utils.logger.LoggerType;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +27,7 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
     private User currentUser;
     private final UserRepository userRepo;
     private final FakeUserAuthService fakeUserAuthService;
-
+    private static final String LOG_PREFIX = "UserService: ";
     public UserService(UserRepository userRepo, UserMapper userMapper, FakeUserAuthService fakeUserAuthService) {
         this.userRepo = userRepo;
         this.userMapper = userMapper;
@@ -35,18 +37,27 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
     //CREATE methods
     @Override
     public UserResponseDto create(UserRegisterRequestDto dto) {
-        if (userRepo.existsByUsername(dto.username())) {
-            throw new UsernameAlreadyInUseException(dto.username());
-        }
-        if (userRepo.findByEmail(dto.email()).isPresent()) {
-            throw new EmailAlreadyInUseException(dto.email());
-        }
-        User user = userMapper.userRegisterRequestDtoToUser(dto);
-        UserResponseDto userResponseDto =  userMapper.userToUserResponseDto(userRepo.save(user));
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Attempting to register user with username: " + dto.username());
+        try {
+            if (userRepo.existsByUsername(dto.username())) {
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Username already in use: " + dto.username());
+                throw new UsernameAlreadyInUseException(dto.username());
+            }
+            if (userRepo.findByEmail(dto.email()).isPresent()) {
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Email already in use: " + dto.email());
+                throw new EmailAlreadyInUseException(dto.email());
+            }
+            User user = userMapper.userRegisterRequestDtoToUser(dto);
+            UserResponseDto userResponseDto = userMapper.userToUserResponseDto(userRepo.save(user));
 
-        fakeUserAuthService.setClientUserId(user.getId());
+            fakeUserAuthService.setClientUserId(user.getId());
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "User registered successfully: " + user.getUsername());
 
-        return userResponseDto;
+            return userResponseDto;
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to register user: " + e.getMessage());
+            throw e;
+        }
     }
 
     //READ methods
@@ -94,10 +105,17 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
     //DELETE methods
     @Override
     public void deleteById(UUID id) {
-        userRepo.deleteById(id);
-        //stergem current User
-        if (currentUser != null && currentUser.getId() == id) {
-            currentUser = null;
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Deleting user with ID: " + id);
+        try {
+            userRepo.deleteById(id);
+            //stergem current User
+            if (currentUser != null && currentUser.getId().equals(id)) {
+                currentUser = null;
+            }
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "User with ID " + id + " deleted successfully");
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to delete user with ID " + id + ": " + e.getMessage());
+            throw e;
         }
     }
 
@@ -115,11 +133,19 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
 
     //metoda pentru comunicare cu controller, pentru mai putina logica in controller, returneaza responseDto
     public UserResponseDto findByUsername(String username) {
-        Optional<User> user = userRepo.findByUsername(username);
-        if(user.isEmpty()){
-            throw new UserNotFoundException("Couldn't find user with username: " + username);
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Looking up user by username: " + username);
+        try {
+            Optional<User> user = userRepo.findByUsername(username);
+            if (user.isEmpty()) {
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "User not found with username: " + username);
+                throw new UserNotFoundException("Couldn't find user with username: " + username);
+            }
+            Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Successfully retrieved user: " + username);
+            return userMapper.userToUserResponseDto(user.get());
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Error retrieving user by username: " + e.getMessage());
+            throw e;
         }
-        return userMapper.userToUserResponseDto(user.get());
     }
     //METODA pentru a gasi un User dupa username, returneaza User entity, metoda e folosita intern de alte servicii, nu controllere
     public User findUserEntityByUsername(String username) {
@@ -131,12 +157,20 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
     }
 
     public UserResponseDto loginUser(UserLoginRequestDto userLoginRequestDto) {
-        Optional<User> user = userRepo.findByEmailAndPassword(userLoginRequestDto.email(), userLoginRequestDto.password());
-        if(user.isEmpty()){
-            throw new InvalidUserLoginException("Invalid email or password.");
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Attempting login for email: " + userLoginRequestDto.email());
+        try {
+            Optional<User> user = userRepo.findByEmailAndPassword(userLoginRequestDto.email(), userLoginRequestDto.password());
+            if(user.isEmpty()){
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Invalid login attempt for email: " + userLoginRequestDto.email());
+                throw new InvalidUserLoginException("Invalid email or password.");
+            }
+            fakeUserAuthService.setClientUserId(user.get().getId());
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "User logged in successfully: " + user.get().getUsername());
+            return userMapper.userToUserResponseDto(user.get());
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Login failed: " + e.getMessage());
+            throw e;
         }
-        fakeUserAuthService.setClientUserId(user.get().getId());
-        return userMapper.userToUserResponseDto(user.get());
     }
 
     public void logoutUser() {
@@ -157,7 +191,19 @@ public class UserService implements CrudService<UserResponseDto, UUID, UserRegis
     }
 
     public User getUserByUsername(String username) {
-        return userRepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found."));
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Looking up user by username: " + username);
+        try {
+            User user = userRepo.findByUsername(username)
+                    .orElseThrow(() -> {
+                        Logger.log(LoggerType.WARNING, LOG_PREFIX + "User not found with username: " + username);
+                        return new UserNotFoundException("User with username " + username + " not found.");
+                    });
+            Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Successfully retrieved user: " + username);
+            return user;
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Error retrieving user by username: " + e.getMessage());
+            throw e;
+        }
     }
 
     public User getUserByEmail(String email) {

@@ -44,8 +44,6 @@ public class CommentView {
         }
     }
 
-
-
 private static void displayCommentBox(JsonNode comment, int level, int commentIndex) {
     int maxLineLength = 45; // lungimea max a liniei textului în box
     String indent = "  ".repeat(level);

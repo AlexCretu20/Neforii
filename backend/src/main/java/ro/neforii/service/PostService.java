@@ -20,6 +20,8 @@ import ro.neforii.model.VoteType;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.VoteRepository;
 import ro.neforii.service.security.OwnershipValidator;
+import ro.neforii.utils.logger.Logger;
+import ro.neforii.utils.logger.LoggerType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +36,7 @@ public class PostService {
     private final CommentService commentService;
     private final PostMapper postMapper;
     private final OwnershipValidator ownershipValidator;
-
+    private static final String LOG_PREFIX = "PostService: ";
 
     public PostService(PostRepository postRepository, PostMapper postMapper, UserService userService, VoteService voteService,
                        OwnershipValidator ownershipValidator, CommentService commentService) {
@@ -48,19 +50,21 @@ public class PostService {
 
 
     public PostResponseDto createPost(PostRequestDto postRequestDto, UUID currentUserId) {
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new post by user " + postRequestDto.author());
         User user = userService.getUserByUsername(postRequestDto.author());
         Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
 
-//        ownershipValidator.assertPostOwner(currentUserId, post);
-
         Post savedPost = postRepository.save(post);
+        Logger.log(LoggerType.INFO, LOG_PREFIX + "Created post with ID " + savedPost.getId());
 
         return postMapper.postToPostResponseDto(savedPost, user.getId());
     }
 
     public List<PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving all posts for user " + currentUserId);
         var sort = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
         var posts = postRepository.findAll(sort);
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Found " + posts.size() + " posts");
 
         return posts.stream()
                 .map(post -> postMapper.postToPostResponseDto(post, currentUserId))
@@ -68,39 +72,71 @@ public class PostService {
     }
 
     public PostResponseDto getPostByIdAsUser(UUID id, UUID currentUserId) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
-
-        return postMapper.postToPostResponseDto(post, currentUserId);
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving post with ID " + id);
+        try {
+            Post post = postRepository.findById(id)
+                    .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
+            return postMapper.postToPostResponseDto(post, currentUserId);
+        } catch (PostNotFoundException e) {
+            Logger.log(LoggerType.WARNING, LOG_PREFIX + e.getMessage());
+            throw e;
+        }
     }
 
     public PostResponseDto updatePost(UUID id, PostUpdateRequestDto postUpdateRequestDto, UUID currentUserId) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Attempting to update post with ID " + id);
+        try {
+            Post post = postRepository.findById(id)
+                    .orElseThrow(() -> {
+                        Logger.log(LoggerType.WARNING, LOG_PREFIX + "Post not found with ID: " + id);
+                        return new PostNotFoundException("Post with ID " + id + " not found.");
+                    });
+            // ownershipValidator.assertPostOwner(currentUserId, post);
 
-//        ownershipValidator.assertPostOwner(currentUserId, post);
+            // verifica ce este actualizat
+            boolean titleUpdated = false;
+            boolean contentUpdated = false;
 
-        if (postUpdateRequestDto.title() != null) {
-            post.setTitle(postUpdateRequestDto.title());
+            if (postUpdateRequestDto.title() != null) {
+                post.setTitle(postUpdateRequestDto.title());
+                titleUpdated = true;
+            }
+            if (postUpdateRequestDto.content() != null) {
+                post.setContent(postUpdateRequestDto.content());
+                contentUpdated = true;
+            }
+            post.setUpdatedAt(LocalDateTime.now());
+
+            Post updatedPost = postRepository.save(post);
+
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "Successfully updated post " + id +
+                    (titleUpdated ? " (title updated)" : "") +
+                    (contentUpdated ? " (content updated)" : ""));
+
+            return postMapper.postToPostResponseDto(updatedPost, post.getUser().getId());
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to update post " + id + ": " + e.getMessage());
+            throw e;
         }
-        if (postUpdateRequestDto.content() != null) {
-            post.setContent(postUpdateRequestDto.content());
-        }
-        post.setUpdatedAt(LocalDateTime.now());
-
-        Post updatedPost = postRepository.save(post);
-        return postMapper.postToPostResponseDto(updatedPost, post.getUser().getId());
     }
 
     public void deletePost(UUID id, UUID currentUserId) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Attempting to delete post with ID " + id);
+        try {
+            Post post = postRepository.findById(id)
+                    .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
 
-        if (!post.getUser().getId().equals(currentUserId)) {
-            throw new ForbiddenActionException("The current user is not the author of the post.");
+            if (!post.getUser().getId().equals(currentUserId)) {
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Unauthorized delete attempt of post " + id + " by user " + currentUserId);
+                throw new ForbiddenActionException("The current user is not the author of the post.");
+            }
+
+            postRepository.delete(post);
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "Successfully deleted post with ID " + id);
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to delete post with ID " + id + ": " + e.getMessage());
+            throw e;
         }
-
-        postRepository.delete(post);
     }
 
     public PostVoteResponseDto votePost(UUID postId, UUID currentUserId, VoteRequestDto voteRequestDto) {
@@ -119,32 +155,59 @@ public class PostService {
     }
 
     public CommentListResponseDto getCommentsForPost(UUID id, UUID currentUserId) {
+    Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving comments for post with ID " + id);
         return commentService.getCommentsForPost(id, currentUserId);
     }
 
     public CommentResponseDto createComment(UUID postId, CommentOnPostRequestDto request, UUID currentUserId) {
-        User user = userService.getUserByUsername(request.author());
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("Post not found with ID: " + postId));
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new comment on post " + postId + " by author " + request.author());
+        try {
+            User user = userService.getUserByUsername(request.author());
+            String username = user.getUsername();
 
-        Comment parent = null;
-        if (request.parentId() != null) {
-            parent = commentService.findById(request.parentId())
-                    .orElseThrow(() -> new CommentNotFoundException("Parent comment not found with ID: " + request.parentId()));
+            Post post = postRepository.findById(postId)
+                    .orElseThrow(() -> {
+                        Logger.log(LoggerType.WARNING, LOG_PREFIX + "Failed to create comment: Post not found with ID: " + postId);
+                        return new PostNotFoundException("Post not found with ID: " + postId);
+                    });
+
+            Comment parent = null;
+            if (request.parentId() != null) {
+                Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Comment has parent ID: " + request.parentId());
+                parent = commentService.findById(request.parentId())
+                        .orElseThrow(() -> {
+                            Logger.log(LoggerType.WARNING, LOG_PREFIX + "Failed to create comment: Parent comment not found with ID: " + request.parentId());
+                            return new CommentNotFoundException("Parent comment not found with ID: " + request.parentId());
+                        });
+            }
+
+            CommentResponseDto response = commentService.createCommentOnPost(request.content(), user, post, parent);
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "User '" + username + "' successfully created comment " +
+                    response.id() + " on post " + postId + (parent != null ? " as reply to comment " + parent.getId() : ""));
+
+            return response;
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to create comment on post " + postId + ": " + e.getMessage());
+            throw e;
         }
-
-        return commentService.createCommentOnPost(request.content(), user, post, parent);
     }
 
-    public PostResponseDto createImagePost(PostRequestDto postRequestDto,String imagePath){
-        User user = userService.getUserByUsername(postRequestDto.author());
-        Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
+    public PostResponseDto createImagePost(PostRequestDto postRequestDto, String imagePath) {
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new image post by user " + postRequestDto.author() + " with image path: " + imagePath);
+        try {
+            User user = userService.getUserByUsername(postRequestDto.author());
+            Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
 
-        post.setImagePath(imagePath);
+            post.setImagePath(imagePath);
 
-        Post savedPost = postRepository.save(post);
+            Post savedPost = postRepository.save(post);
+            Logger.log(LoggerType.INFO, LOG_PREFIX + "Created image post with ID " + savedPost.getId() + " for user " + user.getUsername());
 
-        return postMapper.postToPostResponseDto(savedPost, user.getId());
+            return postMapper.postToPostResponseDto(savedPost, user.getId());
+        } catch (Exception e) {
+            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to create image post for user " + postRequestDto.author() + ": " + e.getMessage());
+            throw e;
+        }
     }
 
 }

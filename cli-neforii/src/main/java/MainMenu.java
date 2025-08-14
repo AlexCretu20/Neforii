@@ -5,23 +5,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import config.ConnectionConfig;
 import models.ApiResult;
 import models.comment.CommentRequestDto;
+import models.comment.CommentUpdateRequestDto;
 import models.post.PostRequestDto;
 import models.post.PostResponseDto;
+import models.post.PostUpdateRequestDto;
 import models.user.UserLoginRequestDto;
 import models.user.UserRegisterRequestDto;
 import models.user.UserResponseDto;
 import views.CommentView;
 import views.PostView;
 import views.UserView;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 
 public class MainMenu {
     private static final UserClient userClient = new UserClient(ConnectionConfig.BASE_URL + "/users");
     private static final PostClient postClient = new PostClient(ConnectionConfig.BASE_URL + "/posts");
-//  private static final CommentClient commentClient = new CommentClient(ConnectionConfig.BASE_URL + "/comments");
     private static final CommentClient commentClient = new CommentClient(ConnectionConfig.BASE_URL);
     public static String currentUsername = null;
     public static UUID currentUserId = null;
@@ -60,6 +58,7 @@ public class MainMenu {
             System.out.println("3. Open Post (view comments)");
             System.out.println("4. Delete Post");
             System.out.println("5. Logout ");
+            System.out.println("6. Edit Post");
             System.out.print("Choose option: ");
             String option = scanner.nextLine();
 
@@ -72,6 +71,7 @@ public class MainMenu {
                     currentUserId = null;
                     return;
                 }
+                case "6"->handleEditPost(scanner);
                 case "4" -> handleDeletePost(scanner);
                 default -> System.out.println("Invalid option. Please try again.");
             }
@@ -119,28 +119,27 @@ private static void handleOpenPost(Scanner scanner) {
             return;
         }
 
-
         ApiResult postResult = postClient.getPostById(selectedPost.id());
         PostView.displayPostResult(postResult, String.valueOf(postNumber));
-
-
-
         ApiResult commentsResult = postClient.getCommentsByPostId(selectedPost.id());
         commentIndexMap = CommentView.displayCommentList(commentsResult);
-
 
         while (true) {
             System.out.println("\n--- Comment Menu ---");
             System.out.println("1. Add a new comment");
             System.out.println("2. Reply to a comment");
-            System.out.println("3. Back to main menu");
+            System.out.println("3. Edit a comment");
+            System.out.println("4. Delete a comment");
+            System.out.println("5. Back to main menu");
             System.out.print("Choose option: ");
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1" -> handleAddComment(scanner, selectedPost.id(), null);
                 case "2" -> handleReplyToComment(scanner, selectedPost.id());
-                case "3" -> { return; }
+                case "3" -> handleEditComment(scanner);
+                case "4" -> handleDeleteComment(scanner, commentClient,currentUsername, commentIndexMap);
+                case "5" -> { return; }
                 default -> System.out.println("[ERROR]: Invalid choice.");
             }
         }
@@ -302,7 +301,131 @@ private static void handleReplyToComment(Scanner scanner, UUID postId) {
         System.out.println("[ERROR]: Please enter a valid number.");
     }
 }
+    private static void handleEditPost(Scanner scanner) {
+        if (postIndexMap.isEmpty()) {
+            System.out.println("[INFO]: Please view posts first using option 2.");
+            return;
+        }
 
+        System.out.print("Enter Post Number to edit: ");
+        String input = scanner.nextLine();
+
+        try {
+            int postNumber = Integer.parseInt(input);
+            PostResponseDto selectedPost = postIndexMap.get(postNumber);
+
+            if (selectedPost == null) {
+                System.out.println("[ERROR]: No post found with number: " + postNumber);
+                return;
+            }
+
+            System.out.println("Leave blank to keep current value.");
+            System.out.print("New Title (current: " + selectedPost.title() + "): ");
+            String newTitle = scanner.nextLine();
+            if (newTitle.isBlank()) newTitle = null;
+
+            System.out.print("New Content (current: " + selectedPost.content() + "): ");
+            String newContent = scanner.nextLine();
+            if (newContent.isBlank()) newContent = null;
+
+            if (newTitle == null && newContent == null) {
+                System.out.println("[INFO]: No changes entered. Post not updated.");
+                return;
+            }
+
+            PostUpdateRequestDto updateDto = new PostUpdateRequestDto(newTitle, newContent);
+            ApiResult result = postClient.updatePost(selectedPost.id(), updateDto);
+
+//
+            if(result.getSuccess()) {
+                System.out.println("[SUCCESS]: Post updated successfully.");
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR]: Please enter a valid number.");
+        } catch (Exception e) {
+            System.out.println("[ERROR]: Could not update post. " + e.getMessage());
+        }
+    }
+
+    private static void handleEditComment(Scanner scanner) {
+        if (commentIndexMap.isEmpty()) {
+            System.out.println("[INFO]: Please open a post first to load its comments.");
+            return;
+        }
+
+        System.out.print("Enter comment number to edit: ");
+        String indexStr = scanner.nextLine();
+        try {
+            int commentNumber = Integer.parseInt(indexStr);
+            UUID commentId = commentIndexMap.get(commentNumber);
+
+            if (commentId == null) {
+                System.out.println("[ERROR]: No comment found with number: " + commentNumber);
+                return;
+            }
+
+            System.out.print("Enter new comment content: ");
+            String newContent = scanner.nextLine();
+
+            if (newContent.isBlank()) {
+                System.out.println("[ERROR]: Content cannot be empty.");
+                return;
+            }
+
+
+            CommentUpdateRequestDto updateDto = new CommentUpdateRequestDto(newContent);
+
+
+            ApiResult result = commentClient.updateComment(commentId, updateDto);
+
+            if (result.getSuccess()) {
+                System.out.println("[SUCCESS]: Comment updated successfully.");
+
+            } else {
+                System.out.println("[ERROR]: " + result.getMessage());
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR]: Please enter a valid number.");
+        }
+    }
+
+//
+
+    private static void handleDeleteComment(Scanner scanner, CommentClient commentClient, String currentUsername, Map<Integer, UUID> commentIndexMap) {
+        if (commentIndexMap.isEmpty()) {
+            System.out.println("[INFO]: Please open a post first to load its comments.");
+            return;
+        }
+
+        System.out.print("Enter comment number to delete: ");
+        String indexStr = scanner.nextLine();
+
+        try {
+            int commentNumber = Integer.parseInt(indexStr);
+            UUID commentId = commentIndexMap.get(commentNumber);
+
+            if (commentId == null) {
+                System.out.println("[ERROR]: No comment found with number: " + commentNumber);
+                return;
+            }
+
+
+            ApiResult deleteResult = commentClient.deleteComment(commentId);
+
+            if (deleteResult.getSuccess()) {
+                System.out.println("[SUCCESS]: Comment deleted successfully.");
+                commentIndexMap.remove(commentNumber);
+            } else {
+                System.out.println("[ERROR]: " + deleteResult.getMessage());
+                System.out.println("[DEBUG]: " + deleteResult.getResponseBody());
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR]: Please enter a valid number.");
+        }
+    }
 
     private static String extractUsernameFromLogin(ApiResult loginResult) {
         try {
@@ -327,6 +450,5 @@ private static void handleReplyToComment(Scanner scanner, UUID postId) {
             return null;
         }
     }
-
 
 }

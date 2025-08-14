@@ -3,6 +3,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
 import models.post.PostRequestDto;
+import models.post.PostUpdateRequestDto;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -64,43 +66,44 @@ public class PostClient {
         }
     }
 
-    public ApiResult updatePost(UUID id, PostRequestDto postRequestDto) {
-        try {
-            String url = baseUrl + '/' + id;
-            String requestBody = objectMapper.writeValueAsString(postRequestDto);
 
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
+public ApiResult updatePost(UUID id, PostUpdateRequestDto postUpdateDto) {
+    try {
+        String url = baseUrl + "/" + id;
+        String requestBody = objectMapper.writeValueAsString(postUpdateDto);
 
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            int statusCode = response.statusCode();
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
 
-            boolean isSuccess;
-            String message = "";
-            if (statusCode >= 200 && statusCode < 300) {
-                isSuccess = true;
-                message = "The post was updated.";
-            } else if (statusCode >= 400 && statusCode < 500) {
-                isSuccess = false;
-                if (response.body() != null && !response.body().isEmpty()) {
-                    message = response.body();
-                }
-            } else {
-                isSuccess = false;
-                message = "Unexpected error has appeared! Please try again later.";
-            }
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        int statusCode = response.statusCode();
 
-            return new ApiResult(isSuccess, message, response.body());
-
-        } catch (JsonProcessingException e) {
-            return new ApiResult(false, "Couldn't map the Post request to JSON.", null);
-        } catch (IOException | InterruptedException e) {
-            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
+        boolean isSuccess;
+        String message;
+        if (statusCode >= 200 && statusCode < 300) {
+            isSuccess = true;
+            message = "The post was updated.";
+        } else if (statusCode >= 400 && statusCode < 500) {
+            isSuccess = false;
+            message = (response.body() != null && !response.body().isEmpty())
+                    ? response.body()
+                    : "Client-side error occurred while updating the post.";
+        } else {
+            isSuccess = false;
+            message = "Unexpected error has appeared! Please try again later.";
         }
+
+        return new ApiResult(isSuccess, message, response.body());
+
+    } catch (JsonProcessingException e) {
+        return new ApiResult(false, "Couldn't map the update request to JSON.", null);
+    } catch (IOException | InterruptedException e) {
+        return new ApiResult(false, "Couldn't maintain the connection: " + e.getMessage(), null);
     }
+}
 
     public ApiResult deletePost(UUID id) {
         try {
