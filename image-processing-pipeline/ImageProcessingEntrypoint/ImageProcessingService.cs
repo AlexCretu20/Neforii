@@ -52,8 +52,15 @@ public class ImageProcessingService
         {
             throw new FileNotFoundException($"The file does not exits.");
         }
-
+        
         using var srcImg = (Bitmap)Image.FromFile(imagePath);
+
+        if (filters[filterId] == null)
+        {
+            using var msOriginal = new MemoryStream();
+            srcImg.Save(msOriginal, System.Drawing.Imaging.ImageFormat.Png);
+            return msOriginal.ToArray();
+        }
 
         using var clonedImg = new Bitmap(srcImg);
 

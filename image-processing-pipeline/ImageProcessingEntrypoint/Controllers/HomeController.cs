@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ImageProcessingEntrypoint.Services;
 
-
-
 namespace ImageProcessingPipeline.Controllers 
 {
     [ApiController]

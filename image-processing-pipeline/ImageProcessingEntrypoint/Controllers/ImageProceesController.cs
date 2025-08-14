@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using ImageProcessingEntrypoint;
 using Microsoft.AspNetCore.Mvc;
+using ImageProcessingEntrypoint.Services;
 
 namespace ImageProcessingPipeline.Controllers;
 
@@ -16,7 +17,11 @@ public class ImageProceesController : ControllerBase
             return BadRequest("No image uploaded.");
         }
 
-        var filters = FilterLoader.LoadAll(PathConfig.FiltersDir);
+        var filters = FilterService.GetFilters()
+            .Select(f => f.Instance)
+            .ToList();
+        
+        
         var tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         using (var stream = new FileStream(tempPath, FileMode.Create))
         {
