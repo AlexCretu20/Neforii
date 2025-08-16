@@ -27,12 +27,12 @@
 //        System.out.print("Enter the content of your post: ");
 //        String content = scanner.nextLine();
 //        System.out.print("Enter the path of the for your post: ");
-//        String imagePath = scanner.nextLine();
+//        String imageUrl = scanner.nextLine();
 //        Post post = new Post();
 //        post.setTitle(title);
 //        post.setContent(content);
 //        post.setAuthor(currentUser.getUsername());
-//        post.setImagePath(imagePath);
+//        post.setImagePath(imageUrl);
 //        post.setCreatedAt(LocalDateTime.now());
 //        post.setUser(currentUser);
 //

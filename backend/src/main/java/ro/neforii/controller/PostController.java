@@ -50,11 +50,12 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<ExpectedResponse<PostResponseDto>> createPost(@Valid @RequestBody PostRequestDto postRequestDto) {
+    public ResponseEntity<ExpectedResponse<PostResponseDto>> createPost(
+            @Valid @ModelAttribute PostRequestDto postRequestDto
+    ) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
-        PostResponseDto postResponseDto = postService.createPost(postRequestDto, currentUserId);
-
-        return ResponseEntity.ok(new ExpectedResponse<>(postResponseDto));
+        PostResponseDto dto = postService.createPost(postRequestDto, currentUserId);
+        return ResponseEntity.ok(new ExpectedResponse<>(dto));
     }
 
     @PutMapping("/{id}")
@@ -96,38 +97,4 @@ public class PostController {
         CommentResponseDto commentResponseDto = postService.createComment(id, request, currentUserId);
         return ResponseEntity.ok(new ExpectedResponse<>(commentResponseDto));
     }
-
-    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ExpectedResponse<PostResponseDto>> createImagePost(
-            @RequestPart("post") @Valid PostRequestDto postDto,
-            @RequestPart("file") MultipartFile file
-    ) throws IOException, InterruptedException {
-
-        String imagePath = fileService.save(file);
-
-        PostResponseDto postResponseDto = postService.createImagePost(postDto, imagePath);
-
-        return ResponseEntity.ok(new ExpectedResponse<>(postResponseDto));
-
-    }
-
-
-//    @GetMapping("/{postId}/comments")
-//    public ResponseEntity<Map<String, Object>> getCommentsForPost(@PathVariable UUID postId) {
-//        User user = userService.getCurrentUser();
-//        List<Comment> topLevelComments = commentService.getTopLevelComments(postId);
-//
-//        List<CommentResponseDto> dtos = topLevelComments.stream()
-//                .map(c -> commentMapper.toCommentDto(c, user))
-//                .toList();
-//
-//        int total = commentService.getComments().stream()
-//                .filter(c -> c.getPost() != null && c.getPost().getId() == postId)
-//                .toList().size();
-//
-//        return ResponseEntity.ok(Map.of(
-//                "data", dtos,
-//                "total", total
-//        ));
-//    }
 }

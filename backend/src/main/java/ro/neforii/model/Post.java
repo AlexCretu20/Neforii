@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,8 +32,8 @@ public class Post {
     @Column(nullable = false, length = 255)
     private String author;
 
-    @Column(name = "image_path", length = 2048)
-    String imagePath;
+    @Column(name = "image_url", length = 2048)
+    String imageUrl;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

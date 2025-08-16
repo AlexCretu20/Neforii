@@ -46,7 +46,7 @@ public class PostMapper {
                 .userVote(userVote)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
-                .imagePath(post.getImagePath())
+                .imageUrl(post.getImageUrl())
                 .build();
     }
 

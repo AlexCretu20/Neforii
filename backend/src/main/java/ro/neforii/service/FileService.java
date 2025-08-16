@@ -76,8 +76,13 @@ public class FileService {
 
     public String save(MultipartFile file) throws IOException {
         Map uploadUrl = (Map) cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-
         return uploadUrl.get("secure_url").toString();
 
+    }
+
+    public String save(byte[] bytes) throws IOException {
+        Map upload = (Map) cloudinary.uploader()
+                .upload(bytes, ObjectUtils.asMap("resource_type", "auto"));
+        return upload.get("secure_url").toString();
     }
 }

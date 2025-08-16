@@ -1,15 +1,19 @@
 package ro.neforii.service;
 
-import jakarta.validation.Valid;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.multipart.MultipartFile;
+import ro.neforii.client.ImageProcessorClient;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.post.*;
 import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.exception.CommentNotFoundException;
+import ro.neforii.exception.FileStorageException;
 import ro.neforii.exception.ForbiddenActionException;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.mapper.PostMapper;
@@ -18,16 +22,17 @@ import ro.neforii.model.Post;
 import ro.neforii.model.User;
 import ro.neforii.model.VoteType;
 import ro.neforii.repository.PostRepository;
-import ro.neforii.repository.VoteRepository;
 import ro.neforii.service.security.OwnershipValidator;
 import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
@@ -36,29 +41,58 @@ public class PostService {
     private final CommentService commentService;
     private final PostMapper postMapper;
     private final OwnershipValidator ownershipValidator;
+    private final FileService fileService;
+    private final ImageProcessorClient imageProcessorClient;
     private static final String LOG_PREFIX = "PostService: ";
 
-    public PostService(PostRepository postRepository, PostMapper postMapper, UserService userService, VoteService voteService,
-                       OwnershipValidator ownershipValidator, CommentService commentService) {
-        this.postRepository = postRepository;
-        this.postMapper = postMapper;
-        this.userService = userService;
-        this.voteService = voteService;
-        this.ownershipValidator = ownershipValidator;
-        this.commentService = commentService;
+    @Transactional
+    public PostResponseDto createPost(PostRequestDto form, UUID currentUserId) {
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new post by user " + form.author());
+
+        User user = userService.getUserByUsername(form.author());
+
+        Post post = postMapper.postRequestDtoToPost(form, user);
+
+        MultipartFile image = form.image();
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = null;
+            Integer filterId = form.filter();
+
+            if (filterId != null) {
+                try {
+                    byte[] filteredBytes = imageProcessorClient.applyFilter(image, filterId);
+                    try {
+                        imageUrl = fileService.save(filteredBytes);
+                    } catch (IOException uploadFilteredEx) {
+                        throw new FileStorageException("Failed to upload filtered image", uploadFilteredEx);
+                    }
+                } catch (RestClientException | IllegalStateException | IOException filterEx) {
+                    Logger.log(
+                            LoggerType.ERROR,
+                            LOG_PREFIX + "Filter failed (" + filterEx.getClass().getSimpleName() + "): " + filterEx.getMessage()
+                    );
+                    try {
+                        imageUrl = fileService.save(image);
+                    } catch (IOException uploadOrigEx) {
+                        throw new FileStorageException("Failed to upload original image after filter failure", uploadOrigEx);
+                    }
+                }
+            } else {
+                try {
+                    imageUrl = fileService.save(image);
+                } catch (IOException uploadEx) {
+                    throw new FileStorageException("Failed to upload image", uploadEx);
+                }
+            }
+
+            post.setImageUrl(imageUrl);
+        }
+
+        Post saved = postRepository.save(post);
+        Logger.log(LoggerType.INFO, LOG_PREFIX + "Created post with ID " + saved.getId());
+        return postMapper.postToPostResponseDto(saved, user.getId());
     }
 
-
-    public PostResponseDto createPost(PostRequestDto postRequestDto, UUID currentUserId) {
-        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new post by user " + postRequestDto.author());
-        User user = userService.getUserByUsername(postRequestDto.author());
-        Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
-
-        Post savedPost = postRepository.save(post);
-        Logger.log(LoggerType.INFO, LOG_PREFIX + "Created post with ID " + savedPost.getId());
-
-        return postMapper.postToPostResponseDto(savedPost, user.getId());
-    }
 
     public List<PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving all posts for user " + currentUserId);
@@ -192,22 +226,22 @@ public class PostService {
         }
     }
 
-    public PostResponseDto createImagePost(PostRequestDto postRequestDto, String imagePath) {
-        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new image post by user " + postRequestDto.author() + " with image path: " + imagePath);
-        try {
-            User user = userService.getUserByUsername(postRequestDto.author());
-            Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
-
-            post.setImagePath(imagePath);
-
-            Post savedPost = postRepository.save(post);
-            Logger.log(LoggerType.INFO, LOG_PREFIX + "Created image post with ID " + savedPost.getId() + " for user " + user.getUsername());
-
-            return postMapper.postToPostResponseDto(savedPost, user.getId());
-        } catch (Exception e) {
-            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to create image post for user " + postRequestDto.author() + ": " + e.getMessage());
-            throw e;
-        }
-    }
+//    public PostResponseDto createImagePost(PostRequestDto postRequestDto, String imageUrl) {
+//        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new image post by user " + postRequestDto.author() + " with image path: " + imageUrl);
+//        try {
+//            User user = userService.getUserByUsername(postRequestDto.author());
+//            Post post = postMapper.postRequestDtoToPost(postRequestDto, user);
+//
+//            post.setImagePath(imageUrl);
+//
+//            Post savedPost = postRepository.save(post);
+//            Logger.log(LoggerType.INFO, LOG_PREFIX + "Created image post with ID " + savedPost.getId() + " for user " + user.getUsername());
+//
+//            return postMapper.postToPostResponseDto(savedPost, user.getId());
+//        } catch (Exception e) {
+//            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Failed to create image post for user " + postRequestDto.author() + ": " + e.getMessage());
+//            throw e;
+//        }
+//    }
 
 }
