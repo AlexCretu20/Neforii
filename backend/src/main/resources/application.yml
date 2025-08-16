@@ -43,3 +43,9 @@ file-upload:
     host: 13.48.203.214
     remote-dir: /home/ubuntu/images_uploads
 
+cloudinary:
+  cloud_name: dqi8akgce
+  api_key: 293692513885774
+  api_secret: JLdJUNGL1r5eTlvWmOYzbOj7yyY
+
+

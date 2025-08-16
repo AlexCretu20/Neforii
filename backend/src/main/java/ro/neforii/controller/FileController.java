@@ -22,8 +22,8 @@ public class FileController {
 
     @PostMapping("/upload")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) throws IOException, InterruptedException {
-        fileService.save(file);
-        return ResponseEntity.ok("File uploaded succesfully.");
+        String url = fileService.save(file);
+        return ResponseEntity.ok("File uploaded succesfully. Check the image here : " +  url);
 
     }
 
