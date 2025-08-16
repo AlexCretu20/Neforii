@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 @Service
 public class FilterService {
 
-    private static final String url = "http://localhost:5000/api/filters";
+    private static final String url = "http://3.121.100.69/api/filters";
 
     public String getFilters() throws IOException, InterruptedException {
 
