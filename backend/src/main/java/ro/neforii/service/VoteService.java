@@ -30,7 +30,7 @@ public class VoteService implements IVoteService {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
     }
-//// TODO de facut mai clean
+// TODO de facut mai clean
     public String createVote(UUID userId, UUID postId, UUID commentId, boolean isUpvote) {
         User user = userRepository.findById(userId).orElseThrow();
 
@@ -105,7 +105,7 @@ public class VoteService implements IVoteService {
 //        }
 //    }
 
-//    private static void registerAfterCommit(Runnable task) {
+    //    private static void registerAfterCommit(Runnable task) {
 //        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
 //                new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
 //                    @Override public void afterCommit() { task.run(); }

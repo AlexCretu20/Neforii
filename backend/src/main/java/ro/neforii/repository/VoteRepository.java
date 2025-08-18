@@ -17,6 +17,8 @@ public interface VoteRepository extends JpaRepository<Vote, UUID> {
 
     Optional<Vote> findByPostAndUser(Post post, User user);
 
+
+
     Optional<Vote> findByCommentAndUser(Comment comment, User user);
 
     int countByPostAndIsUpvote(Post post, boolean isUpvote);

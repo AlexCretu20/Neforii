@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
 import models.post.PostRequestDto;
 import models.post.PostUpdateRequestDto;
+import models.post.PostVoteRequestDto;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 
 public class PostClient {
@@ -27,45 +30,120 @@ public class PostClient {
         this(baseUrl, HttpClient.newHttpClient(), new ObjectMapper());
     }
 
+//
+//    public ApiResult newPost(PostRequestDto postRequestDto) {
+//        try {
+//            String url = baseUrl;
+//            String requestBody = objectMapper.writeValueAsString(postRequestDto);
+//
+//            HttpRequest httpRequest = HttpRequest.newBuilder()
+//
+//                    .uri(URI.create(url))
+////                    .header("Content-Type", "application/json")
+//                    .header("Content-Type", "multipart/form-data")
+//                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+//                    .build();
+//            System.out.println("[INFO]: POST Request: " + requestBody);
+//            System.out.println("[INFO]: POST Request: " + httpRequest.uri());
+//            System.out.println();
+//
+//            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+//            int statusCode = response.statusCode();
+//            System.out.println(response);
+//            boolean isSuccess;
+//            String message = "";
+//            if (statusCode >= 200 && statusCode < 300) {
+//                isSuccess = true;
+//                message = "The post was made. ";
+//            } else if (statusCode >= 400 && statusCode < 500) {
+//                isSuccess = false;
+//                if (response.body() != null && !response.body().isEmpty()) {
+//                    message = response.body();
+//                }
+//            } else {
+//                isSuccess = false;
+//                message = "Unexpected error has appeared! Please try again later.";
+//            }
+//
+//            return new ApiResult(isSuccess, message, response.body());
+//
+//        } catch (JsonProcessingException e) {
+//            return new ApiResult(false, "Couldn't map the Post request to JSON.", null);
+//        } catch (IOException | InterruptedException e) {
+//            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
+//        }
+//    }
+public ApiResult newPost(PostRequestDto postRequestDto) {
+    try {
+        final String url = baseUrl;
 
-    public ApiResult newPost(PostRequestDto postRequestDto) {
-        try {
-            String url = baseUrl;
-            String requestBody = objectMapper.writeValueAsString(postRequestDto);
+        // facem multipart text-only
+        final String boundary = "----boundary-" + java.util.UUID.randomUUID();
+        final byte[] body = buildTextOnlyMultipart(postRequestDto, boundary);
 
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+                .build();
 
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            int statusCode = response.statusCode();
+        HttpResponse<String> response =
+                httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        int statusCode = response.statusCode();
 
-            boolean isSuccess;
-            String message = "";
-            if (statusCode >= 200 && statusCode < 300) {
-                isSuccess = true;
-                message = "The post was made. ";
-            } else if (statusCode >= 400 && statusCode < 500) {
-                isSuccess = false;
-                if (response.body() != null && !response.body().isEmpty()) {
-                    message = response.body();
-                }
-            } else {
-                isSuccess = false;
-                message = "Unexpected error has appeared! Please try again later.";
-            }
-
-            return new ApiResult(isSuccess, message, response.body());
-
-        } catch (JsonProcessingException e) {
-            return new ApiResult(false, "Couldn't map the Post request to JSON.", null);
-        } catch (IOException | InterruptedException e) {
-            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
+        boolean isSuccess;
+        String message;
+        if (statusCode >= 200 && statusCode < 300) {
+            isSuccess = true;
+            message = "The post was made.";
+        } else if (statusCode >= 400 && statusCode < 500) {
+            isSuccess = false;
+            message = (response.body() != null && !response.body().isEmpty())
+                    ? response.body()
+                    : "Client error.";
+        } else {
+            isSuccess = false;
+            message = "Unexpected error has appeared! Please try again later.";
         }
-    }
 
+        return new ApiResult(isSuccess, message, response.body());
+
+    } catch (IOException | InterruptedException e) {
+        Thread.currentThread().interrupt(); // safe if InterruptedException
+        return new ApiResult(false, "Couldn't maintain the connection. " + e.getMessage(), null);
+    } catch (RuntimeException e) {
+        return new ApiResult(false, "Request building failed. " + e.getMessage(), null);
+    }
+}
+
+
+    private byte[] buildTextOnlyMultipart(PostRequestDto dto, String boundary) throws IOException {
+        // Convertim DTO -> Map pentru a nu scrie manual fiecare câmp.
+        // Exclude: "image", "filter"
+        com.fasterxml.jackson.databind.ObjectMapper om = new com.fasterxml.jackson.databind.ObjectMapper();
+        java.util.Map<String, Object> asMap = om.convertValue(
+                dto, new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {});
+
+        String CRLF = "\r\n";
+        StringBuilder sb = new StringBuilder(1024);
+
+        for (java.util.Map.Entry<String, Object> e : asMap.entrySet()) {
+            String name = e.getKey();
+            if ("image".equalsIgnoreCase(name) || "filter".equalsIgnoreCase(name)) continue;
+            Object val = e.getValue();
+            if (val == null) continue;
+
+            sb.append("--").append(boundary).append(CRLF);
+            sb.append("Content-Disposition: form-data; name=\"").append(name).append("\"").append(CRLF);
+            sb.append("Content-Type: text/plain; charset=UTF-8").append(CRLF);
+            sb.append(CRLF);
+            sb.append(val.toString()).append(CRLF);
+        }
+
+        sb.append("--").append(boundary).append("--").append(CRLF);
+        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
 
 public ApiResult updatePost(UUID id, PostUpdateRequestDto postUpdateDto) {
     try {
@@ -250,6 +328,33 @@ public ApiResult updatePost(UUID id, PostUpdateRequestDto postUpdateDto) {
         }
     }
 
+    public ApiResult votePost(UUID id, String voteType) {
+        try {
+            String url = baseUrl + "/" + id + "/vote";
+            PostVoteRequestDto voteRequest = new PostVoteRequestDto(voteType);
+            String requestBody = objectMapper.writeValueAsString(voteRequest);
 
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+
+            if (statusCode == 200) {
+                return new ApiResult(true, "Vote registered successfully.", response.body());
+            } else if (statusCode >= 400 && statusCode < 500) {
+                return new ApiResult(false,
+                        (response.body() != null && !response.body().isEmpty()) ? response.body() : "Client error.",
+                        response.body());
+            } else {
+                return new ApiResult(false, "Unexpected error occurred.", response.body());
+            }
+        } catch (Exception e) {
+            return new ApiResult(false, "Couldn't maintain the connection: " + e.getMessage(), null);
+        }
+    }
 }
 

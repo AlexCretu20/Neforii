@@ -1,6 +1,7 @@
 import client.CommentClient;
 import client.PostClient;
 import client.UserClient;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import config.ConnectionConfig;
 import models.ApiResult;
@@ -125,24 +126,37 @@ private static void handleOpenPost(Scanner scanner) {
         commentIndexMap = CommentView.displayCommentList(commentsResult);
 
         while (true) {
-            System.out.println("\n--- Comment Menu ---");
-            System.out.println("1. Add a new comment");
-            System.out.println("2. Reply to a comment");
-            System.out.println("3. Edit a comment");
-            System.out.println("4. Delete a comment");
-            System.out.println("5. Back to main menu");
+            System.out.println("\n--- Post Menu ---");
+            System.out.println("1. Upvote Post");
+            System.out.println("2. Downvote Post");
+            System.out.println("3. Remove Vote from Post");
+            System.out.println("4. Add Comment");
+            System.out.println("5. Reply to Comment");
+            System.out.println("6. Upvote Comment");
+            System.out.println("7. Downvote Comment");
+            System.out.println("8. Remove Vote from Comment");
+            System.out.println("9. Edit Comment");
+            System.out.println("10. Delete Comment");
+            System.out.println("11. Back to main menu");
             System.out.print("Choose option: ");
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1" -> handleAddComment(scanner, selectedPost.id(), null);
-                case "2" -> handleReplyToComment(scanner, selectedPost.id());
-                case "3" -> handleEditComment(scanner);
-                case "4" -> handleDeleteComment(scanner, commentClient,currentUsername, commentIndexMap);
-                case "5" -> { return; }
+                case "1" -> handleVotePost(selectedPost.id(), "up");
+                case "2" -> handleVotePost(selectedPost.id(), "down");
+                case "3" -> handleVotePost(selectedPost.id(), "none");
+                case "4" -> handleAddComment(scanner, selectedPost.id(), null);
+                case "5" -> handleReplyToComment(scanner, selectedPost.id());
+                case "6" -> handleVoteComment(scanner, "up");
+                case "7" -> handleVoteComment(scanner, "down");
+                case "8" -> handleVoteComment(scanner, "none");
+                case "9" -> handleEditComment(scanner);
+                case "10" -> handleDeleteComment(scanner, commentClient, currentUsername, commentIndexMap);
+                case "11" -> { return; }
                 default -> System.out.println("[ERROR]: Invalid choice.");
             }
         }
+
 
     } catch (NumberFormatException e) {
         System.out.println("[ERROR]: Please enter a valid number.");
@@ -150,6 +164,8 @@ private static void handleOpenPost(Scanner scanner) {
         System.out.println("[ERROR]: Could not load post or comments.");
     }
 }
+
+
 
     private static Map<Integer, PostResponseDto> postIndexMap = new HashMap<>();
 
@@ -179,8 +195,7 @@ private static void handleOpenPost(Scanner scanner) {
                 title,
                 content,
                 currentUsername,
-                null,
-                imagePath
+                null
 
         );
 
@@ -336,9 +351,11 @@ private static void handleReplyToComment(Scanner scanner, UUID postId) {
             PostUpdateRequestDto updateDto = new PostUpdateRequestDto(newTitle, newContent);
             ApiResult result = postClient.updatePost(selectedPost.id(), updateDto);
 
-//
+
             if(result.getSuccess()) {
                 System.out.println("[SUCCESS]: Post updated successfully.");
+            }else{
+                System.out.println("[ERROR]: " + result.getMessage());
             }
 
         } catch (NumberFormatException e) {
@@ -391,7 +408,7 @@ private static void handleReplyToComment(Scanner scanner, UUID postId) {
         }
     }
 
-//
+
 
     private static void handleDeleteComment(Scanner scanner, CommentClient commentClient, String currentUsername, Map<Integer, UUID> commentIndexMap) {
         if (commentIndexMap.isEmpty()) {
@@ -448,6 +465,60 @@ private static void handleReplyToComment(Scanner scanner, UUID postId) {
         } catch (Exception e) {
             System.out.println("Couldn't parse login response to extract id.");
             return null;
+        }
+    }
+    private static void handleVotePost(UUID postId, String voteType) {
+        ApiResult result = postClient.votePost(postId, voteType);
+
+        if (result.getSuccess()) {
+            System.out.println("[SUCCESS]: " + result.getMessage());
+
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(result.getResponseBody());
+                JsonNode data = root.get("data");
+
+                if (data != null && data.isObject()) {
+                    int score = data.get("score").asInt();
+                    String userVote = data.get("userVote").asText();
+                    System.out.println("[INFO]: New total votes = " + score + " (your vote: " + userVote + ")");
+                }
+            } catch (Exception e) {
+                System.out.println("[ERROR]: Couldn't parse vote response.");
+            }
+
+        } else {
+            System.out.println("[ERROR]: " + result.getMessage());
+        }
+    }
+
+    private static void handleVoteComment(Scanner scanner, String voteType) {
+        if (commentIndexMap.isEmpty()) {
+            System.out.println("[INFO]: Please open a post first to load its comments.");
+            return;
+        }
+
+        System.out.print("Enter comment number to vote: ");
+        String indexStr = scanner.nextLine();
+        try {
+            int commentNumber = Integer.parseInt(indexStr);
+            UUID commentId = commentIndexMap.get(commentNumber);
+
+            if (commentId == null) {
+                System.out.println("[ERROR]: No comment found with number: " + commentNumber);
+                return;
+            }
+
+            ApiResult result = commentClient.voteComment(commentId, voteType);
+
+            if (result.getSuccess()) {
+                System.out.println("[SUCCESS]: You voted the comment.");
+            } else {
+                System.out.println("[ERROR]: " + result.getMessage());
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR]: Please enter a valid number.");
         }
     }
 

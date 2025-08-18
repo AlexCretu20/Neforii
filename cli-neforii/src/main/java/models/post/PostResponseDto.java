@@ -1,8 +1,7 @@
 package models.post;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.UUID;
+
 
 public record PostResponseDto(
         UUID id,
@@ -17,7 +16,7 @@ public record PostResponseDto(
         String userVote,
         String createdAt,
         String updatedAt,
-        String imagePath
+        String imageUrl
 
 ) {
 }

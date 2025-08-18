@@ -12,6 +12,7 @@ import ro.neforii.dto.post.PostCommentResponseDto;
 import ro.neforii.dto.user.UserResponseDto;
 import ro.neforii.exception.BadRequestException;
 import ro.neforii.exception.CommentNotFoundException;
+import ro.neforii.exception.ForbiddenActionException;
 import ro.neforii.exception.PostNotFoundException;
 import ro.neforii.mapper.CommentMapper;
 import ro.neforii.mapper.UserMapper;
@@ -23,6 +24,7 @@ import ro.neforii.repository.CommentRepository;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.repository.UserRepository;
 import ro.neforii.repository.VoteRepository;
+import ro.neforii.service.security.OwnershipValidator;
 import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
@@ -41,9 +43,10 @@ public class CommentService implements IVotable {
     private final UserService userService;
     private final UserMapper userMapper;
     private final VoteService voteService;
+    private final OwnershipValidator ownershipValidator;
     private static final String LOG_PREFIX = "CommentService: ";
 
-    public CommentService(CommentRepository commentRepo, UserRepository userRepo, PostRepository postRepo, VoteRepository voteRepo, CommentMapper commentMapper, UserService userService, UserMapper userMapper, VoteService voteService) {
+    public CommentService(CommentRepository commentRepo, UserRepository userRepo, PostRepository postRepo, VoteRepository voteRepo, CommentMapper commentMapper, UserService userService, UserMapper userMapper, VoteService voteService, OwnershipValidator ownershipValidator) {
         this.commentRepo = commentRepo;
         this.userRepo = userRepo;
         this.postRepo = postRepo;
@@ -52,6 +55,7 @@ public class CommentService implements IVotable {
         this.userService = userService;
         this.userMapper = userMapper;
         this.voteService = voteService;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public List<CommentResponseDto> getComments(User currentUser) {
@@ -103,9 +107,10 @@ public class CommentService implements IVotable {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Updating comment with ID " + id);
         try {
             Comment comment = commentRepo.findById(id).orElseThrow(() -> {
-                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Comment with id " + id + " not found");
-                return new CommentNotFoundException("The comment with ID " + id + " not found.");
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Comment with id=" + id + " not found");
+                return new CommentNotFoundException("Comment with id " + id + " does not exist");
             });
+            ownershipValidator.assertCommentOwner(currentUserId, comment);
 
             comment.setContent(commentDto.content());
             comment.setUpdatedAt(LocalDateTime.now());
@@ -122,7 +127,11 @@ public class CommentService implements IVotable {
     public void deleteComment(UUID id, UUID currentUserId) {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Attempting to delete comment with ID " + id);
         try {
-            // Verif: daca userul care incearca sa stearga postarea este cel care a facut postarea
+            Comment comment = commentRepo.findById(id).orElseThrow(() -> {
+                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Comment with id=" + id + " not found");
+                return new CommentNotFoundException("Comment with id " + id + " does not exist");
+            });
+            ownershipValidator.assertCommentOwner(currentUserId, comment);
             getComment(id, currentUserId);
             commentRepo.deleteById(id);
             Logger.log(LoggerType.INFO, LOG_PREFIX + "Comment " + id + " deleted successfully");

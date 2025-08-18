@@ -1,11 +1,12 @@
 package client;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApiResult;
 import models.comment.CommentRequestDto;
 import models.comment.CommentUpdateRequestDto;
+import models.comment.CommentVoteRequestDto;
+import models.post.PostVoteRequestDto;
 
 import java.io.IOException;
 import java.net.URI;
@@ -201,6 +202,34 @@ public ApiResult addComment(UUID postId, CommentRequestDto commentRequestDto) {
         return new ApiResult(false, "Couldn't maintain the connection: " + e.getMessage(), null);
     }
 }
+    public ApiResult voteComment(UUID id, String voteType) {
+        try {
+            String url = baseUrl + "/comments/" + id + "/vote";
+            CommentVoteRequestDto dto = new CommentVoteRequestDto(voteType);
+            String requestBody = objectMapper.writeValueAsString(dto);
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+
+            if (statusCode >= 200 && statusCode < 300) {
+                return new ApiResult(true, "You voted the comment successfully.", response.body());
+            } else if (statusCode >= 400 && statusCode < 500) {
+                return new ApiResult(false, response.body(), response.body());
+            } else {
+                return new ApiResult(false, "Unexpected error occurred. Please try again later.", response.body());
+            }
+
+        } catch (Exception e) {
+            return new ApiResult(false, "Couldn't maintain the connection: " + e.getMessage(), null);
+        }
+    }
+
 
 
 }

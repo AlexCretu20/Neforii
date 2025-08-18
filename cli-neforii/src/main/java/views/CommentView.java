@@ -44,28 +44,66 @@ public class CommentView {
         }
     }
 
+//private static void displayCommentBox(JsonNode comment, int level, int commentIndex) {
+//    int maxLineLength = 45; // lungimea max a liniei textului în box
+//    String indent = "  ".repeat(level);
+//
+//    String author = comment.has("author") ? comment.get("author").asText() : "unknown";
+//    String content = comment.has("content") ? comment.get("content").asText() : "";
+//    int upVotes = comment.has("upVotes") ? comment.get("upVotes").asInt() : 0;
+//    int downVotes = comment.has("downVotes") ? comment.get("downVotes").asInt() : 0;
+//    String createdAt = comment.has("createdAt") ? formatTimestamp(comment.get("createdAt").asText()) : "N/A";
+//
+//    // Linia author cu ComId
+//    String authorLine = String.format("Author: @%-12s ComId: %d", author, commentIndex);
+//    String[] wrappedAuthor = wrapText(authorLine, maxLineLength);
+//    String[] wrappedContent = wrapText("Content: " + content, maxLineLength);
+//    String votesLine = "Upvotes: " + upVotes + "   Downvotes: " + downVotes;
+//    String[] wrappedVotes = wrapText(votesLine, maxLineLength);
+//    String[] wrappedCreated = wrapText("Created: " + createdAt, maxLineLength);
+//
+//    List<String> allLines = new ArrayList<>();
+//    for (String s : wrappedAuthor) allLines.add(s);
+//    for (String s : wrappedContent) allLines.add(s);
+//    for (String s : wrappedVotes) allLines.add(s);
+//    for (String s : wrappedCreated) allLines.add(s);
+//
+//    int maxLength = 0;
+//    for (String line : allLines) {
+//        if (line.length() > maxLength) maxLength = line.length();
+//    }
+//    int widthPadding = maxLength + 2;
+//
+//    String topBorder = indent + "┌" + "─".repeat(widthPadding) + "┐";
+//    String bottomBorder = indent + "└" + "─".repeat(widthPadding) + "┘";
+//
+//    System.out.println(GREEN + topBorder);
+//    for (String line : allLines) {
+//        System.out.printf(indent + "│ %-" + (widthPadding - 1) + "s│%n", line);
+//    }
+//    System.out.println(bottomBorder + NORMAL);
+//}
 private static void displayCommentBox(JsonNode comment, int level, int commentIndex) {
-    int maxLineLength = 45; // lungimea max a liniei textului în box
+    int maxLineLength = 45; // lungimea maximă a liniei textului în box
     String indent = "  ".repeat(level);
 
     String author = comment.has("author") ? comment.get("author").asText() : "unknown";
     String content = comment.has("content") ? comment.get("content").asText() : "";
-    int upVotes = comment.has("upVotes") ? comment.get("upVotes").asInt() : 0;
-    int downVotes = comment.has("downVotes") ? comment.get("downVotes").asInt() : 0;
+    int score = comment.has("score") ? comment.get("score").asInt() : 0;
     String createdAt = comment.has("createdAt") ? formatTimestamp(comment.get("createdAt").asText()) : "N/A";
 
-    // Linia author cu ComId
+    // Linia cu author + ComId
     String authorLine = String.format("Author: @%-12s ComId: %d", author, commentIndex);
     String[] wrappedAuthor = wrapText(authorLine, maxLineLength);
     String[] wrappedContent = wrapText("Content: " + content, maxLineLength);
-    String votesLine = "Upvotes: " + upVotes + "   Downvotes: " + downVotes;
-    String[] wrappedVotes = wrapText(votesLine, maxLineLength);
+    String scoreLine = "Score: " + score;
+    String[] wrappedScore = wrapText(scoreLine, maxLineLength);
     String[] wrappedCreated = wrapText("Created: " + createdAt, maxLineLength);
 
     List<String> allLines = new ArrayList<>();
     for (String s : wrappedAuthor) allLines.add(s);
     for (String s : wrappedContent) allLines.add(s);
-    for (String s : wrappedVotes) allLines.add(s);
+    for (String s : wrappedScore) allLines.add(s);
     for (String s : wrappedCreated) allLines.add(s);
 
     int maxLength = 0;
@@ -84,7 +122,8 @@ private static void displayCommentBox(JsonNode comment, int level, int commentIn
     System.out.println(bottomBorder + NORMAL);
 }
 
-private static void displayCommentWithReplies(JsonNode comment, int level) {
+
+    private static void displayCommentWithReplies(JsonNode comment, int level) {
     UUID commentId = UUID.fromString(comment.get("id").asText());
     int currentIndex = globalIndex++;
     indexMap.put(currentIndex, commentId);

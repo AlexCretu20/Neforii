@@ -125,7 +125,7 @@ public class PostService {
                         Logger.log(LoggerType.WARNING, LOG_PREFIX + "Post not found with ID: " + id);
                         return new PostNotFoundException("Post with ID " + id + " not found.");
                     });
-            // ownershipValidator.assertPostOwner(currentUserId, post);
+             ownershipValidator.assertPostOwner(currentUserId, post);
 
             // verifica ce este actualizat
             boolean titleUpdated = false;
@@ -160,10 +160,7 @@ public class PostService {
             Post post = postRepository.findById(id)
                     .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found."));
 
-            if (!post.getUser().getId().equals(currentUserId)) {
-                Logger.log(LoggerType.WARNING, LOG_PREFIX + "Unauthorized delete attempt of post " + id + " by user " + currentUserId);
-                throw new ForbiddenActionException("The current user is not the author of the post.");
-            }
+            ownershipValidator.assertPostOwner(currentUserId, post);
 
             postRepository.delete(post);
             Logger.log(LoggerType.INFO, LOG_PREFIX + "Successfully deleted post with ID " + id);
