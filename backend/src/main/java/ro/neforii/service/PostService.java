@@ -59,6 +59,7 @@ public class PostService {
             Integer filterId = form.filter();
 
             if (filterId != null) {
+                filterId --;
                 try {
                     byte[] filteredBytes = imageProcessorClient.applyFilter(image, filterId);
                     try {
