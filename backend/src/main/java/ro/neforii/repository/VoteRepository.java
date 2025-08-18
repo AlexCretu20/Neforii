@@ -12,6 +12,9 @@ import java.util.UUID;
 
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, UUID> {
+    Optional<Vote> findByPostIdAndUserId(UUID postId, UUID userId);
+    int deleteByPostIdAndUserId(UUID postId, UUID userId);
+
     Optional<Vote> findByPostAndUser(Post post, User user);
 
     Optional<Vote> findByCommentAndUser(Comment comment, User user);

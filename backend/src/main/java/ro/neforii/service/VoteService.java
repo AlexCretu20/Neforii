@@ -1,5 +1,6 @@
 package ro.neforii.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ro.neforii.exception.CommentNotFoundException;
 import ro.neforii.exception.PostNotFoundException;
@@ -29,7 +30,7 @@ public class VoteService implements IVoteService {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
     }
-// TODO de facut mai clean
+//// TODO de facut mai clean
     public String createVote(UUID userId, UUID postId, UUID commentId, boolean isUpvote) {
         User user = userRepository.findById(userId).orElseThrow();
 
@@ -54,7 +55,63 @@ public class VoteService implements IVoteService {
         voteRepository.save(vote);
         return "You have successfully voted!";
     }
+//hat fixes the above, keeps your behavior (NONE removes), and is concurrency-aware:
+//
+//    @Transactional
+//    public VoteResult upsertPostVote(UUID userId, UUID postId, VoteType voteType) {
+//        if (voteType == null) throw new IllegalArgumentException("voteType is required");
+//
+//        // Load once, fail fast
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+//        Post post = postRepository.findById(postId)
+//                .orElseThrow(() -> new PostNotFoundException("Post not found: " + postId));
+//
+//        // Lock the (potential) row to avoid duplicate votes under concurrency
+//        // Define this method with @Lock(PESSIMISTIC_WRITE) in the repository
+//        Optional<Vote> existingOpt = voteRepository.findByPostAndUserForUpdate(post, user);
+//
+//        if (voteType == VoteType.NONE) {
+//            if (existingOpt.isPresent()) {
+//                voteRepository.delete(existingOpt.get());
+//                // If you track counters on Post, decrement here
+//                // adjustPostCounters(post, existingOpt.get(), null);
+//                // postRepository.save(post);
+//                registerAfterCommit(() -> evaluatePostAward(post));
+//                return VoteResult.removed();
+//            }
+//            return VoteResult.noop(); // nothing to remove
+//        }
+//
+//        boolean wantUp = (voteType == VoteType.UP);
+//
+//        if (existingOpt.isPresent()) {
+//            Vote existing = existingOpt.get();
+//            if (existing.isUpvote() == wantUp) {
+//                return VoteResult.noop(existing); // idempotent no-op
+//            }
+//            existing.setUpvote(wantUp);
+//            Vote saved = voteRepository.save(existing);
+//            // adjustPostCounters(post, existing /*old value known*/, saved);
+//            // postRepository.save(post);
+//            registerAfterCommit(() -> evaluatePostAward(post));
+//            return VoteResult.updated(saved);
+//        } else {
+//            Vote created = voteRepository.save(new Vote(wantUp, post, null, user));
+//            // adjustPostCounters(post, null, created);
+//            // postRepository.save(post);
+//            registerAfterCommit(() -> evaluatePostAward(post));
+//            return VoteResult.created(created);
+//        }
+//    }
 
+//    private static void registerAfterCommit(Runnable task) {
+//        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+//                new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
+//                    @Override public void afterCommit() { task.run(); }
+//                }
+//        );
+//    }
     public Vote createOrUpdateVoteForComment(UUID userId, UUID commentId, VoteType voteType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
@@ -76,44 +133,50 @@ public class VoteService implements IVoteService {
         return voteRepository.save(vote);
     }
 
+    @Transactional
     public Vote createOrUpdateVoteForPost(UUID userId, UUID postId, VoteType voteType) {
-        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Processing vote type " + voteType + " for post " + postId + " by user " + userId);
-        try {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
-            Post post = postRepository.findById(postId)
-                    .orElseThrow(() -> new PostNotFoundException("Post not found with ID: " + postId));
+        if (voteType == null) throw new IllegalArgumentException("voteType is required");
 
-            Optional<Vote> existingVoteOpt = voteRepository.findByPostAndUser(post, user);
+        // Validate existence (and load only IDs you need)
+        userRepository.existsById(userId); // or throw if needed
+        postRepository.existsById(postId);
 
-            if (voteType == VoteType.NONE) {
-                if (existingVoteOpt.isPresent()) {
-                    Logger.log(LoggerType.INFO, LOG_PREFIX + "Removing vote from post " + postId + " by user " + userId);
-                    voteRepository.delete(existingVoteOpt.get());
-                }
-                return null;
-            }
+        // Nuke any existing rows to avoid “phantom opposite vote”
+        voteRepository.deleteByPostIdAndUserId(postId, userId);
 
-            Vote vote = existingVoteOpt.orElseGet(() ->
-                    new Vote(voteType == VoteType.UP, post, null, user)
-            );
-            vote.setUpvote(voteType == VoteType.UP);
-
-            Vote savedVote = voteRepository.save(vote);
-            Logger.log(LoggerType.INFO, LOG_PREFIX + "Saved " + (voteType == VoteType.UP ? "upvote" : "downvote") + " for post " + postId);
-
-            Post updatedPost = postRepository.findById(postId)
-                    .orElseThrow(() -> new PostNotFoundException("Post not found after voting: " + postId));
-
-            evaluatePostAward(updatedPost);
-            return savedVote;
-        } catch (Exception e) {
-            Logger.log(LoggerType.ERROR, LOG_PREFIX + "Error processing vote: " + e.getMessage());
-            throw e;
+        if (voteType == VoteType.NONE) {
+            afterCommit(() -> evaluatePostAwardById(postId)); // use byId to avoid entity state issues
+            return null;
         }
+        Post post = postRepository.findById(postId).orElseThrow(() -> {
+            Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Post with ID " + postId + " not found.");
+            return new PostNotFoundException("Post not found with ID: " + postId);
+        });
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            Logger.log(LoggerType.DEBUG, LOG_PREFIX + "User with ID " + userId + " not found.");
+            return new UserNotFoundException("User not found with ID: " + userId);
+        });
+        Vote v = new Vote(voteType == VoteType.UP, /*post*/ post, /*comment*/ null, /*user*/ user);
+        Vote saved = voteRepository.save(v);
+
+        afterCommit(() -> evaluatePostAwardById(postId));
+        return saved;
     }
 
-    public void evaluatePostAward(Post post) {
+    private static void afterCommit(Runnable r) {
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
+                    @Override public void afterCommit() { r.run(); }
+                }
+        );
+    }
+
+
+    public void evaluatePostAwardById(UUID postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> {
+            Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Post with ID " + postId + " not found.");
+            return new PostNotFoundException("Post not found with ID: " + postId);
+        });
         long upvoteCount = post.getVotes().stream()
                 .filter(Vote::isUpvote)
                 .count();
