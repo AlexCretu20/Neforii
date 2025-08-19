@@ -46,6 +46,18 @@ public class PostService {
     private static final String LOG_PREFIX = "PostService: ";
 
     @Transactional
+    public PostResponseDto createPost(PostRequestDtoJson postRequestDto, UUID currentUserId) {
+        return createPost(new PostRequestDto(
+                postRequestDto.title(),
+                postRequestDto.content(),
+                postRequestDto.author(),
+                postRequestDto.subreddit(),
+                null,
+                null
+        ), null);
+    }
+
+    @Transactional
     public PostResponseDto createPost(PostRequestDto form, UUID currentUserId) {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new post by user " + form.author());
 
@@ -59,7 +71,7 @@ public class PostService {
             Integer filterId = form.filter();
 
             if (filterId != null) {
-                filterId --;
+                filterId--;
                 try {
                     byte[] filteredBytes = imageProcessorClient.applyFilter(image, filterId);
                     try {
@@ -126,7 +138,7 @@ public class PostService {
                         Logger.log(LoggerType.WARNING, LOG_PREFIX + "Post not found with ID: " + id);
                         return new PostNotFoundException("Post with ID " + id + " not found.");
                     });
-             ownershipValidator.assertPostOwner(currentUserId, post);
+            ownershipValidator.assertPostOwner(currentUserId, post);
 
             // verifica ce este actualizat
             boolean titleUpdated = false;
@@ -187,7 +199,7 @@ public class PostService {
     }
 
     public CommentListResponseDto getCommentsForPost(UUID id, UUID currentUserId) {
-    Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving comments for post with ID " + id);
+        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving comments for post with ID " + id);
         return commentService.getCommentsForPost(id, currentUserId);
     }
 

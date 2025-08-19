@@ -12,7 +12,7 @@ public class FakeUserAuthService {
         if (cliUserId != null){
             return cliUserId;
         }
-        return UUID.fromString("550e8400-e29b-41d4-a716-446655440098");
+        return UUID.fromString("112af037-9859-41ca-aa4a-1ce6694cec68");
     }
 
     public void setClientUserId(UUID userId) {
