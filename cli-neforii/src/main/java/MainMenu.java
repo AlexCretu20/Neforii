@@ -1,36 +1,16 @@
-import client.CommentClient;
-import client.PostClient;
-import client.UserClient;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import config.ConnectionConfig;
-import models.ApiResult;
-import models.comment.CommentRequestDto;
-import models.comment.CommentUpdateRequestDto;
-import models.post.PostRequestDto;
+import handlers.UserHandler;
+import handlers.PostHandler;
+import handlers.CommentHandler;
 import models.post.PostResponseDto;
-import models.post.PostUpdateRequestDto;
-import models.user.UserLoginRequestDto;
-import models.user.UserRegisterRequestDto;
-import models.user.UserResponseDto;
-import views.CommentView;
+import models.ApiResult;
 import views.PostView;
-import views.UserView;
 import java.util.*;
 
 public class MainMenu {
-    private static final UserClient userClient = new UserClient(ConnectionConfig.BASE_URL + "/users");
-    private static final PostClient postClient = new PostClient(ConnectionConfig.BASE_URL + "/posts");
-    private static final CommentClient commentClient = new CommentClient(ConnectionConfig.BASE_URL);
-    public static String currentUsername = null;
-    public static UUID currentUserId = null;
-    private static Map<Integer, UUID> commentIndexMap = new HashMap<>();
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-
             System.out.println("====== Welcome to Neforii CLI ======");
             System.out.println("1. Login");
             System.out.println("2. Register");
@@ -39,8 +19,8 @@ public class MainMenu {
             String option = scanner.nextLine();
 
             switch (option) {
-                case "1" -> handleLogin(scanner);
-                case "2" -> handleRegister(scanner);
+                case "1" -> UserHandler.handleLogin(scanner, () -> mainMenu(scanner));
+                case "2" -> UserHandler.handleRegister(scanner, () -> mainMenu(scanner));
                 case "3" -> {
                     System.out.println("Exiting... Goodbye!");
                     return;
@@ -50,199 +30,100 @@ public class MainMenu {
         }
     }
 
-    private static void postLoginMenu(Scanner scanner) {
-        while (true) {
 
+    private static void mainMenu(Scanner scanner) {
+        while (true) {
             System.out.println("\n==== Main Menu ====");
             System.out.println("1. Create Post");
-            System.out.println("2. View Posts");
-            System.out.println("3. Open Post (view comments)");
-            System.out.println("4. Delete Post");
-            System.out.println("5. Logout ");
-            System.out.println("6. Edit Post");
+            System.out.println("2. View Posts (and Post Menu)");
+            System.out.println("3. Logout");
             System.out.print("Choose option: ");
             String option = scanner.nextLine();
 
             switch (option) {
-                case "1" -> handleCreatePost(scanner);
-                case "2" -> handleViewPosts();
-                case "3" -> handleOpenPost(scanner);
-                case "5" -> {
-                    currentUsername = null;
-                    currentUserId = null;
+                case "1" -> PostHandler.handleCreatePost(scanner);
+                case "2" -> {
+                    PostHandler.handleViewPosts();
+                    postMenu(scanner);
+                }
+                case "3" -> {
+                    UserHandler.currentUsername = null;
+                    UserHandler.currentUserId = null;
+                    System.out.println("[INFO] Logged out.");
                     return;
                 }
-                case "6"->handleEditPost(scanner);
-                case "4" -> handleDeletePost(scanner);
                 default -> System.out.println("Invalid option. Please try again.");
             }
         }
     }
 
 
-
-    private static void handleLogin(Scanner scanner) {
-        System.out.println("==== LOGIN ====");
-        System.out.print("Email: ");
-        String email = scanner.nextLine();
-
-        System.out.print("Password: ");
-        String password = scanner.nextLine();
-
-        UserLoginRequestDto loginRequest = new UserLoginRequestDto(email, password);
-        ApiResult result = userClient.login(loginRequest);
-
-        UserView.displayUserResult(result);
-        if (result.getSuccess()) {
-            currentUsername = extractUsernameFromLogin(result);
-            currentUserId = extractIdFromLogin(result);
-
-            postLoginMenu(scanner);
-        }
-    }
-
-
-private static void handleOpenPost(Scanner scanner) {
-    if (postIndexMap.isEmpty()) {
-        System.out.println("[INFO]: Please view posts first using option 2.");
-        return;
-    }
-
-    System.out.print("Enter Post Number: ");
-    String input = scanner.nextLine();
-
-    try {
-        int postNumber = Integer.parseInt(input);
-        PostResponseDto selectedPost = postIndexMap.get(postNumber);
-
-        if (selectedPost == null) {
-            System.out.println("[ERROR]: No post found with number: " + postNumber);
-            return;
-        }
-
-        ApiResult postResult = postClient.getPostById(selectedPost.id());
-        PostView.displayPostResult(postResult, String.valueOf(postNumber));
-        ApiResult commentsResult = postClient.getCommentsByPostId(selectedPost.id());
-        commentIndexMap = CommentView.displayCommentList(commentsResult);
-
+    private static void postMenu(Scanner scanner) {
         while (true) {
-            System.out.println("\n--- Post Menu ---");
+            System.out.println("\n==== Post Menu ====");
             System.out.println("1. Upvote Post");
             System.out.println("2. Downvote Post");
-            System.out.println("3. Remove Vote from Post");
-            System.out.println("4. Add Comment");
-            System.out.println("5. Reply to Comment");
-            System.out.println("6. Upvote Comment");
-            System.out.println("7. Downvote Comment");
-            System.out.println("8. Remove Vote from Comment");
-            System.out.println("9. Edit Comment");
-            System.out.println("10. Delete Comment");
-            System.out.println("11. Back to main menu");
+            System.out.println("3. Open Post (and Comment Menu)");
+            System.out.println("4. Edit Post");
+            System.out.println("5. Delete Post");
+            System.out.println("6. Create Post");
+            System.out.println("7. Refresh Posts");
+            System.out.println("8. Back to Main Menu");
+            System.out.print("Choose option: ");
+            String option = scanner.nextLine();
+
+            switch (option) {
+                case "1" -> votePost(scanner, "up");
+                case "2" -> votePost(scanner, "down");
+                case "3" -> handleOpenPost(scanner);
+                case "4" -> PostHandler.handleEditPost(scanner);
+                case "5" -> PostHandler.handleDeletePost(scanner);
+                case "6" -> PostHandler.handleCreatePost(scanner);
+                case "7" -> PostHandler.handleViewPosts();
+                case "8" -> { return; }
+                default -> System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+
+    private static void commentMenu(Scanner scanner, UUID postId) {
+        while (true) {
+            System.out.println("\n==== Comment Menu ====");
+            System.out.println("1. Upvote Comment");
+            System.out.println("2. Downvote Comment");
+            System.out.println("3. Add a New Comment");
+            System.out.println("4. Reply to a Comment");
+            System.out.println("5. Edit a Comment");
+            System.out.println("6. Delete a Comment");
+            System.out.println("7. Back to Post Menu");
+
             System.out.print("Choose option: ");
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1" -> handleVotePost(selectedPost.id(), "up");
-                case "2" -> handleVotePost(selectedPost.id(), "down");
-                case "3" -> handleVotePost(selectedPost.id(), "none");
-                case "4" -> handleAddComment(scanner, selectedPost.id(), null);
-                case "5" -> handleReplyToComment(scanner, selectedPost.id());
-                case "6" -> handleVoteComment(scanner, "up");
-                case "7" -> handleVoteComment(scanner, "down");
-                case "8" -> handleVoteComment(scanner, "none");
-                case "9" -> handleEditComment(scanner);
-                case "10" -> handleDeleteComment(scanner, commentClient, currentUsername, commentIndexMap);
-                case "11" -> { return; }
+                case "1" -> CommentHandler.handleVoteComment(scanner, "up");
+                case "2" -> CommentHandler.handleVoteComment(scanner, "down");
+                case "3" -> CommentHandler.handleAddComment(scanner, postId, null);
+                case "4" -> CommentHandler.handleReplyToComment(scanner, postId);
+                case "5" -> CommentHandler.handleEditComment(scanner);
+                case "6" -> CommentHandler.handleDeleteComment(scanner);
+                case "7" -> { return; }
+
                 default -> System.out.println("[ERROR]: Invalid choice.");
             }
         }
-
-
-    } catch (NumberFormatException e) {
-        System.out.println("[ERROR]: Please enter a valid number.");
-    } catch (Exception e) {
-        System.out.println("[ERROR]: Could not load post or comments.");
-    }
-}
-
-
-
-    private static Map<Integer, PostResponseDto> postIndexMap = new HashMap<>();
-
-    private static void handleViewPosts() {
-        System.out.println("==== All Posts ====");
-        ApiResult result = postClient.getAllPosts();
-        postIndexMap = PostView.displayPostListResult(result);
-    }
-
-    private static void handleCreatePost(Scanner scanner) {
-        if (currentUsername == null || currentUserId == null) {
-            System.out.println("[ERROR]: You must be logged in to create a post.");
-            return;
-        }
-
-        System.out.println("==== Create Post ====");
-        System.out.print("Title: ");
-        String title = scanner.nextLine();
-
-        System.out.print("Content: ");
-        String content = scanner.nextLine();
-
-        System.out.print("Image path (optional, press Enter to skip): ");
-        String imagePathInput = scanner.nextLine();
-        String imagePath = imagePathInput.isBlank() ? null : imagePathInput;
-        PostRequestDto postDto = new PostRequestDto(
-                title,
-                content,
-                currentUsername,
-                null
-
-        );
-
-        ApiResult result = postClient.newPost(postDto);
-       if(result.getSuccess()) {
-           System.out.println("[INFO]: Post successfully created.");
-       }
-    }
-
-    private static void handleRegister(Scanner scanner) {
-        System.out.println("==== REGISTER ====");
-        System.out.print("Username: ");
-        String username = scanner.nextLine();
-
-        System.out.print("Email: ");
-        String email = scanner.nextLine();
-
-        System.out.print("Password: ");
-        String password = scanner.nextLine();
-
-        System.out.print("Phone Number: ");
-        String phoneNumber = scanner.nextLine();
-
-        System.out.print("Description: ");
-        String description = scanner.nextLine();
-
-        UserRegisterRequestDto registerRequest = new UserRegisterRequestDto(username, email, password, phoneNumber, description);
-        ApiResult result = userClient.register(registerRequest);
-
-        System.out.println(result.getMessage());
-        if (result.getSuccess()) {
-            currentUsername = username;
-            ApiResult userResult = userClient.getUserByUsername(username);
-            UserView.displayUserResult(userResult);
-            currentUserId = userClient.extractUserId(userResult);
-            postLoginMenu(scanner);
-        }
     }
 
 
-    private static void handleDeletePost(Scanner scanner) {
+    private static void handleOpenPost(Scanner scanner) {
+        Map<Integer, PostResponseDto> postIndexMap = PostHandler.getPostIndexMap();
         if (postIndexMap.isEmpty()) {
-            System.out.println("[INFO]: Please view posts first using option 2.");
+            System.out.println("[INFO]: Please view posts first using option 7.");
             return;
         }
 
-        System.out.print("Enter Post ID to delete: ");
+        System.out.print("Enter Post Number: ");
         String input = scanner.nextLine();
 
         try {
@@ -254,272 +135,41 @@ private static void handleOpenPost(Scanner scanner) {
                 return;
             }
 
-            ApiResult result = postClient.deletePost(selectedPost.id());
 
-            if (result.getSuccess()) {
-                System.out.println("[SUCCESS]: Post deleted successfully.");
-                postIndexMap.remove(postNumber);
-            } else {
-                System.out.println("[ERROR]: " + result.getMessage());
-            }
+            ApiResult postResult = new client.PostClient(config.ConnectionConfig.BASE_URL + "/posts")
+                    .getPostById(selectedPost.id());
+            PostView.displayPostResult(postResult, String.valueOf(postNumber));
+
+
+            CommentHandler.loadComments(selectedPost.id());
+
+
+            commentMenu(scanner, selectedPost.id());
 
         } catch (NumberFormatException e) {
             System.out.println("[ERROR]: Please enter a valid number.");
-        } catch (Exception e) {
-            System.out.println("[ERROR]: Could not delete the post. " + e.getMessage());
         }
     }
 
-    private static void handleAddComment(Scanner scanner, UUID postId, UUID parentId) {
-        if (currentUsername == null) {
-            System.out.println("[ERROR]: You must be logged in to add a comment.");
-            return;
-        }
-
-        System.out.print("Enter your comment: ");
-        String content = scanner.nextLine();
-
-        if (content.isBlank()) {
-            System.out.println("[ERROR]: Comment cannot be empty.");
-            return;
-        }
-
-        CommentRequestDto dto = new CommentRequestDto(
-                content,
-                currentUsername,
-                parentId
-        );
-
-        ApiResult result = commentClient.addComment(postId, dto);
-        if (result.getSuccess()) {
-            System.out.println("[SUCCESS]: Comment added successfully.");
-        } else {
-            System.out.println("[ERROR]: " + result.getMessage());
-        }
-    }
-
-
-private static void handleReplyToComment(Scanner scanner, UUID postId) {
-    System.out.print("Enter comment number to reply to: ");
-    String indexStr = scanner.nextLine();
-    try {
-        int commentNumber = Integer.parseInt(indexStr);
-        UUID parentId = commentIndexMap.get(commentNumber);
-
-        if (parentId == null) {
-            System.out.println("[ERROR]: No comment found with number: " + commentNumber);
-            return;
-        }
-
-        handleAddComment(scanner, postId, parentId);
-    } catch (NumberFormatException e) {
-        System.out.println("[ERROR]: Please enter a valid number.");
-    }
-}
-    private static void handleEditPost(Scanner scanner) {
+    private static void votePost(Scanner scanner, String type) {
+        Map<Integer, PostResponseDto> postIndexMap = PostHandler.getPostIndexMap();
         if (postIndexMap.isEmpty()) {
-            System.out.println("[INFO]: Please view posts first using option 2.");
+            System.out.println("[INFO]: Please view posts first using option 7.");
             return;
         }
 
-        System.out.print("Enter Post Number to edit: ");
+        System.out.print("Enter Post Number: ");
         String input = scanner.nextLine();
-
         try {
             int postNumber = Integer.parseInt(input);
             PostResponseDto selectedPost = postIndexMap.get(postNumber);
-
             if (selectedPost == null) {
                 System.out.println("[ERROR]: No post found with number: " + postNumber);
                 return;
             }
-
-            System.out.println("Leave blank to keep current value.");
-            System.out.print("New Title (current: " + selectedPost.title() + "): ");
-            String newTitle = scanner.nextLine();
-            if (newTitle.isBlank()) newTitle = null;
-
-            System.out.print("New Content (current: " + selectedPost.content() + "): ");
-            String newContent = scanner.nextLine();
-            if (newContent.isBlank()) newContent = null;
-
-            if (newTitle == null && newContent == null) {
-                System.out.println("[INFO]: No changes entered. Post not updated.");
-                return;
-            }
-
-            PostUpdateRequestDto updateDto = new PostUpdateRequestDto(newTitle, newContent);
-            ApiResult result = postClient.updatePost(selectedPost.id(), updateDto);
-
-
-            if(result.getSuccess()) {
-                System.out.println("[SUCCESS]: Post updated successfully.");
-            }else{
-                System.out.println("[ERROR]: " + result.getMessage());
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("[ERROR]: Please enter a valid number.");
-        } catch (Exception e) {
-            System.out.println("[ERROR]: Could not update post. " + e.getMessage());
-        }
-    }
-
-    private static void handleEditComment(Scanner scanner) {
-        if (commentIndexMap.isEmpty()) {
-            System.out.println("[INFO]: Please open a post first to load its comments.");
-            return;
-        }
-
-        System.out.print("Enter comment number to edit: ");
-        String indexStr = scanner.nextLine();
-        try {
-            int commentNumber = Integer.parseInt(indexStr);
-            UUID commentId = commentIndexMap.get(commentNumber);
-
-            if (commentId == null) {
-                System.out.println("[ERROR]: No comment found with number: " + commentNumber);
-                return;
-            }
-
-            System.out.print("Enter new comment content: ");
-            String newContent = scanner.nextLine();
-
-            if (newContent.isBlank()) {
-                System.out.println("[ERROR]: Content cannot be empty.");
-                return;
-            }
-
-
-            CommentUpdateRequestDto updateDto = new CommentUpdateRequestDto(newContent);
-
-
-            ApiResult result = commentClient.updateComment(commentId, updateDto);
-
-            if (result.getSuccess()) {
-                System.out.println("[SUCCESS]: Comment updated successfully.");
-
-            } else {
-                System.out.println("[ERROR]: " + result.getMessage());
-            }
-
+            PostHandler.handleVotePost(selectedPost.id(), type);
         } catch (NumberFormatException e) {
             System.out.println("[ERROR]: Please enter a valid number.");
         }
     }
-
-
-
-    private static void handleDeleteComment(Scanner scanner, CommentClient commentClient, String currentUsername, Map<Integer, UUID> commentIndexMap) {
-        if (commentIndexMap.isEmpty()) {
-            System.out.println("[INFO]: Please open a post first to load its comments.");
-            return;
-        }
-
-        System.out.print("Enter comment number to delete: ");
-        String indexStr = scanner.nextLine();
-
-        try {
-            int commentNumber = Integer.parseInt(indexStr);
-            UUID commentId = commentIndexMap.get(commentNumber);
-
-            if (commentId == null) {
-                System.out.println("[ERROR]: No comment found with number: " + commentNumber);
-                return;
-            }
-
-
-            ApiResult deleteResult = commentClient.deleteComment(commentId);
-
-            if (deleteResult.getSuccess()) {
-                System.out.println("[SUCCESS]: Comment deleted successfully.");
-                commentIndexMap.remove(commentNumber);
-            } else {
-                System.out.println("[ERROR]: " + deleteResult.getMessage());
-                System.out.println("[DEBUG]: " + deleteResult.getResponseBody());
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("[ERROR]: Please enter a valid number.");
-        }
-    }
-
-    private static String extractUsernameFromLogin(ApiResult loginResult) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.findAndRegisterModules(); // pentru  datetime
-            UserResponseDto user = mapper.readValue(loginResult.getResponseBody(), UserResponseDto.class);
-            return user.username(); // getter pt username
-        } catch (Exception e) {
-            System.out.println("Couldn't parse login response to extract username.");
-            return null;
-        }
-    }
-
-    private static UUID extractIdFromLogin(ApiResult loginResult) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.findAndRegisterModules();
-            UserResponseDto user = mapper.readValue(loginResult.getResponseBody(), UserResponseDto.class);
-            return user.id();
-        } catch (Exception e) {
-            System.out.println("Couldn't parse login response to extract id.");
-            return null;
-        }
-    }
-    private static void handleVotePost(UUID postId, String voteType) {
-        ApiResult result = postClient.votePost(postId, voteType);
-
-        if (result.getSuccess()) {
-            System.out.println("[SUCCESS]: " + result.getMessage());
-
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(result.getResponseBody());
-                JsonNode data = root.get("data");
-
-                if (data != null && data.isObject()) {
-                    int score = data.get("score").asInt();
-                    String userVote = data.get("userVote").asText();
-                    System.out.println("[INFO]: New total votes = " + score + " (your vote: " + userVote + ")");
-                }
-            } catch (Exception e) {
-                System.out.println("[ERROR]: Couldn't parse vote response.");
-            }
-
-        } else {
-            System.out.println("[ERROR]: " + result.getMessage());
-        }
-    }
-
-    private static void handleVoteComment(Scanner scanner, String voteType) {
-        if (commentIndexMap.isEmpty()) {
-            System.out.println("[INFO]: Please open a post first to load its comments.");
-            return;
-        }
-
-        System.out.print("Enter comment number to vote: ");
-        String indexStr = scanner.nextLine();
-        try {
-            int commentNumber = Integer.parseInt(indexStr);
-            UUID commentId = commentIndexMap.get(commentNumber);
-
-            if (commentId == null) {
-                System.out.println("[ERROR]: No comment found with number: " + commentNumber);
-                return;
-            }
-
-            ApiResult result = commentClient.voteComment(commentId, voteType);
-
-            if (result.getSuccess()) {
-                System.out.println("[SUCCESS]: You voted the comment.");
-            } else {
-                System.out.println("[ERROR]: " + result.getMessage());
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("[ERROR]: Please enter a valid number.");
-        }
-    }
-
 }

@@ -30,54 +30,12 @@ public class PostClient {
         this(baseUrl, HttpClient.newHttpClient(), new ObjectMapper());
     }
 
-//
-//    public ApiResult newPost(PostRequestDto postRequestDto) {
-//        try {
-//            String url = baseUrl;
-//            String requestBody = objectMapper.writeValueAsString(postRequestDto);
-//
-//            HttpRequest httpRequest = HttpRequest.newBuilder()
-//
-//                    .uri(URI.create(url))
-////                    .header("Content-Type", "application/json")
-//                    .header("Content-Type", "multipart/form-data")
-//                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-//                    .build();
-//            System.out.println("[INFO]: POST Request: " + requestBody);
-//            System.out.println("[INFO]: POST Request: " + httpRequest.uri());
-//            System.out.println();
-//
-//            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-//            int statusCode = response.statusCode();
-//            System.out.println(response);
-//            boolean isSuccess;
-//            String message = "";
-//            if (statusCode >= 200 && statusCode < 300) {
-//                isSuccess = true;
-//                message = "The post was made. ";
-//            } else if (statusCode >= 400 && statusCode < 500) {
-//                isSuccess = false;
-//                if (response.body() != null && !response.body().isEmpty()) {
-//                    message = response.body();
-//                }
-//            } else {
-//                isSuccess = false;
-//                message = "Unexpected error has appeared! Please try again later.";
-//            }
-//
-//            return new ApiResult(isSuccess, message, response.body());
-//
-//        } catch (JsonProcessingException e) {
-//            return new ApiResult(false, "Couldn't map the Post request to JSON.", null);
-//        } catch (IOException | InterruptedException e) {
-//            return new ApiResult(false, "Couldn't maintain the connection." + e.getMessage(), null);
-//        }
-//    }
+
 public ApiResult newPost(PostRequestDto postRequestDto) {
     try {
         final String url = baseUrl;
 
-        // facem multipart text-only
+
         final String boundary = "----boundary-" + java.util.UUID.randomUUID();
         final byte[] body = buildTextOnlyMultipart(postRequestDto, boundary);
 
@@ -110,7 +68,7 @@ public ApiResult newPost(PostRequestDto postRequestDto) {
         return new ApiResult(isSuccess, message, response.body());
 
     } catch (IOException | InterruptedException e) {
-        Thread.currentThread().interrupt(); // safe if InterruptedException
+        Thread.currentThread().interrupt();
         return new ApiResult(false, "Couldn't maintain the connection. " + e.getMessage(), null);
     } catch (RuntimeException e) {
         return new ApiResult(false, "Request building failed. " + e.getMessage(), null);
@@ -119,8 +77,7 @@ public ApiResult newPost(PostRequestDto postRequestDto) {
 
 
     private byte[] buildTextOnlyMultipart(PostRequestDto dto, String boundary) throws IOException {
-        // Convertim DTO -> Map pentru a nu scrie manual fiecare câmp.
-        // Exclude: "image", "filter"
+
         com.fasterxml.jackson.databind.ObjectMapper om = new com.fasterxml.jackson.databind.ObjectMapper();
         java.util.Map<String, Object> asMap = om.convertValue(
                 dto, new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {});
