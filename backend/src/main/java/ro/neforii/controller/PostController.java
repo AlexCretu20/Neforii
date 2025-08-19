@@ -49,9 +49,18 @@ public class PostController {
         return ResponseEntity.ok(new ExpectedResponse<>(postResponseDto));
     }
 
-    @PostMapping
-    public ResponseEntity<ExpectedResponse<PostResponseDto>> createPost(
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ExpectedResponse<PostResponseDto>> createPostMultipart(
             @Valid @ModelAttribute PostRequestDto postRequestDto
+    ) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        PostResponseDto dto = postService.createPost(postRequestDto, currentUserId);
+        return ResponseEntity.ok(new ExpectedResponse<>(dto));
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ExpectedResponse<PostResponseDto>> createPostJson(
+            @Valid @RequestBody PostRequestDtoJson postRequestDto
     ) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         PostResponseDto dto = postService.createPost(postRequestDto, currentUserId);
