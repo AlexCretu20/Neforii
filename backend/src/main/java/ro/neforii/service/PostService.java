@@ -1,15 +1,20 @@
 package ro.neforii.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.MultipartFile;
 import ro.neforii.client.ImageProcessorClient;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
+import ro.neforii.dto.common.PageResponseCursor;
+import ro.neforii.dto.common.PageResult;
 import ro.neforii.dto.post.*;
 import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.exception.CommentNotFoundException;
@@ -23,6 +28,7 @@ import ro.neforii.model.User;
 import ro.neforii.model.VoteType;
 import ro.neforii.repository.PostRepository;
 import ro.neforii.service.security.OwnershipValidator;
+import ro.neforii.utils.cursor.CursorCodec;
 import ro.neforii.utils.logger.Logger;
 import ro.neforii.utils.logger.LoggerType;
 
@@ -36,18 +42,21 @@ import java.util.UUID;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final VoteService voteService;
-    private final UserService userService;
-    private final CommentService commentService;
+    private final ro.neforii.service.VoteService voteService;
+    private final ro.neforii.service.UserService userService;
+    private final ro.neforii.service.CommentService commentService;
     private final PostMapper postMapper;
     private final OwnershipValidator ownershipValidator;
-    private final FileService fileService;
+    private final ro.neforii.service.FileService fileService;
     private final ImageProcessorClient imageProcessorClient;
+
     private static final String LOG_PREFIX = "PostService: ";
+    private static final int MAX_LIMIT = 100; // for cursor pagination
+
 
     @Transactional
-    public PostResponseDto createPost(PostRequestDtoJson postRequestDto, UUID currentUserId) {
-        return createPost(new PostRequestDto(
+    public ro.neforii.dto.post.PostResponseDto createPost(ro.neforii.dto.post.PostRequestDtoJson postRequestDto, UUID currentUserId) {
+        return createPost(new ro.neforii.dto.post.PostRequestDto(
                 postRequestDto.title(),
                 postRequestDto.content(),
                 postRequestDto.author(),
@@ -58,7 +67,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto createPost(PostRequestDto form, UUID currentUserId) {
+    public ro.neforii.dto.post.PostResponseDto createPost(ro.neforii.dto.post.PostRequestDto form, UUID currentUserId) {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new post by user " + form.author());
 
         User user = userService.getUserByUsername(form.author());
@@ -107,7 +116,7 @@ public class PostService {
     }
 
 
-    public List<PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
+    public List<ro.neforii.dto.post.PostResponseDto> getAllPostsAsUser(UUID currentUserId) {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving all posts for user " + currentUserId);
         var sort = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
         var posts = postRepository.findAll(sort);
@@ -118,7 +127,7 @@ public class PostService {
                 .toList();
     }
 
-    public PostResponseDto getPostByIdAsUser(UUID id, UUID currentUserId) {
+    public ro.neforii.dto.post.PostResponseDto getPostByIdAsUser(UUID id, UUID currentUserId) {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Retrieving post with ID " + id);
         try {
             Post post = postRepository.findById(id)
@@ -130,7 +139,7 @@ public class PostService {
         }
     }
 
-    public PostResponseDto updatePost(UUID id, PostUpdateRequestDto postUpdateRequestDto, UUID currentUserId) {
+    public ro.neforii.dto.post.PostResponseDto updatePost(UUID id, ro.neforii.dto.post.PostUpdateRequestDto postUpdateRequestDto, UUID currentUserId) {
         Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Attempting to update post with ID " + id);
         try {
             Post post = postRepository.findById(id)
@@ -183,7 +192,7 @@ public class PostService {
         }
     }
 
-    public PostVoteResponseDto votePost(UUID postId, UUID currentUserId, VoteRequestDto voteRequestDto) {
+    public ro.neforii.dto.post.PostVoteResponseDto votePost(UUID postId, UUID currentUserId, VoteRequestDto voteRequestDto) {
         VoteType voteType = VoteType.fromString(voteRequestDto.voteType());
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + postId + " not found."));
@@ -235,6 +244,74 @@ public class PostService {
             throw e;
         }
     }
+
+    public List<ro.neforii.dto.post.PostResponseDto> getFeed(UUID currentUserId) {
+        var sort = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+        var posts = postRepository.findAll(sort);
+
+        return posts.stream()
+                .map(post -> postMapper.postToPostResponseDtoOptimized(post, currentUserId))
+                .toList();
+    }
+
+    public PageResult<ro.neforii.dto.post.PostResponseDto> getFeedOffset(UUID currentUserId, int page, int limit) {
+        if (page < 0) page = 0;
+
+        Pageable pageable = PageRequest.of(page, limit);
+        var slice = postRepository.findAllByOrderByCreatedAtDescIdDesc(pageable);
+
+        List<ro.neforii.dto.post.PostResponseDto> items = slice.getContent().stream()
+                .map(post -> postMapper.postToPostResponseDtoOptimized(post, currentUserId))
+                .toList();
+
+        return new PageResult<>(items, slice.hasNext(), page, limit);
+    }
+
+    private static Pageable pageOf(int size) {
+        return PageRequest.of(
+                0,
+                size,
+                Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"))
+        );
+    }
+
+    private static int clamp(int n, int min, int max) {
+        return Math.max(min, Math.min(max, n));
+    }
+
+    @Cacheable(
+            value = "feed:page:v1",
+            key   = "'cur:' + ((#cursor == null || #cursor.isBlank()) ? 'FIRST' : #cursor) + ':lim:' + #limit",
+            unless = "#result == null || #result.items().isEmpty()"
+    )
+    @Transactional(readOnly = true)
+    public PageResponseCursor<PostResponseDto> page(String cursor, int limit, UUID currentUserId) {
+        int size = Math.max(1, Math.min(limit, MAX_LIMIT));
+
+        LocalDateTime since = null; UUID lastId = null;
+        if (cursor != null && !cursor.isBlank()) {
+            var c = CursorCodec.decode(cursor);
+            since  = c.createdAt();
+            lastId = c.id();
+        }
+
+        var posts = (since == null)
+                ? postRepository.firstPage(org.springframework.data.domain.PageRequest.of(0, size))
+                : postRepository.nextPage(since, lastId, org.springframework.data.domain.PageRequest.of(0, size));
+
+        var items = posts.stream()
+                .map(p -> postMapper.postToPostResponseDtoOptimized(p, currentUserId))
+                .toList();
+
+        String next = null;
+        if (items.size() == size) {
+            var tail = items.get(items.size() - 1);
+            next = CursorCodec.encode(tail.createdAt(), tail.id());
+        }
+        return new PageResponseCursor<>(items, next);
+    }
+
+    // Your clamp
 
 //    public PostResponseDto createImagePost(PostRequestDto postRequestDto, String imageUrl) {
 //        Logger.log(LoggerType.DEBUG, LOG_PREFIX + "Creating new image post by user " + postRequestDto.author() + " with image path: " + imageUrl);

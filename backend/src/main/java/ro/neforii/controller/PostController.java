@@ -3,12 +3,15 @@ package ro.neforii.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ro.neforii.dto.CommentListResponseDto;
 import ro.neforii.dto.comment.CommentResponseDto;
 import ro.neforii.dto.comment.create.CommentOnPostRequestDto;
 import ro.neforii.dto.common.ExpectedResponse;
+import ro.neforii.dto.common.PageResponseCursor;
+import ro.neforii.dto.common.PageResult;
 import ro.neforii.dto.post.*;
 import ro.neforii.dto.vote.VoteRequestDto;
 import ro.neforii.service.FakeUserAuthService;
@@ -41,7 +44,36 @@ public class PostController {
         return ResponseEntity.ok(new ExpectedResponse<>(posts));
     }
 
+    @GetMapping("/feed/basic")
+    public ResponseEntity<ExpectedResponse<List<PostResponseDto>>> getFeed() {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        List<PostResponseDto> posts = postService.getFeed(currentUserId);
+
+        return ResponseEntity.ok(new ExpectedResponse<>(posts));
+    }
+
+    @GetMapping("/feed/offset")
+    public PageResult<PostResponseDto> getFeedOffset(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+
+        return postService.getFeedOffset(currentUserId, page, limit);
+    }
+
+    @GetMapping("/feed/cursor")
+    @Transactional(readOnly = true)
+    public PageResponseCursor feed(
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(required = false) String cursor
+    ) {
+        UUID currentUserId = fakeAuthService.getCurrentUserId();
+        return postService.page(cursor, limit, currentUserId); // one entry point
+    }
+
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<ExpectedResponse<PostResponseDto>> getPostById(@PathVariable UUID id) {
         UUID currentUserId = fakeAuthService.getCurrentUserId();
         PostResponseDto postResponseDto = postService.getPostByIdAsUser(id, currentUserId);

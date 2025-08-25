@@ -84,6 +84,25 @@ public class PostMapper {
                 .userVote(userVote)
                 .build();
     }
+    public PostResponseDto postToPostResponseDtoOptimized(Post post, UUID currentUserId) { // hardcoding votecounts/commentcount because they should be static parameter but not currently and would have to fix everywhere
+        if (post == null) return null;
+
+        return PostResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .author(post.getAuthor())
+                .subreddit(post.getSubreddit()) // presupun ca subreddit e un obiect cu nume
+                .upvotes(0)
+                .downvotes(0)
+                .score(0)
+                .commentCount(0)
+                .userVote("none")
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .imageUrl(post.getImageUrl())
+                .build();
+    }
 
 }
 
