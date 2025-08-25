@@ -123,28 +123,6 @@ public static void displayPost(PostResponseDto post, String displayId) {
         System.out.println(bottomBorder + NORMAL);
     }
 
-//    public static void displayPostResult(ApiResult apiResult) {
-//        if (apiResult.getSuccess()) {
-//            try {
-//                ObjectMapper objectMapper = new ObjectMapper();
-//                JsonNode root = objectMapper.readTree(apiResult.getResponseBody());
-//                JsonNode dataNode = root.get("data");
-//
-//                if (dataNode != null && dataNode.isObject()) {
-//                    PostResponseDto post = objectMapper.treeToValue(dataNode, PostResponseDto.class);
-//                    displayPost(post);
-//
-//                } else {
-//                    System.out.println("[INFO]: No post found in response.");
-//                }
-//            } catch (Exception e) {
-//                displayError("A problem has appeared while processing data. Please try again later.");
-//                e.printStackTrace();
-//            }
-//        } else {
-//            displayError(apiResult.getMessage());
-//        }
-//    }
     public static void displayPostResult(ApiResult apiResult, String displayId) {
         if (apiResult.getSuccess()) {
             try {

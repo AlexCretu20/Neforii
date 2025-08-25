@@ -79,6 +79,10 @@ public class GlobalExceptionHandler {
                 .body("Missing ec2 key" + e.getMessage());
     }
 
+    public ResponseEntity<String> handlefile (FilterException e){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error to file" + e.getMessage());
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception e){
